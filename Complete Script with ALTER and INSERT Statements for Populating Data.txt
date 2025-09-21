@@ -1,0 +1,52 @@
+-- Disable foreign key checks to avoid issues during data population
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Insert data into `users` table
+INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `stripe_id`, `pm_type`, `pm_last_four`, `trial_ends_at`) VALUES
+(1, 'Admin', 'admin@betternet.com', '2024-05-13 11:20:35', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'G7RcTO2nco', '2024-05-13 11:20:35', '2024-05-13 11:20:35', NULL, NULL, NULL, NULL),
+(2, 'John Doe', 'john@doe.com', '2024-05-13 11:30:00', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', NULL, '2024-05-13 11:30:00', '2024-05-13 11:30:00', NULL, NULL, NULL, NULL);
+
+-- Insert data into `tickets` table
+INSERT INTO `tickets` (`id`, `number`, `subject`, `message`, `status`, `priority`, `user_id`, `created_at`, `updated_at`) VALUES
+(1, 'TCK-1001', 'Login Issue', 'User cannot log in to the system.', 'open', 'high', 2, '2024-05-13 12:00:00', '2024-05-13 12:00:00'),
+(2, 'TCK-1002', 'Payment Issue', 'Payment not reflecting in the account.', 'open', 'medium', 2, '2024-05-13 12:30:00', '2024-05-13 12:30:00');
+
+-- Insert data into `comments` table
+INSERT INTO `comments` (`id`, `comment`, `user_id`, `ticket_id`, `created_at`, `updated_at`) VALUES
+(1, 'This is a test comment on Ticket 1.', 2, 1, '2024-05-13 12:10:00', '2024-05-13 12:10:00'),
+(2, 'Follow-up comment on Ticket 1.', 2, 1, '2024-05-13 12:20:00', '2024-05-13 12:20:00'),
+(3, 'This is a comment on Ticket 2.', 2, 2, '2024-05-13 12:35:00', '2024-05-13 12:35:00');
+
+-- Insert data into `billings` table
+INSERT INTO `billings` (`id`, `invoice`, `package_name`, `package_price`, `package_start`, `user_id`, `created_at`, `updated_at`) VALUES
+(1, 'INV-001', 'Basic Package', 1000, '2024-05-01', 2, '2024-05-01 10:00:00', '2024-05-01 10:00:00'),
+(2, 'INV-002', 'Pro Package', 2000, '2024-05-10', 2, '2024-05-10 11:00:00', '2024-05-10 11:00:00');
+
+-- Insert data into `payments` table
+INSERT INTO `payments` (`id`, `invoice`, `payment_method`, `package_price`, `user_id`, `billing_id`, `created_at`, `updated_at`) VALUES
+(1, 'INV-001', 'Credit Card', 1000, 2, 1, '2024-05-02 09:00:00', '2024-05-02 09:00:00'),
+(2, 'INV-002', 'PayPal', 2000, 2, 2, '2024-05-11 10:00:00', '2024-05-11 10:00:00');
+
+-- Insert data into `companies` table
+INSERT INTO `companies` (`id`, `name`, `address`, `phone`, `email`, `created_at`, `updated_at`) VALUES
+(1, 'Tech Solutions', '1234 Tech Avenue', '123-456-7890', 'info@techsolutions.com', '2024-05-13 10:00:00', '2024-05-13 10:00:00'),
+(2, 'Web Innovations', '5678 Web St.', '098-765-4321', 'contact@webinnovations.com', '2024-05-13 11:00:00', '2024-05-13 11:00:00');
+
+-- Insert data into `details` table
+INSERT INTO `details` (`id`, `address`, `phone`, `dob`, `pin`, `router_password`, `package_name`, `package_price`, `package_start`, `due`, `status`, `user_id`, `created_at`, `updated_at`, `router_name`) VALUES
+(1, '7890 Customer Ln.', '456-789-0123', '1990-01-01', '1234', 'pass123', 'Pro Package', 2000, '2024-05-10', 0, 'active', 2, '2024-05-10 12:00:00', '2024-05-10 12:00:00', 'Router1');
+
+-- Insert data into `failed_jobs` table
+INSERT INTO `failed_jobs` (`id`, `uuid`, `connection`, `queue`, `payload`, `exception`, `failed_at`) VALUES
+(1, '123e4567-e89b-12d3-a456-426614174000', 'mysql', 'default', 'payload_data', 'exception_data', '2024-05-13 11:20:35');
+
+-- Insert data into `subscriptions` table
+INSERT INTO `subscriptions` (`id`, `user_id`, `name`, `stripe_id`, `stripe_status`, `stripe_price`, `quantity`, `trial_ends_at`, `ends_at`, `created_at`, `updated_at`) VALUES
+(1, 2, 'Premium Plan', 'stripe-001', 'active', '20.00', 1, '2024-06-01', '2025-06-01', '2024-05-13 10:00:00', '2024-05-13 10:00:00');
+
+-- Insert data into `personal_access_tokens` table
+INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
+(1, 'App\\User', 2, 'Token Name', 'token1234', '["*"]', '2024-05-13 12:00:00', '2024-12-31 12:00:00', '2024-05-13 12:00:00', '2024-05-13 12:00:00');
+
+-- Enable foreign key checks after populating data
+SET FOREIGN_KEY_CHECKS = 1;
