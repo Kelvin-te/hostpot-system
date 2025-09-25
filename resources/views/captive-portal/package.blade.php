@@ -5,173 +5,218 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $package->name }} - Package Details</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 1em;
+            font-weight: 500;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #eeffef 30%, #ffe0b1 100%);
+        }
+
+        .container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .form-widget {
+            margin-bottom: 30px;
+            min-width: 350px;
+            max-width: 350px;
+            padding: 20px;
+        }
+
+        .package-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .package-table th {
+            background: #0e770e;
+            color: white;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .package-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e1e8ed;
+            color: #444;
+        }
+
+        .package-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .package-name {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .package-price {
+            text-align: right;
+            font-weight: 500;
+            color: #0e770e !important;
+            font-size: 1.2em;
+        }
+
+        .package-desc {
+            font-size: 80%;
+            color: #6c757d;
+            display: block;
+            margin-top: 2px;
+            line-height: 1;
+            font-weight: 300;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            min-width: 120px;
+            border: none;
+            font-size: 1em;
+            border-radius: 5px;
+            font-weight: 500 !important;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(0);
+        }
+
+        .btn-light {
+            background: #ffffff;
+            color: #0e770e;
+            border: 1px solid #e1e8ed;
+        }
+
+        .btn-light:hover {
+            background: #f8f9fa;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+        }
+
+        .back-btn {
+            margin-bottom: 20px;
+            min-width: fit-content;
+            width: auto;
+        }
+
+
+        /* Mobile styles */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                max-width: 380px;
+            }
+            
+            .form-widget {
+                min-width: 300px;
+                max-width: 300px;
+            }
+            
         }
     </style>
 </head>
-<body class="font-sans antialiased">
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-white/10 backdrop-blur-md border-b border-white/20">
-            <div class="max-w-4xl mx-auto px-4 py-6">
-                <div class="flex items-center justify-between">
-                    <a href="{{ route('portal.index') }}" class="text-white hover:text-white/80 flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Back to Packages
-                    </a>
-                    <h1 class="text-2xl font-bold text-white">Package Details</h1>
-                </div>
+<body>
+    <div class="container">
+        <div class="content">
+            <!-- Logo Section -->
+            <div style="width:100%; display:flex; justify-content:center; margin-bottom: 28px;">
+                <img src="/wifi/logo.png" alt="Sterke Hotspot Logo" style="max-width:150px;">
             </div>
-        </header>
 
-        <!-- Main Content -->
-        <main class="flex-1 py-8">
-            <div class="max-w-2xl mx-auto px-4">
-                <!-- Package Card -->
-                <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
-                    <!-- Package Header -->
-                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-8 text-white text-center">
-                        <h2 class="text-3xl font-bold mb-2">{{ $package->name }}</h2>
-                        <div class="text-5xl font-bold mb-2">
-                            {{ config('app.currency') }}{{ number_format($package->price, 2) }}
-                        </div>
-                        <p class="text-blue-100">Premium Internet Package</p>
-                    </div>
-
-                    <!-- Package Features -->
-                    <div class="p-8">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Package Features</h3>
-                        
-                        <div class="space-y-4">
-                            @if($package->bandwidth_upload && $package->bandwidth_download)
-                                <div class="flex items-center p-4 bg-green-50 rounded-lg">
-                                    <div class="bg-green-100 p-2 rounded-full mr-4">
-                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Internet Speed</h4>
-                                        <p class="text-gray-600">{{ $package->bandwidth_upload }} Mbps Upload / {{ $package->bandwidth_download }} Mbps Download</p>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if($package->session_timeout)
-                                <div class="flex items-center p-4 bg-blue-50 rounded-lg">
-                                    <div class="bg-blue-100 p-2 rounded-full mr-4">
-                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Session Duration</h4>
-                                        <p class="text-gray-600">{{ $package->session_timeout }} hours of continuous usage</p>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if($package->validity_days)
-                                <div class="flex items-center p-4 bg-purple-50 rounded-lg">
-                                    <div class="bg-purple-100 p-2 rounded-full mr-4">
-                                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Package Validity</h4>
-                                        <p class="text-gray-600">Valid for {{ $package->validity_days }} days from activation</p>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if($package->shared_users && $package->shared_users > 1)
-                                <div class="flex items-center p-4 bg-orange-50 rounded-lg">
-                                    <div class="bg-orange-100 p-2 rounded-full mr-4">
-                                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Shared Access</h4>
-                                        <p class="text-gray-600">Can be shared with up to {{ $package->shared_users }} users simultaneously</p>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if($package->idle_timeout)
-                                <div class="flex items-center p-4 bg-red-50 rounded-lg">
-                                    <div class="bg-red-100 p-2 rounded-full mr-4">
-                                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Idle Timeout</h4>
-                                        <p class="text-gray-600">Disconnects after {{ $package->idle_timeout }} minutes of inactivity</p>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if($package->rate_limit)
-                                <div class="flex items-center p-4 bg-gray-50 rounded-lg">
-                                    <div class="bg-gray-100 p-2 rounded-full mr-4">
-                                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800">Rate Limit</h4>
-                                        <p class="text-gray-600">{{ $package->rate_limit }}</p>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Router Information -->
-                        @if($router)
-                            <div class="mt-8 p-4 bg-gray-100 rounded-lg">
-                                <h4 class="font-semibold text-gray-800 mb-2">Router Information</h4>
-                                <p class="text-gray-600">{{ $router->name }} ({{ $router->ip }})</p>
-                                @if($router->location)
-                                    <p class="text-gray-500 text-sm">Location: {{ $router->location }}</p>
+            <!-- Package Details Widget -->
+            <div class="form-widget">
+                <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}'">← Back to Packages</button>
+                <!-- Package Details Table -->
+                <table class="package-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">{{ $package->name }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="package-name">Package Price</td>
+                            <td class="package-price"><span style="font-size: 0.8em;">{{ config('app.currency') }}</span>{{ number_format($package->price, 0) }}</td>
+                        </tr>
+                        @if($package->bandwidth_download)
+                        <tr>
+                            <td class="package-name">Download Speed</td>
+                            <td style="text-align: right; color: #444;">{{ intval($package->bandwidth_download) }}
+                                @if($package->bandwidth_upload) 
+                                    / {{ intval($package->bandwidth_upload) }}
                                 @endif
-                            </div>
+                                Mbps
+                            </td>
+                        </tr>
                         @endif
+                        @if($package->session_timeout)
+                        <tr>
+                            <td class="package-name">Session Duration</td>
+                            <td style="text-align: right; color: #444;">{{ $package->session_timeout }} hours</td>
+                        </tr>
+                        @endif
+                        @if($package->validity_days)
+                        <tr>
+                            <td class="package-name">Package Validity</td>
+                            <td style="text-align: right; color: #444;">{{ $package->validity_days }} day{{ $package->validity_days > 1 ? 's' : '' }}</td>
+                        </tr>
+                        @endif
+                        @if($package->shared_users && $package->shared_users > 1)
+                        <tr>
+                            <td class="package-name">Simultaneous Users</td>
+                            <td style="text-align: right; color: #444;">{{ $package->shared_users }} users</td>
+                        </tr>
+                        @endif
+                        @if($package->idle_timeout)
+                        <tr>
+                            <td class="package-name">Idle Timeout</td>
+                            <td style="text-align: right; color: #444;">{{ $package->idle_timeout }} minutes</td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
 
-                        <!-- Action Buttons -->
-                        <div class="mt-8 space-y-4">
-                            <form action="{{ route('portal.purchase', $package) }}" method="POST" class="w-full">
-                                @csrf
-                                <button type="submit" 
-                                        class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition-all duration-200 transform hover:scale-105">
-                                    Purchase This Package
-                                </button>
-                            </form>
-                            
-                            <a href="{{ route('portal.index') }}" 
-                               class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 text-center block">
-                                Choose Different Package
-                            </a>
-                        </div>
-                    </div>
+                <div class="flex justify-center">
+                    <a href="{{ route('portal.purchase', $package) }}" class="btn bg-orange-600 w-full">💳 Subscribe</a>
                 </div>
+                
             </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-white/10 backdrop-blur-md border-t border-white/20 py-6">
-            <div class="max-w-4xl mx-auto px-4 text-center">
-                <p class="text-white/80 text-sm">
-                    Need help? Contact support for assistance with your internet package.
-                </p>
-            </div>
-        </footer>
+        </div>
     </div>
+
+    <!-- Contact Section -->
+    @include('captive-portal.components.contact-section', [
+        'message' => 'Need help? Contact support',
+        'fallbackMessage' => 'for assistance with your internet package'
+    ])
 </body>
 </html>

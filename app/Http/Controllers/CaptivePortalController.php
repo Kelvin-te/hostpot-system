@@ -4,16 +4,45 @@ namespace App\Http\Controllers;
 
 use App\Models\Package;
 use App\Models\Router;
+use App\Models\HotspotSession;
+use App\Models\PaymentTransaction;
+use App\Models\User;
+use App\Services\DeviceIdentificationService;
+use App\Services\HotspotSessionService;
+use App\Services\MikroTikService;
+use App\Services\MpesaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class CaptivePortalController extends Controller
 {
+    protected HotspotSessionService $sessionService;
+    protected DeviceIdentificationService $deviceService;
+    protected MikroTikService $mikrotikService;
+    protected MpesaService $mpesaService;
+
+    public function __construct(HotspotSessionService $sessionService, DeviceIdentificationService $deviceService, MikroTikService $mikrotikService, MpesaService $mpesaService)
+    {
+        $this->sessionService = $sessionService;
+        $this->deviceService = $deviceService;
+        $this->mikrotikService = $mikrotikService;
+        $this->mpesaService = $mpesaService;
+    }
+
     /**
      * Display the captive portal page with packages
      */
     public function index(Request $request)
     {
+        // Check if device already has an active session
+        $activeSession = $this->sessionService->getActiveSession($request);
+        
+        if ($activeSession) {
+            // Device already has active session, redirect to status page or allow internet
+            return $this->showSessionStatus($activeSession);
+        }
+
         // Try to detect router by various methods
         $router = $this->detectRouter($request);
         
@@ -46,13 +75,457 @@ class CaptivePortalController extends Controller
      */
     public function purchase(Request $request, $packageId)
     {
+        // Check if device already has an active session
+        $activeSession = $this->sessionService->getActiveSession($request);
+        
+        if ($activeSession) {
+            return $this->showSessionStatus($activeSession);
+        }
+
         $package = Package::with('router')->findOrFail($packageId);
         $router = $this->detectRouter($request);
         
-        // Here you would integrate with payment gateway or voucher system
-        // For now, we'll just show a purchase confirmation
-        
         return view('captive-portal.purchase', compact('package', 'router'));
+    }
+
+    /**
+     * Process payment for a package
+     */
+    public function processPayment(Request $request, $packageId)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|min:10|max:15',
+            'name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $package = Package::findOrFail($packageId);
+        
+        // Check if device already has an active session
+        $activeSession = $this->sessionService->getActiveSession($request);
+        if ($activeSession) {
+            return redirect()->route('portal.status')->with('info', 'You already have an active session.');
+        }
+
+        try {
+            // Initiate M-Pesa STK Push
+            $accountReference = 'PKG-' . $package->id . '-' . time();
+            $transactionDesc = $package->name . ' - Internet Package';
+            
+            $stkResult = $this->mpesaService->stkPush(
+                $request->phone,
+                $package->price,
+                $accountReference,
+                $transactionDesc
+            );
+
+            if (!$stkResult['success']) {
+                return back()->with('error', $stkResult['message']);
+            }
+
+            // Update the payment transaction with package and session info
+            $transaction = PaymentTransaction::where('checkout_request_id', $stkResult['checkout_request_id'])->first();
+            if ($transaction) {
+                $transaction->update([
+                    'package_id' => $package->id,
+                    'account_reference' => $accountReference
+                ]);
+            }
+
+            // Store transaction ID in session for status checking
+            session([
+                'payment_transaction_id' => $transaction->id ?? null,
+                'checkout_request_id' => $stkResult['checkout_request_id'],
+                'package_id' => $package->id,
+                'customer_phone' => $request->phone,
+                'customer_name' => $request->name
+            ]);
+
+            Log::info('M-Pesa STK Push initiated', [
+                'checkout_request_id' => $stkResult['checkout_request_id'],
+                'package' => $package->name,
+                'phone' => $request->phone,
+                'amount' => $package->price,
+                'device_info' => $this->deviceService->getDeviceInfo($request)
+            ]);
+
+            // Redirect to payment status page
+            return redirect()->route('portal.payment-status')->with('success', $stkResult['message']);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to process M-Pesa payment', [
+                'error' => $e->getMessage(),
+                'package_id' => $packageId,
+                'request_data' => $request->except('phone') // Don't log sensitive phone data in error
+            ]);
+            
+            return back()->with('error', 'Payment processing failed. Please try again.');
+        }
+    }
+
+    /**
+     * Show payment status page
+     */
+    public function showPaymentStatus(Request $request)
+    {
+        $checkoutRequestId = session('checkout_request_id');
+        $packageId = session('package_id');
+        
+        if (!$checkoutRequestId || !$packageId) {
+            return redirect()->route('portal.index')->with('error', 'No payment session found.');
+        }
+
+        $package = Package::findOrFail($packageId);
+        $transaction = PaymentTransaction::where('checkout_request_id', $checkoutRequestId)->first();
+        $router = $this->detectRouter($request);
+
+        return view('captive-portal.payment-status', compact('package', 'transaction', 'router', 'checkoutRequestId'));
+    }
+
+    /**
+     * Check payment status via AJAX
+     */
+    public function checkPaymentStatus(Request $request)
+    {
+        $checkoutRequestId = $request->input('checkout_request_id') ?? session('checkout_request_id');
+        
+        if (!$checkoutRequestId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No payment session found'
+            ]);
+        }
+
+        $transaction = PaymentTransaction::where('checkout_request_id', $checkoutRequestId)->first();
+        
+        if (!$transaction) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction not found'
+            ]);
+        }
+
+        // If transaction is still pending and not expired, query M-Pesa
+        if ($transaction->isPending() && !$transaction->isExpired()) {
+            $queryResult = $this->mpesaService->queryTransaction($checkoutRequestId);
+            
+            if ($queryResult['success']) {
+                $responseData = $queryResult['data'];
+                $resultCode = $responseData['ResultCode'] ?? null;
+                
+                if ($resultCode == 0) {
+                    // Payment successful - update transaction
+                    $transaction->markAsCompleted([
+                        'result_code' => $resultCode,
+                        'result_description' => $responseData['ResultDesc'] ?? 'Payment successful'
+                    ]);
+                } elseif ($resultCode && $resultCode != 1032) { // 1032 = Request cancelled by user (still pending)
+                    // Payment failed
+                    $transaction->markAsFailed(
+                        $responseData['ResultDesc'] ?? 'Payment failed',
+                        $resultCode
+                    );
+                }
+            }
+        }
+
+        // Check if payment is completed and create session
+        if ($transaction->isCompleted()) {
+            try {
+                // Create hotspot session
+                $session = $this->sessionService->createSessionForPackage(
+                    $request,
+                    $transaction->package,
+                    null, // user (for guest purchases)
+                    session('customer_phone') // username/identifier
+                );
+
+                // Update transaction with session ID
+                $transaction->update(['session_id' => $session->session_id]);
+
+                // Clear payment session data
+                session()->forget(['payment_transaction_id', 'checkout_request_id', 'package_id', 'customer_phone', 'customer_name']);
+
+                Log::info('Hotspot session created after successful payment', [
+                    'session_id' => $session->session_id,
+                    'transaction_id' => $transaction->id,
+                    'mpesa_receipt' => $transaction->mpesa_receipt_number
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'status' => 'completed',
+                    'message' => 'Payment successful! You are now connected to the internet.',
+                    'redirect_url' => route('portal.status')
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error('Failed to create session after payment', [
+                    'error' => $e->getMessage(),
+                    'transaction_id' => $transaction->id
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'status' => 'error',
+                    'message' => 'Payment successful but failed to activate internet. Please contact support.'
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $transaction->status,
+            'message' => $this->getStatusMessage($transaction),
+            'is_expired' => $transaction->isExpired()
+        ]);
+    }
+
+    /**
+     * Get user-friendly status message
+     */
+    private function getStatusMessage(PaymentTransaction $transaction): string
+    {
+        if ($transaction->isCompleted()) {
+            return 'Payment completed successfully!';
+        } elseif ($transaction->isFailed()) {
+            return $transaction->result_description ?? 'Payment failed. Please try again.';
+        } elseif ($transaction->isExpired()) {
+            return 'Payment request expired. Please try again.';
+        } else {
+            return 'Waiting for payment confirmation. Please complete the payment on your phone.';
+        }
+    }
+
+    /**
+     * Show login page
+     */
+    public function showLogin(Request $request)
+    {
+        return view('captive-portal.login');
+    }
+
+    /**
+     * Show signup page
+     */
+    public function showSignup(Request $request)
+    {
+        return view('captive-portal.signup');
+    }
+
+    /**
+     * Authenticate user with voucher or credentials
+     */
+    public function authenticate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string',
+            'password' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $session = $this->sessionService->authenticateUser(
+                $request,
+                $request->username,
+                $request->password
+            );
+
+            if (!$session) {
+                return back()->with('error', 'Invalid voucher code or credentials. Please check and try again.');
+            }
+
+            Log::info('User authenticated successfully', [
+                'session_id' => $session->session_id,
+                'username' => $request->username,
+                'device_info' => $this->deviceService->getDeviceInfo($request)
+            ]);
+
+            return redirect()->route('portal.status')->with('success', 'Login successful! You are now connected to the internet.');
+            
+        } catch (\Exception $e) {
+            Log::error('Authentication failed', [
+                'error' => $e->getMessage(),
+                'username' => $request->username,
+            ]);
+            
+            return back()->with('error', 'Authentication failed. Please try again.');
+        }
+    }
+
+    /**
+     * Show session status page
+     */
+    public function showStatus(Request $request)
+    {
+        $activeSession = $this->sessionService->getActiveSession($request);
+        
+        if (!$activeSession) {
+            return redirect()->route('portal.index')->with('info', 'No active session found. Please select a package or login.');
+        }
+
+        $sessionStatus = $this->sessionService->getSessionStatus($activeSession);
+        $router = $this->detectRouter($request);
+
+        return view('captive-portal.status', compact('activeSession', 'sessionStatus', 'router'));
+    }
+
+    /**
+     * Show session status (internal method)
+     */
+    protected function showSessionStatus(HotspotSession $session)
+    {
+        if ($session->isExpired()) {
+            // Session expired, redirect to packages
+            return redirect()->route('portal.index')->with('info', 'Your session has expired. Please select a new package.');
+        }
+
+        // Redirect to status page
+        return redirect()->route('portal.status');
+    }
+
+    /**
+     * Disconnect/logout user
+     */
+    public function disconnect(Request $request)
+    {
+        $activeSession = $this->sessionService->getActiveSession($request);
+        
+        if ($activeSession) {
+            $this->sessionService->terminateSession($activeSession);
+            
+            Log::info('User disconnected', [
+                'session_id' => $activeSession->session_id,
+                'device_info' => $this->deviceService->getDeviceInfo($request)
+            ]);
+        }
+
+        return redirect()->route('portal.index')->with('success', 'You have been disconnected successfully.');
+    }
+
+    /**
+     * Handle user signup for free 500MB package
+     */
+    public function processSignup(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|min:10|max:15|unique:users,phone',
+            'name' => 'required|string|max:255',
+            'password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            // Check if device already has an active session
+            $activeSession = $this->sessionService->getActiveSession($request);
+            if ($activeSession) {
+                return redirect()->route('portal.status')->with('info', 'You already have an active session.');
+            }
+
+            // Create user account
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->phone . '@hotspot.local', // Generate email from phone
+                'phone' => $request->phone,
+                'password' => bcrypt($request->password),
+                'email_verified_at' => now(), // Auto-verify for hotspot users
+            ]);
+
+            // Find or create free 500MB package
+            $freePackage = $this->getOrCreateFreePackage();
+
+            // Create session for the free package
+            $session = $this->sessionService->createSessionForPackage(
+                $request, 
+                $freePackage, 
+                $user,
+                $request->phone
+            );
+
+            Log::info('New user signup with free package', [
+                'user_id' => $user->id,
+                'session_id' => $session->session_id,
+                'phone' => $request->phone,
+                'device_info' => $this->deviceService->getDeviceInfo($request)
+            ]);
+
+            return redirect()->route('portal.status')->with('success', 'Account created successfully! You now have 500MB of free internet access.');
+            
+        } catch (\Exception $e) {
+            Log::error('Signup failed', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->except('password')
+            ]);
+            
+            return back()->with('error', 'Signup failed. Please try again.');
+        }
+    }
+
+    /**
+     * Get or create the free 500MB package
+     */
+    protected function getOrCreateFreePackage(): Package
+    {
+        // Try to find existing free package
+        $freePackage = Package::where('name', 'Free 500MB')
+                             ->where('price', 0)
+                             ->first();
+
+        if (!$freePackage) {
+            // Get the first available router, or create without router_id if none exists
+            $firstRouter = Router::first();
+            
+            if (!$firstRouter) {
+                // If no routers exist, we need to handle this case
+                Log::warning('No routers found when creating free package');
+                throw new \Exception('No routers available. Please create a router first.');
+            }
+            
+            // Create free package if it doesn't exist
+            $freePackage = Package::create([
+                'name' => 'Free 500MB',
+                'price' => 0.00,
+                'rate_limit' => '500MB',
+                'bandwidth_download' => 10, // 10 Mbps
+                'bandwidth_upload' => 5,    // 5 Mbps
+                'validity_days' => 1,       // 24 hours
+                'session_timeout' => 24,    // 24 hours
+                'shared_users' => 1,        // Single device
+                'is_active' => true,
+                'description' => 'Free starter package for new users',
+                'router_id' => $firstRouter->id, // Assign to first router
+            ]);
+        }
+
+        return $freePackage;
+    }
+
+    /**
+     * Debug endpoint to show device information
+     */
+    public function debugDevice(Request $request)
+    {
+        if (!config('app.debug')) {
+            abort(404);
+        }
+
+        $deviceInfo = $this->sessionService->getDeviceDebugInfo($request);
+        $activeSession = $this->sessionService->getActiveSession($request);
+        
+        return response()->json([
+            'device_info' => $deviceInfo,
+            'active_session' => $activeSession,
+            'router_detection' => $this->detectRouter($request),
+        ]);
     }
 
     /**
@@ -148,5 +621,43 @@ class CaptivePortalController extends Controller
             'packages' => $packages,
             'router_detected' => $router ?? null
         ]);
+    }
+
+
+    /**
+     * Handle M-Pesa callback
+     */
+    public function mpesaCallback(Request $request)
+    {
+        try {
+            $callbackData = $request->all();
+            
+            Log::info('M-Pesa callback received', $callbackData);
+            
+            $success = $this->mpesaService->handleCallback($callbackData);
+            
+            if ($success) {
+                return response()->json([
+                    'ResultCode' => 0,
+                    'ResultDesc' => 'Success'
+                ]);
+            }
+            
+            return response()->json([
+                'ResultCode' => 1,
+                'ResultDesc' => 'Failed to process callback'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Exception handling M-Pesa callback', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+            
+            return response()->json([
+                'ResultCode' => 1,
+                'ResultDesc' => 'Internal server error'
+            ]);
+        }
     }
 }

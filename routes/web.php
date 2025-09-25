@@ -87,12 +87,8 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// Captive Portal Routes (Public - No Authentication Required)
-Route::prefix('portal')->name('portal.')->group(function () {
-    Route::get('/', [CaptivePortalController::class, 'index'])->name('index');
-    Route::get('/package/{package}', [CaptivePortalController::class, 'package'])->name('package');
-    Route::post('/package/{package}/purchase', [CaptivePortalController::class, 'purchase'])->name('purchase');
-    
-    // API Routes for AJAX requests
-    Route::get('/api/packages/{router?}', [CaptivePortalController::class, 'apiPackages'])->name('api.packages');
-});
+// M-Pesa Callback Route (Public - No Authentication Required)
+Route::post('/api/mpesa/callback', [CaptivePortalController::class, 'mpesaCallback'])->name('mpesa.callback');
+
+// Include Captive Portal Routes (Public - No Authentication Required)
+require __DIR__.'/captive-portal.php';

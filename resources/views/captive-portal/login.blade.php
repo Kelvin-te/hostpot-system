@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase {{ $package->name }} - Payment</title>
+    <title>Login - Hotspot Portal</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         * {
@@ -51,49 +51,10 @@
             margin-bottom: 30px;
             min-width: 350px;
             max-width: 350px;
+            background: #ffffff88;
             border-radius: 5px;
             padding: 20px;
-        }
-
-        .package-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #ffffff;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .package-table th {
-            background: #0e770e;
-            color: white;
-            letter-spacing: 0.5px;
-            padding: 10px 12px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .package-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #e1e8ed;
-            color: #444;
-        }
-
-        .package-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .package-name {
-            color: #2c3e50;
-            font-weight: 500;
-        }
-
-        .package-price {
-            text-align: right;
-            font-weight: 500;
-            color: #0e770e !important;
-            font-size: 1.2em;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
         .form-group {
@@ -107,7 +68,6 @@
             color: #374151;
             font-size: 0.875rem;
         }
-
 
         .btn {
             padding: 10px 20px;
@@ -159,20 +119,37 @@
 
 
         .info-box {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            background: #e8f5e8;
+            border: 1px solid #c3e6c3;
             border-radius: 5px;
             padding: 12px;
             margin-bottom: 20px;
-            color: #856404;
+            color: #2d5a2d;
             font-size: 0.85em;
             line-height: 1.4;
         }
 
         .info-box strong {
-            color: #856404;
+            color: #1a4a1a;
             margin-bottom: 8px;
             display: block;
+        }
+
+        .login-options {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-options a {
+            color: #0e770e;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+
+        .login-options a:hover {
+            color: #ff8800;
+            text-decoration: underline;
         }
 
         /* Mobile styles */
@@ -198,13 +175,14 @@
                 <img src="/wifi/logo.png" alt="Sterke Hotspot Logo" style="max-width:150px;">
             </div>
 
-            <!-- Payment Widget -->
+            <!-- Login Widget -->
             <div class="form-widget">
                 <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}'">← Back to Packages</button>
-                <!-- Purchase Header -->
-                <div style="margin-bottom: 20px;">
-                    <div class="text-lg font-medium text-gray-900 mb-0">Complete Your Purchase</div>
-                    <div class="text-green-800 font-bold text-lg">{{ $package->name }} - <span style="font-size: 0.8em;">KES</span> {{ number_format($package->price, 0) }}</div>
+                
+                <!-- Login Header -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div class="text-lg font-medium text-gray-900" style="margin-bottom: 8px;">Login to Internet</div>
+                    <div class="text-sm text-gray-600">Use your voucher code or registered phone number</div>
                 </div>
 
                 <!-- Error Messages -->
@@ -240,64 +218,105 @@
                     </div>
                 @endif
 
-                <!-- Payment Form -->
-                <form action="{{ route('portal.process-payment', $package->id) }}" method="POST">
+                <!-- Login Form -->
+                <form action="{{ route('portal.authenticate') }}" method="POST" id="loginForm">
                     @csrf
                     <div class="form-group">
-                        <x-input-label for="paymentPhone" :value="__('Phone Number')" />
-                        <x-text-input id="paymentPhone" name="phone" type="tel" class="mt-1 block w-full" required 
-                                     placeholder="e.g 0712345678" pattern="[0-9]{10,12}" />
-                        <div class="text-sm text-gray-500" style="margin-top: 5px;">Enter your Mpesa phone number</div>
+                        <x-input-label for="username" :value="__('Voucher Code or Phone Number')" />
+                        <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" required 
+                                     placeholder="Enter voucher code or phone number" />
+                        <div class="text-sm text-gray-600" style="margin-top: 5px;">
+                            Enter your voucher code or the phone number registered in your profile
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <x-input-label for="customerName" :value="__('Full Name')" />
-                        <x-text-input id="customerName" name="name" type="text" class="mt-1 block w-full" required 
-                                     placeholder="Your full name" />
+                    <div class="form-group" id="passwordGroup" style="display: none;">
+                        <x-input-label for="password" :value="__('Password')" />
+                        <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" 
+                                     placeholder="Enter your password" />
+                        <div class="text-sm text-gray-600" style="margin-top: 5px;">
+                            Password is required when using phone number
+                        </div>
                     </div>
 
                     <div class="info-box">
-                        <strong>📱 Payment Instructions:</strong>
-                        1. Enter your mpesa phone number<br>
-                        2. Click "Complete Payment"<br>
-                        3. Follow the prompt on your phone<br>
-                        4. Wait for confirmation message
+                        <strong>🎫 Login Instructions:</strong>
+                        • For voucher codes: Enter the code directly<br>
+                        • For phone numbers: Enter your registered number and password<br>
+                        • Make sure you have an active package or valid voucher
                     </div>
 
-                    <button type="submit" class="btn btn-green">
-                        💳 Complete Payment
+                    <button type="submit" class="btn btn-green" id="loginSubmitBtn">
+                        🌐 Connect to Internet
                     </button>
                 </form>
 
+                <!-- Additional Options -->
+                <div class="login-options">
+                    <p>Don't have a voucher? <a href="{{ route('portal.index') }}">Purchase a package</a></p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Contact Section -->
     @include('captive-portal.components.contact-section', [
-        'message' => 'Need help with payment? Contact support',
-        'fallbackMessage' => 'for assistance with your payment'
+        'message' => 'Need help logging in? Contact support',
+        'fallbackMessage' => 'for assistance with your login'
     ])
 
     <script>
-        // Add form validation and loading states
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const submitBtn = document.querySelector('button[type="submit"]');
-            
+            const usernameInput = document.getElementById('username');
+            const passwordGroup = document.getElementById('passwordGroup');
+            const passwordInput = document.getElementById('password');
+            const form = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+
+            // Show/hide password field based on input type
+            usernameInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                
+                // Check if input looks like a phone number (contains only digits, +, -, spaces)
+                const phonePattern = /^[\d\+\-\s\(\)]+$/;
+                const isPhoneNumber = phonePattern.test(value) && value.length >= 10;
+                
+                if (isPhoneNumber) {
+                    passwordGroup.style.display = 'block';
+                    passwordInput.required = true;
+                } else {
+                    passwordGroup.style.display = 'none';
+                    passwordInput.required = false;
+                    passwordInput.value = '';
+                }
+            });
+
+            // Form submission handling
             form.addEventListener('submit', function(e) {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                
                 // Add loading state
-                submitBtn.innerHTML = 'Processing Payment...';
+                submitBtn.innerHTML = 'Connecting...';
                 submitBtn.disabled = true;
                 
-                // You can add additional validation here
-                const phone = document.getElementById('paymentPhone').value;
-                const name = document.getElementById('customerName').value;
-                
-                if (!phone || !name) {
+                // Basic validation
+                if (!username) {
                     e.preventDefault();
-                    alert('Please fill in all required fields');
-                    submitBtn.innerHTML = '💳 Complete Payment';
+                    alert('Please enter your voucher code or phone number');
+                    submitBtn.innerHTML = '🌐 Connect to Internet';
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                // Check if phone number requires password
+                const phonePattern = /^[\d\+\-\s\(\)]+$/;
+                const isPhoneNumber = phonePattern.test(username) && username.length >= 10;
+                
+                if (isPhoneNumber && !password) {
+                    e.preventDefault();
+                    alert('Password is required when using phone number');
+                    submitBtn.innerHTML = '🌐 Connect to Internet';
                     submitBtn.disabled = false;
                     return;
                 }
