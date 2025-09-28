@@ -25,8 +25,12 @@ use App\Http\Controllers\UserDownload;
 use App\Http\Controllers\UserEnable;
 use Illuminate\Support\Facades\Route;
 
+// Public landing page -> Captive Portal
+Route::get('/', [CaptivePortalController::class, 'index'])->name('portal.landing');
+
 Route::middleware('auth')->group(function () {
-    Route::get('/', DashboardController::class)->name('dashboard');
+    // Admin Dashboard now at /dashboard (keeps name 'dashboard')
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/administration', function () {return view('administration');})->name('administration');
 
     // Package cloning (must be before resource to avoid /packages/{package} capturing 'clone')

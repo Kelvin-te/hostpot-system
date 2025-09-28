@@ -6,6 +6,7 @@
     <title>Internet Status - Connected</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
+        @include('captive-portal.components.base-styles')
         * {
             margin: 0;
             padding: 0;
@@ -232,9 +233,7 @@
     <div class="container">
         <div class="content">
             <!-- Logo Section -->
-            <div style="width:100%; display:flex; justify-content:center; margin-bottom: 28px;">
-                <img src="/wifi/logo.png" alt="Sterke Hotspot Logo" style="max-width:150px;">
-            </div>
+            @include('captive-portal.components.logo')
 
             <!-- Status Widget -->
             <div class="form-widget">
