@@ -29,6 +29,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/administration', function () {return view('administration');})->name('administration');
 
+    // Package cloning (must be before resource to avoid /packages/{package} capturing 'clone')
+    Route::get('/packages/clone', [PackageController::class, 'cloneForm'])->name('packages.clone.form');
+    Route::post('/packages/clone', [PackageController::class, 'clone'])->name('packages.clone');
     Route::resource('/packages', PackageController::class);
     Route::resource('/users', UserController::class);
     Route::resource('/billing', BillingController::class);

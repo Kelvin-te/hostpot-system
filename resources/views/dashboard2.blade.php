@@ -16,11 +16,11 @@
                     <div class="grid grid-cols-2 gap-4 mt-6">
                         <div class="border-l-2 bg-blue-50 border-blue-500 p-4">
                             <h2 class="text-l font-bold">{{ __('Current Package') }}</h2>
-                            <p class="text-xl mt-2 font-bold">{{ $user->detail->package_name }}</p>
+                            <p class="text-xl mt-2 font-bold">{{ data_get($user, 'detail.package_name', '-') }}</p>
                         </div>
                         <div class="border-l-2 bg-blue-50 border-blue-500 p-4">
                             <h2 class="text-l font-bold">{{ __('Package Start') }}</h2>
-                            <p class="text-xl mt-2 font-bold">{{ $user->detail->package_start }}</p>
+                            <p class="text-xl mt-2 font-bold">{{ data_get($user, 'detail.package_start', '-') }}</p>
                         </div>
                         <div class="border-l-2 bg-blue-50 border-blue-500 p-4">
                             <h2 class="text-l font-bold">{{ __('Current Due') }}</h2>

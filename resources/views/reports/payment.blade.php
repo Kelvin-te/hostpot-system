@@ -71,7 +71,7 @@
             <td>{{ $payment->invoice }}</td>
             <td>{{ $payment->user->name }}</td>
             <td>{{ $payment->billing->package_name }}</td>
-            <td>{{ config('app.currency') . $payment->billing->package_price }}</td>
+            <td>{{ config('app.currency') . ' ' . $payment->billing->package_price }}</td>
             <td>{{ $payment->payment_method }}</td>
             <td>{{ date('Y-m-d', strtotime($payment->created_at)) }}</td>
         </tr>

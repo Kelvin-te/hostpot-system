@@ -158,20 +158,19 @@
                 <!-- Package Details Table -->
                 <table class="package-table">
                     <thead>
-                        <tr>
                             <th colspan="2">{{ $package->name }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td class="package-name">Package Price</td>
-                            <td class="package-price"><span style="font-size: 0.8em;">{{ config('app.currency') }}</span>{{ number_format($package->price, 0) }}</td>
+                            <td class="package-price"><span style="font-size: 0.8em;">{{ config('app.currency') }} </span>{{ number_format($package->price, 0) }}</td>
                         </tr>
                         @if($package->bandwidth_download)
                         <tr>
-                            <td class="package-name">Download Speed</td>
+                            <td class="package-name">Speed</td>
                             <td style="text-align: right; color: #444;">{{ intval($package->bandwidth_download) }}
-                                @if($package->bandwidth_upload) 
+                                @if($package->bandwidth_upload)
                                     / {{ intval($package->bandwidth_upload) }}
                                 @endif
                                 Mbps
@@ -180,19 +179,19 @@
                         @endif
                         @if($package->session_timeout)
                         <tr>
-                            <td class="package-name">Session Duration</td>
+                            <td class="package-name">Session</td>
                             <td style="text-align: right; color: #444;">{{ $package->session_timeout }} hours</td>
                         </tr>
                         @endif
                         @if($package->validity_days)
                         <tr>
-                            <td class="package-name">Package Validity</td>
+                            <td class="package-name">Validity</td>
                             <td style="text-align: right; color: #444;">{{ $package->validity_days }} day{{ $package->validity_days > 1 ? 's' : '' }}</td>
                         </tr>
                         @endif
                         @if($package->shared_users && $package->shared_users > 1)
                         <tr>
-                            <td class="package-name">Simultaneous Users</td>
+                            <td class="package-name">Users</td>
                             <td style="text-align: right; color: #444;">{{ $package->shared_users }} users</td>
                         </tr>
                         @endif
@@ -205,8 +204,8 @@
                     </tbody>
                 </table>
 
-                <div class="flex justify-center">
-                    <a href="{{ route('portal.purchase', $package) }}" class="btn bg-orange-600 w-full">💳 Subscribe</a>
+                <div class="flex">
+                    <a href="{{ route('portal.purchase', $package) }}" class="btn bg-green-700 text-center">💳 Subscribe</a>
                 </div>
                 
             </div>

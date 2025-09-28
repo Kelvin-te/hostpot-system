@@ -7,10 +7,12 @@ use App\Models\Router;
 use App\Models\HotspotSession;
 use App\Models\PaymentTransaction;
 use App\Models\User;
+use App\Models\SmsVerification;
 use App\Services\DeviceIdentificationService;
 use App\Services\HotspotSessionService;
 use App\Services\MikroTikService;
 use App\Services\MpesaService;
+use App\Services\VintexSmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -21,13 +23,15 @@ class CaptivePortalController extends Controller
     protected DeviceIdentificationService $deviceService;
     protected MikroTikService $mikrotikService;
     protected MpesaService $mpesaService;
+    protected VintexSmsService $smsService;
 
-    public function __construct(HotspotSessionService $sessionService, DeviceIdentificationService $deviceService, MikroTikService $mikrotikService, MpesaService $mpesaService)
+    public function __construct(HotspotSessionService $sessionService, DeviceIdentificationService $deviceService, MikroTikService $mikrotikService, MpesaService $mpesaService, VintexSmsService $smsService)
     {
         $this->sessionService = $sessionService;
         $this->deviceService = $deviceService;
         $this->mikrotikService = $mikrotikService;
         $this->mpesaService = $mpesaService;
+        $this->smsService = $smsService;
     }
 
     /**
@@ -56,7 +60,13 @@ class CaptivePortalController extends Controller
             $routerName = $router->name;
         }
 
-        return view('captive-portal.index', compact('packages', 'routerName', 'router'));
+        // Filter out free packages if user has already used them
+        $packages = $this->filterFreePackagesForDevice($request, $packages);
+
+        // Check if user has already used free package (for signup button visibility)
+        $hasUsedFreePackage = $this->hasUsedFreePackage($request);
+
+        return view('captive-portal.index', compact('packages', 'routerName', 'router', 'hasUsedFreePackage'));
     }
 
     /**
@@ -415,9 +425,10 @@ class CaptivePortalController extends Controller
     public function processSignup(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string|min:10|max:15|unique:users,phone',
+            'phone' => 'required|string|min:10|max:15',
             'name' => 'required|string|max:255',
             'password' => 'required|string|min:6',
+            'otp' => 'required|string|size:6',
         ]);
 
         if ($validator->fails()) {
@@ -425,17 +436,37 @@ class CaptivePortalController extends Controller
         }
 
         try {
+            // Normalize phone number
+            $normalizedPhone = $this->smsService->normalizePhoneNumber($request->phone);
+            if (!$normalizedPhone) {
+                return back()->with('error', 'Invalid phone number format.')->withInput();
+            }
+
+            // Check if phone has already been used for free package
+            if ($this->hasPhoneUsedFreePackage($normalizedPhone)) {
+                return back()->with('error', 'This phone number has already been used for a free package.')->withInput();
+            }
+
+            // Verify OTP
+            $otpRecord = SmsVerification::findValidOtp($normalizedPhone, $request->otp);
+            if (!$otpRecord) {
+                return back()->with('error', 'Invalid or expired verification code.')->withInput();
+            }
+
             // Check if device already has an active session
             $activeSession = $this->sessionService->getActiveSession($request);
             if ($activeSession) {
                 return redirect()->route('portal.status')->with('info', 'You already have an active session.');
             }
 
+            // Mark OTP as verified
+            $otpRecord->markAsVerified();
+
             // Create user account
             $user = User::create([
                 'name' => $request->name,
-                'email' => $request->phone . '@hotspot.local', // Generate email from phone
-                'phone' => $request->phone,
+                'email' => $normalizedPhone . '@hotspot.local', // Generate email from phone
+                'phone' => $normalizedPhone,
                 'password' => bcrypt($request->password),
                 'email_verified_at' => now(), // Auto-verify for hotspot users
             ]);
@@ -448,13 +479,16 @@ class CaptivePortalController extends Controller
                 $request, 
                 $freePackage, 
                 $user,
-                $request->phone
+                $normalizedPhone
             );
+
+            // Send welcome SMS
+            $this->smsService->sendWelcomeSms($normalizedPhone, $request->name);
 
             Log::info('New user signup with free package', [
                 'user_id' => $user->id,
                 'session_id' => $session->session_id,
-                'phone' => $request->phone,
+                'phone' => $normalizedPhone,
                 'device_info' => $this->deviceService->getDeviceInfo($request)
             ]);
 
@@ -463,10 +497,79 @@ class CaptivePortalController extends Controller
         } catch (\Exception $e) {
             Log::error('Signup failed', [
                 'error' => $e->getMessage(),
-                'request_data' => $request->except('password')
+                'request_data' => $request->except(['password', 'otp'])
             ]);
             
             return back()->with('error', 'Signup failed. Please try again.');
+        }
+    }
+
+    /**
+     * Send OTP for signup verification
+     */
+    public function sendSignupOtp(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|min:10|max:15',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid phone number format.'
+            ]);
+        }
+
+        try {
+            // Normalize phone number
+            $normalizedPhone = $this->smsService->normalizePhoneNumber($request->phone);
+            if (!$normalizedPhone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid phone number format.'
+                ]);
+            }
+
+            // Check if phone has already been used for free package
+            if ($this->hasPhoneUsedFreePackage($normalizedPhone)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This phone number has already been used for a free package.'
+                ]);
+            }
+
+            // Create OTP record
+            $otpRecord = SmsVerification::createForPhone(
+                $normalizedPhone,
+                $request->ip(),
+                $request->userAgent()
+            );
+
+            // Send OTP SMS
+            $smsResult = $this->smsService->sendOtp($normalizedPhone, $otpRecord->otp);
+
+            if ($smsResult['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Verification code sent to your phone.'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to send verification code. Please try again.'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send signup OTP', [
+                'phone' => $request->phone,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send verification code. Please try again.'
+            ]);
         }
     }
 
@@ -507,6 +610,148 @@ class CaptivePortalController extends Controller
         }
 
         return $freePackage;
+    }
+
+    /**
+     * Filter out free packages if the device has already used them
+     */
+    protected function filterFreePackagesForDevice(Request $request, $packages)
+    {
+        $hasUsedFreePackage = $this->hasUsedFreePackage($request);
+        
+        if ($hasUsedFreePackage) {
+            // Filter out free packages (price = 0)
+            $packages = $packages->filter(function ($package) {
+                return $package->price > 0;
+            });
+        }
+        
+        return $packages;
+    }
+
+    /**
+     * Check if user/device has already used a free package (comprehensive approach)
+     */
+    protected function hasUsedFreePackage(Request $request): bool
+    {
+        // Method 1: Check by IP address for recent usage (strongest protection against MAC spoofing)
+        $clientIp = $request->ip();
+        if ($this->hasRecentFreeUsageFromIP($clientIp)) {
+            return true;
+        }
+
+        // Method 2: Check by device fingerprint and MAC address
+        $deviceFingerprint = $this->deviceService->generateDeviceFingerprint($request);
+        $macAddress = $this->deviceService->getMacAddress($request);
+        
+        if ($this->hasDeviceUsedFreePackage($deviceFingerprint, $macAddress)) {
+            return true;
+        }
+
+        // Method 3: Check for suspicious behavior patterns
+        if ($this->detectSuspiciousBehavior($request)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a device has already used a free package (legacy method)
+     */
+    protected function hasDeviceUsedFreePackage(?string $deviceFingerprint, ?string $macAddress): bool
+    {
+        // If neither fingerprint nor MAC is available, we can't identify the device
+        if (!$deviceFingerprint && !$macAddress) {
+            return false;
+        }
+
+        // Build query to check for sessions with free packages
+        $query = HotspotSession::whereHas('package', function ($q) {
+            $q->where('price', 0);
+        });
+
+        // Add device identification conditions
+        $query->where(function ($q) use ($deviceFingerprint, $macAddress) {
+            if ($deviceFingerprint) {
+                $q->where('device_fingerprint', $deviceFingerprint);
+            }
+            
+            if ($macAddress) {
+                $q->orWhere('mac_address', $macAddress);
+            }
+        });
+
+        return $query->exists();
+    }
+
+    /**
+     * Check if phone number has already been used for free package
+     */
+    protected function hasPhoneUsedFreePackage(string $phone): bool
+    {
+        $normalizedPhone = $this->smsService->normalizePhoneNumber($phone);
+        
+        if (!$normalizedPhone) {
+            return false;
+        }
+
+        // Check if user exists with this phone
+        if (User::where('phone', $normalizedPhone)->exists()) {
+            return true;
+        }
+
+        // Check if any session was created with this phone as username
+        return HotspotSession::where('username', $normalizedPhone)
+                           ->whereHas('package', function ($q) {
+                               $q->where('price', 0);
+                           })
+                           ->exists();
+    }
+
+    /**
+     * Check for recent free package usage from same IP/subnet
+     */
+    protected function hasRecentFreeUsageFromIP(string $ip): bool
+    {
+        // Get subnet (first 3 octets)
+        $subnet = substr($ip, 0, strrpos($ip, '.'));
+        
+        // Check for recent free package usage from this subnet
+        $recentUsage = HotspotSession::where('ip_address', 'LIKE', $subnet . '%')
+                                   ->whereHas('package', function ($q) {
+                                       $q->where('price', 0);
+                                   })
+                                   ->where('created_at', '>', now()->subDays(7))
+                                   ->count();
+
+        // Allow max 2 free packages per subnet per week
+        return $recentUsage >= 2;
+    }
+
+    /**
+     * Detect suspicious behavior patterns
+     */
+    protected function detectSuspiciousBehavior(Request $request): bool
+    {
+        $clientIp = $request->ip();
+        
+        // Check for rapid MAC changes from same IP (indicates MAC spoofing)
+        $recentSessions = HotspotSession::where('ip_address', $clientIp)
+                                       ->where('created_at', '>', now()->subHours(2))
+                                       ->distinct('mac_address')
+                                       ->count('mac_address');
+        
+        if ($recentSessions > 3) {
+            Log::warning('Suspicious behavior detected: Multiple MAC addresses from same IP', [
+                'ip' => $clientIp,
+                'mac_count' => $recentSessions,
+                'user_agent' => $request->userAgent()
+            ]);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -615,6 +860,9 @@ class CaptivePortalController extends Controller
                 $packages = Package::with('router')->orderBy('price')->get();
             }
         }
+
+        // Filter out free packages if user has already used them
+        $packages = $this->filterFreePackagesForDevice($request, $packages);
 
         return response()->json([
             'success' => true,

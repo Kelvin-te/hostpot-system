@@ -184,7 +184,7 @@
         }
 
         .contact-content {
-            padding: 2em 30px 0 30px;
+            padding: 2em 30px;
             text-align: center;
             color: #6c757d;
             line-height: 1.5;

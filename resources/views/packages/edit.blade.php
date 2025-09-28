@@ -106,6 +106,21 @@
                             </div>
                         </div>
                     </form>
+                    <!-- Danger Zone: Delete Package -->
+                    <div class="mt-6 p-4 border border-red-200 bg-red-50 rounded-lg">
+                        <h3 class="text-red-700 font-semibold mb-2">{{ __('Danger Zone') }}</h3>
+                        <p class="text-sm text-red-700 mb-3">
+                            {{ __('Deleting this package will remove it from the database and attempt to remove the corresponding MikroTik profile on router ') }}
+                            <span class="font-semibold">{{ $package->router->name }}</span>.
+                        </p>
+                        <form method="post" action="{{ route('packages.destroy', $package->id) }}" onsubmit="return confirm('{{ __('Are you sure you want to delete this package? This action cannot be undone.') }}');">
+                            @csrf
+                            @method('delete')
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                {{ __('Delete Package') }}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

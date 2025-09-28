@@ -70,7 +70,7 @@
             <td>{{ $bill->invoice }}</td>
             <td>{{ $bill->user->name }}</td>
             <td>{{ $bill->package_name }}</td>
-            <td>{{ config('app.currency') . $bill->package_price }}</td>
+            <td>{{ config('app.currency') . ' ' . $bill->package_price }}</td>
             <td>{{ $bill->package_start }}</td>
         </tr>
     @endforeach

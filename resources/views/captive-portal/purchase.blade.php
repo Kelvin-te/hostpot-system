@@ -244,10 +244,9 @@
                 <form action="{{ route('portal.process-payment', $package->id) }}" method="POST">
                     @csrf
                     <div class="form-group">
-                        <x-input-label for="paymentPhone" :value="__('Phone Number')" />
+                        <x-input-label for="paymentPhone" :value="__('Mpesa Number')" />
                         <x-text-input id="paymentPhone" name="phone" type="tel" class="mt-1 block w-full" required 
                                      placeholder="e.g 0712345678" pattern="[0-9]{10,12}" />
-                        <div class="text-sm text-gray-500" style="margin-top: 5px;">Enter your Mpesa phone number</div>
                     </div>
                     
                     <div class="form-group">

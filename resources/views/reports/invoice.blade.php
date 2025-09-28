@@ -90,11 +90,11 @@
             {{ __('Package name ') . $invoice->billing->package_name }}<br>
             {{ __('(Started on ') . $invoice->billing->package_start . __(')') }}
         </td>
-        <td>{{ config('app.currency') . $invoice->package_price }}</td>
+        <td>{{ config('app.currency') . ' ' . $invoice->package_price }}</td>
     </tr>
     <tr class="invoice-line">
         <td colspan="1" style="text-align: right;">{{ __('Total:') }}</td>
-        <td>{{ config('app.currency') . $invoice->package_price }}</td>
+        <td>{{ config('app.currency') . ' ' . $invoice->package_price }}</td>
     </tr>
 </table>
 

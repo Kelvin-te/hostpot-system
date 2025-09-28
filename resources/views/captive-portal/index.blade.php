@@ -166,7 +166,7 @@
         }
 
         .contact-content {
-            padding: 2em 30px 0 30px;
+            padding: 2em 30px;
             text-align: center;
             color: #6c757d;
             line-height: 1.5;
@@ -310,7 +310,7 @@
                                                 @endif
                                             </span>
                                         </td>
-                                        <td class="package-price"><span style="font-size: 0.8em;">{{ config('app.currency') }}</span>{{ number_format($package->price, 0) }}</td>
+                                        <td class="package-price"><span style="font-size: 0.8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -334,7 +334,7 @@
                                                 <span class="package-desc">{{ $package->bandwidth_download }} Mbps</span>
                                             @endif -->
                                         </td>
-                                        <td class="package-price"><span style="font-size: 0.8em;">{{ config('app.currency') }}</span>{{ number_format($package->price, 0) }}</td>
+                                        <td class="package-price"><span style="font-size: 0.8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -361,12 +361,16 @@
             
             <!-- Action Buttons -->
             <div class="flex gap-4 justify-between w-full mt-8" id="actionButtons">
-                <div class="signup-promo">
-                    <div class="promo-badge promo-badge-top">SIGN UP & ENJOY</div>
-                    <div class="promo-badge promo-badge-bottom">500 MB <span style="color: #ffd82a;">FREE</span></div>
-                    <button type="button" class="btn btn-light border mr-1" onclick="window.location.href='{{ route('portal.signup') }}'"> Sign Up</button>
-                </div>
-                <button type="button" class="btn bg-orange-600 w-full" onclick="window.location.href='{{ route('portal.login') }}'"> Log In</button>
+                @if(!isset($hasUsedFreePackage) || !$hasUsedFreePackage)
+                    <div class="signup-promo">
+                        <div class="promo-badge promo-badge-top">SIGN UP & ENJOY</div>
+                        <div class="promo-badge promo-badge-bottom">500 MB <span style="color: #ffd82a;">FREE</span></div>
+                        <button type="button" class="btn btn-light border mr-1" onclick="window.location.href='{{ route('portal.signup') }}'"> Sign Up</button>
+                    </div>
+                    <button type="button" class="btn bg-orange-600 w-full" onclick="window.location.href='{{ route('portal.login') }}'"> Log In</button>
+                @else
+                    <button type="button" class="btn bg-orange-600 w-full" onclick="window.location.href='{{ route('portal.login') }}'"> Log In</button>
+                @endif
             </div>
             
 

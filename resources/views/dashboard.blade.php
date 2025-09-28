@@ -8,19 +8,19 @@
                     </h2>
                     <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-6">
                         <div class="border border-gray-200 p-4 rounded flex flex-col items-center justify-center">
-                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . $totalBills }}</p>
+                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . ' ' . $totalBills }}</p>
                             <h2 class="text-l">{{ __('Total Bills') }}</h2>
                         </div>
                         <div class="border border-gray-200 p-4 rounded flex flex-col items-center justify-center">
-                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . $totalPayments }}</p>
+                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . ' ' . $totalPayments }}</p>
                             <h2 class="text-l">{{ __('Total Payments') }}</h2>
                         </div>
                         <div class="border border-gray-200 p-4 rounded flex flex-col items-center justify-center">
-                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . $billsThisMonth }}</p>
+                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . ' ' . $billsThisMonth }}</p>
                             <h2 class="text-l">{{ __('Bills This Month') }}</h2>
                         </div>
                         <div class="border border-gray-200 p-4 rounded flex flex-col items-center justify-center">
-                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . $paymentsThisMonth }}</p>
+                            <p class="text-2xl mt-2 font-bold">{{ config('app.currency') . ' ' . $paymentsThisMonth }}</p>
                             <h2 class="text-l">{{ __('Payments This Month') }}</h2>
                         </div>
                     </div>
@@ -47,11 +47,11 @@
                         </div>
                         <div class="border-l-2 bg-neutral-50 border-neutral-500 p-4">
                             <h2 class="text-l font-bold">{{ __('Bills This Year') }}</h2>
-                            <p class="text-xl mt-2 font-bold">{{ config('app.currency') . $billsThisYear }}</p>
+                            <p class="text-xl mt-2 font-bold">{{ config('app.currency') . ' ' . $billsThisYear }}</p>
                         </div>
                         <div class="border-l-2 bg-neutral-50 border-neutral-500 p-4">
                             <h2 class="text-l font-bold">{{ __('Payments This Year') }}</h2>
-                            <p class="text-xl mt-2 font-bold">{{ config('app.currency') . $paymentsThisYear }}</p>
+                            <p class="text-xl mt-2 font-bold">{{ config('app.currency') . ' ' . $paymentsThisYear }}</p>
                         </div>
                     </div>
 
@@ -71,7 +71,7 @@
                                     @foreach ($recentUsers as $user)
                                         <tr>
                                             <td class="border-b border-slate-300 p-2">{{ $user->name }}</td>
-                                            <td class="border-b border-slate-300 p-2">{{ $user->detail->package_name }}</td>
+                                            <td class="border-b border-slate-300 p-2">{{ data_get($user, 'detail.package_name', '-') }}</td>
                                             <td class="border-b border-slate-300 p-2">{{ date('Y-m-d', strtotime($user->created_at)) }}</td>
                                         </tr>
                                     @endforeach
@@ -92,7 +92,7 @@
                                     @foreach ($recentPayments as $payment)
                                         <tr>
                                             <td class="border-b border-slate-300 p-2">{{ $payment->user->name }}</td>
-                                            <td class="border-b border-slate-300 p-2">{{ config('app.currency') . $payment->package_price }}</td>
+                                            <td class="border-b border-slate-300 p-2">{{ config('app.currency') . ' ' . $payment->package_price }}</td>
                                             <td class="border-b border-slate-300 p-2">{{ date('Y-m-d', strtotime($payment->created_at)) }}</td>
                                         </tr>
                                     @endforeach
@@ -118,8 +118,8 @@
                                     @foreach ($usersWithDueList as $user)
                                         <tr>
                                             <td class="border-b border-slate-300 p-2">{{ $user->name }}</td>
-                                            <td class="border-b border-slate-300 p-2">{{ $user->detail->package_name }}</td>
-                                            <td class="border-b border-slate-300 p-2">{{ config('app.currency') . $user->due_amount($user->id) }}</td>
+                                            <td class="border-b border-slate-300 p-2">{{ data_get($user, 'detail.package_name', '-') }}</td>
+                                            <td class="border-b border-slate-300 p-2">{{ config('app.currency') . ' ' . $user->due_amount($user->id) }}</td>
                                         </tr>
                                     @endforeach
                                     </tbody>

@@ -41,4 +41,11 @@ return [
         'merchant_id' => env('BKASH_MERCHANT_ID'),
     ],
 
+    'vintex' => [
+        'api_url' => env('VINTEX_API_URL', 'https://sms.vintextechnologies.com/api/sendMessage'),
+        'email' => env('VINTEX_EMAIL', 'admin@vintextechnologies.com'),
+        'bearer_token' => env('VINTEX_BEARER_TOKEN', 'MGNlYzE4NzlkNTEzZGZmNGI2MWY4MDY2ODlkM2NlNmU='),
+        'sender_id' => env('VINTEX_SENDER_ID', 'STERKE'),
+    ],
+
 ];

@@ -32,12 +32,6 @@ class MpesaService
      */
     public function getAccessToken(): ?string
     {
-        $cacheKey = 'mpesa_access_token';
-        
-        // Check if token exists in cache
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
 
         try {
             $url = $this->getBaseUrl() . '/oauth/v1/generate?grant_type=client_credentials';
@@ -48,10 +42,6 @@ class MpesaService
             if ($response->successful()) {
                 $data = $response->json();
                 $accessToken = $data['access_token'];
-                $expiresIn = $data['expires_in'] ?? 3599; // Default to 1 hour - 1 second
-                
-                // Cache token for slightly less than expiry time
-                Cache::put($cacheKey, $accessToken, now()->addSeconds($expiresIn - 60));
                 
                 return $accessToken;
             }
@@ -83,7 +73,12 @@ class MpesaService
                 'success' => false,
                 'message' => 'Failed to get access token'
             ];
+            Log::error('Failed to get access token');
         }
+
+        Log::info('M-Pesa access token retrieved', [
+            'access_token' => $accessToken
+        ]);
 
         try {
             // Format phone number (remove leading 0 and add 254)

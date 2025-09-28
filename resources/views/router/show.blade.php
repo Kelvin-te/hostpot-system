@@ -46,6 +46,12 @@
                         
                         <div class="pb-6">
                             <div class="grid-cols-4 md:grid-cols-4 gap-4 text-right">
+                                <a href="{{ route('packages.clone.form', ['source_router_id' => $router->id]) }}" class="inline-flex items-center justify-center px-4 py-2 text-indigo-600 font-medium rounded text-sm transition duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8M16 7v8M4 7h16M4 15h16"></path>
+                                    </svg>
+                                    Clone Packages
+                                </a>
                                 <a href="{{ route('log', ['param' => $router]) }}" class="inline-flex items-center justify-center px-4 py-2 text-green-600 font-medium rounded text-sm transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

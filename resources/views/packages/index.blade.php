@@ -19,7 +19,12 @@
                                 {{ __('Packages') }}
                             </h2>
                             @if (auth()->user()->isAdmin())
-                                <x-create-button url="{{ route('packages.create') }}"></x-create-button>
+                                <div class="flex space-x-2">
+                                    <a href="{{ route('packages.clone.form') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                        Clone Packages
+                                    </a>
+                                    <x-create-button url="{{ route('packages.create') }}"></x-create-button>
+                                </div>
                             @endif
                         </div>
                         <div>
