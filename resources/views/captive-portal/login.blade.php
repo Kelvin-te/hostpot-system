@@ -73,7 +73,8 @@
         </form>
 
         <div class="login-options">
-            <p>Don't have a voucher? <a href="{{ route('portal.index') }}">Purchase a package</a></p>
+            <p class="text-sm text-gray-600">Don't have a voucher? <a href="{{ route('portal.index') }}">Purchase a package</a></p>
+            <p class="text-sm text-red-600"><a href="{{ route('portal.forgot-password') }}">Forgot password?</a></p>
         </div>
     </div>
 @endsection

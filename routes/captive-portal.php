@@ -34,6 +34,10 @@ Route::prefix('portal')->name('portal.')->group(function () {
     // Login for existing users/vouchers
     Route::get('/login', [CaptivePortalController::class, 'showLogin'])->name('login');
     Route::post('/authenticate', [CaptivePortalController::class, 'authenticate'])->name('authenticate');
+    // Forgot password (OTP reset)
+    Route::get('/forgot-password', [CaptivePortalController::class, 'showForgotPassword'])->name('forgot-password');
+    Route::post('/forgot-password/send-otp', [CaptivePortalController::class, 'sendPasswordResetOtp'])->name('forgot-password.send-otp');
+    Route::post('/forgot-password/reset', [CaptivePortalController::class, 'processPasswordReset'])->name('forgot-password.reset');
     
     // Signup for free 500MB package
     Route::get('/signup', [CaptivePortalController::class, 'showSignup'])->name('signup');

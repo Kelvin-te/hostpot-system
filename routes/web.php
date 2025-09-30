@@ -23,6 +23,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserDisable;
 use App\Http\Controllers\UserDownload;
 use App\Http\Controllers\UserEnable;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
 
 // Public landing page -> Captive Portal
@@ -75,6 +76,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment-download', PaymentDownload::class)->name('payment.download');
     Route::get('/single-download/{user}', ShowUser::class)->name('single.download');
     Route::get('/invoice-download/{row}', InvoiceDownload::class)->name('invoice.download');
+
+    // Voucher management (admin)
+    Route::resource('/vouchers', VoucherController::class)->only(['index','create','store']);
+    Route::get('/vouchers/export', [VoucherController::class, 'export'])->name('vouchers.export');
 
     Route::group(['middleware' => ['web']], function () {
         // Payment Routes for bKash

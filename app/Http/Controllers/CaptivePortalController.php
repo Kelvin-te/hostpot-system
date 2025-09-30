@@ -6,6 +6,7 @@ use App\Models\Package;
 use App\Models\Router;
 use App\Models\HotspotSession;
 use App\Models\PaymentTransaction;
+use App\Models\Voucher;
 use App\Models\User;
 use App\Models\SmsVerification;
 use App\Services\DeviceIdentificationService;
@@ -32,6 +33,99 @@ class CaptivePortalController extends Controller
         $this->mikrotikService = $mikrotikService;
         $this->mpesaService = $mpesaService;
         $this->smsService = $smsService;
+    }
+
+    /**
+     * Show forgot password page
+     */
+    public function showForgotPassword(Request $request)
+    {
+        return view('captive-portal.forgot-password');
+    }
+
+    /**
+     * Send OTP for password reset
+     */
+    public function sendPasswordResetOtp(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|min:10|max:15',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Invalid phone number format.']);
+        }
+
+        try {
+            $normalizedPhone = $this->smsService->normalizePhoneNumber($request->phone);
+            if (!$normalizedPhone) {
+                return response()->json(['success' => false, 'message' => 'Invalid phone number format.']);
+            }
+
+            // Create OTP record (reuse signup table)
+            $otpRecord = SmsVerification::createForPhone(
+                $normalizedPhone,
+                $request->ip(),
+                $request->userAgent()
+            );
+
+            $smsResult = $this->smsService->sendOtp($normalizedPhone, $otpRecord->otp);
+            if ($smsResult['success']) {
+                return response()->json(['success' => true, 'message' => 'Password reset code sent to your phone.']);
+            }
+            return response()->json(['success' => false, 'message' => 'Failed to send reset code. Please try again.']);
+        } catch (\Exception $e) {
+            Log::error('Failed to send password reset OTP', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Failed to send reset code. Please try again.']);
+        }
+    }
+
+    /**
+     * Process password reset
+     */
+    public function processPasswordReset(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|min:10|max:15',
+            'otp' => 'required|string|size:6',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $normalizedPhone = $this->smsService->normalizePhoneNumber($request->phone);
+            if (!$normalizedPhone) {
+                return back()->with('error', 'Invalid phone number format.')->withInput();
+            }
+
+            // Find user by phone
+            $user = User::where('phone', $normalizedPhone)->first();
+            if (!$user) {
+                return back()->with('error', 'No account found with that phone number.')->withInput();
+            }
+
+            // Verify OTP
+            $otpRecord = SmsVerification::findValidOtp($normalizedPhone, $request->otp);
+            if (!$otpRecord) {
+                return back()->with('error', 'Invalid or expired verification code.')->withInput();
+            }
+
+            $otpRecord->markAsVerified();
+
+            // Update password
+            $user->update(['password' => bcrypt($request->password)]);
+
+            // Notify user via SMS
+            $this->smsService->sendSms($normalizedPhone, 'Your hotspot password has been reset successfully. If this was not you, contact support immediately.');
+
+            return redirect()->route('portal.login')->with('success', 'Password reset successful. Please log in.');
+        } catch (\Exception $e) {
+            Log::error('Password reset failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Password reset failed. Please try again.');
+        }
     }
 
     /**
@@ -95,7 +189,10 @@ class CaptivePortalController extends Controller
         $package = Package::with('router')->findOrFail($packageId);
         $router = $this->detectRouter($request);
         
-        return view('captive-portal.purchase', compact('package', 'router'));
+        // Prefill phone from session or authenticated user if available
+        $defaultPhone = session('customer_phone') ?? (auth()->check() ? (auth()->user()->phone ?? null) : null);
+
+        return view('captive-portal.purchase', compact('package', 'router', 'defaultPhone'));
     }
 
     /**
@@ -106,6 +203,7 @@ class CaptivePortalController extends Controller
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|min:10|max:15',
             'name' => 'required|string|max:255',
+            'mode' => 'nullable|in:activate,voucher'
         ]);
 
         if ($validator->fails()) {
@@ -122,7 +220,9 @@ class CaptivePortalController extends Controller
 
         try {
             // Initiate M-Pesa STK Push
-            $accountReference = 'PKG-' . $package->id . '-' . time();
+            // PayBill AccountReference must be <= 12 alphanumeric chars
+            $rawRef = 'HSP-' . $package->id;
+            $accountReference = substr(preg_replace('/[^A-Z0-9]/i', '', strtoupper($rawRef)), 0, 12);
             $transactionDesc = $package->name . ' - Internet Package';
             
             $stkResult = $this->mpesaService->stkPush(
@@ -151,7 +251,8 @@ class CaptivePortalController extends Controller
                 'checkout_request_id' => $stkResult['checkout_request_id'],
                 'package_id' => $package->id,
                 'customer_phone' => $request->phone,
-                'customer_name' => $request->name
+                'customer_name' => $request->name,
+                'purchase_mode' => $request->input('mode', 'activate')
             ]);
 
             Log::info('M-Pesa STK Push initiated', [
@@ -242,35 +343,68 @@ class CaptivePortalController extends Controller
             }
         }
 
-        // Check if payment is completed and create session
+        // Check if payment is completed and create session or generate voucher
         if ($transaction->isCompleted()) {
             try {
-                // Create hotspot session
-                $session = $this->sessionService->createSessionForPackage(
-                    $request,
-                    $transaction->package,
-                    null, // user (for guest purchases)
-                    session('customer_phone') // username/identifier
-                );
+                $mode = session('purchase_mode', 'activate');
+                if ($mode === 'voucher') {
+                    // Generate a voucher and send via SMS
+                    $expiresAt = now()->addDays(30);
+                    $pkg = $transaction->package; // lazy-load ok
+                    $created = Voucher::createBatch($pkg->id, 1, $expiresAt);
+                    $voucher = $created[0];
 
-                // Update transaction with session ID
-                $transaction->update(['session_id' => $session->session_id]);
+                    // Send voucher to customer's phone via SMS
+                    $phone = session('customer_phone');
+                    $this->smsService->sendVoucherSms(
+                        $phone,
+                        $voucher->code,
+                        $pkg->name,
+                        $voucher->expires_at?->format('j M Y')
+                    );
 
-                // Clear payment session data
-                session()->forget(['payment_transaction_id', 'checkout_request_id', 'package_id', 'customer_phone', 'customer_name']);
+                    // Clear payment session data
+                    session()->forget(['payment_transaction_id', 'checkout_request_id', 'package_id', 'customer_phone', 'customer_name', 'purchase_mode']);
 
-                Log::info('Hotspot session created after successful payment', [
-                    'session_id' => $session->session_id,
-                    'transaction_id' => $transaction->id,
-                    'mpesa_receipt' => $transaction->mpesa_receipt_number
-                ]);
+                    Log::info('Voucher generated and sent via SMS after payment', [
+                        'voucher_code' => $voucher->code,
+                        'transaction_id' => $transaction->id,
+                    ]);
 
-                return response()->json([
-                    'success' => true,
-                    'status' => 'completed',
-                    'message' => 'Payment successful! You are now connected to the internet.',
-                    'redirect_url' => route('portal.status')
-                ]);
+                    return response()->json([
+                        'success' => true,
+                        'status' => 'completed',
+                        'message' => 'Payment successful! Your voucher has been sent via SMS.',
+                        'redirect_url' => route('portal.index')
+                    ]);
+                } else {
+                    // Create hotspot session (activate now)
+                    $session = $this->sessionService->createSessionForPackage(
+                        $request,
+                        $transaction->package,
+                        null, // user (for guest purchases)
+                        session('customer_phone') // username/identifier
+                    );
+
+                    // Update transaction with session ID
+                    $transaction->update(['session_id' => $session->session_id]);
+
+                    // Clear payment session data
+                    session()->forget(['payment_transaction_id', 'checkout_request_id', 'package_id', 'customer_phone', 'customer_name', 'purchase_mode']);
+
+                    Log::info('Hotspot session created after successful payment', [
+                        'session_id' => $session->session_id,
+                        'transaction_id' => $transaction->id,
+                        'mpesa_receipt' => $transaction->mpesa_receipt_number
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'status' => 'completed',
+                        'message' => 'Payment successful! You are now connected to the internet.',
+                        'redirect_url' => route('portal.status')
+                    ]);
+                }
 
             } catch (\Exception $e) {
                 Log::error('Failed to create session after payment', [

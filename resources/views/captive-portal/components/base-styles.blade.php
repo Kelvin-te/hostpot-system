@@ -8,7 +8,6 @@
 
 /* Page body */
 body {
-    color: #ffffff;
     height: 100vh;
     display: flex;
     flex-direction: column;

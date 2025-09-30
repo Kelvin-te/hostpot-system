@@ -1,4 +1,4 @@
-
+@props(['iconSvg' => null, 'icon' => null, 'active' => false])
 
 @php
     $classes = ($active ?? false)
@@ -7,7 +7,13 @@
 @endphp
 
 <a {{ $attributes->merge(['class' => $classes]) }}>
-    <span class="flex items-center">
+    <span class="flex items-center gap-2">
+        @isset($icon)
+            <span class="w-5 h-5 text-current">{!! $icon !!}</span>
+        @elseif($iconSvg)
+            <span class="w-5 h-5 text-current">{!! $iconSvg !!}</span>
+        @endisset
         <span class="mx-2 font-sm">{{ $slot }}</span>
     </span>
+    
 </a>

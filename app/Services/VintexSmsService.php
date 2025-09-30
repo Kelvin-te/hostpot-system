@@ -126,6 +126,16 @@ class VintexSmsService
     }
 
     /**
+     * Send voucher code via SMS
+     */
+    public function sendVoucherSms(string $phone, string $voucherCode, string $packageName, ?string $expiresOn = null): array
+    {
+        $expiryText = $expiresOn ? " (expires {$expiresOn})" : '';
+        $message = "Your voucher for {$packageName}{$expiryText}:\n{$voucherCode}\n\nUse this code on the portal Login page under 'Voucher Code'. Do not share this code.\n\nRegards, Sterke Digital.";
+        return $this->sendSms($phone, $message);
+    }
+
+    /**
      * Normalize phone number to Kenyan format
      */
     public function normalizePhoneNumber(string $phone): ?string

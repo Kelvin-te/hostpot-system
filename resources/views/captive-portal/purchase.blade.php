@@ -57,8 +57,22 @@
         <form action="{{ route('portal.process-payment', $package->id) }}" method="POST">
             @csrf
             <div class="form-group">
+                <x-input-label for="mode" :value="__('How would you like to receive access?')" />
+                <div style="display:flex; gap:15px; align-items:center; margin-top:16px;">
+                    <label style="display:flex; gap:6px; align-items:center;">
+                        <input type="radio" name="mode" class="form-radio text-green-800 border-green-800" value="activate" checked>
+                        <span>Activate Now</span>
+                    </label>
+                    <label style="display:flex; gap:6px; align-items:center;">
+                        <input type="radio" name="mode" class="form-radio text-green-800 border-green-800" value="voucher">
+                        <span>Get Voucher</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
                 <x-input-label for="paymentPhone" :value="__('Mpesa Number')" />
-                <x-text-input id="paymentPhone" name="phone" type="tel" class="mt-1 block w-full" required placeholder="e.g 0712345678" pattern="[0-9]{10,12}" />
+                <x-text-input id="paymentPhone" name="phone" type="tel" class="mt-1 block w-full" required 
+                             placeholder="e.g 0712345678" pattern="[0-9]{10,12}" value="{{ old('phone', $defaultPhone ?? '') }}" />
             </div>
             <div class="form-group">
                 <x-input-label for="customerName" :value="__('Full Name')" />
@@ -66,10 +80,10 @@
             </div>
             <div class="info-box">
                 <strong>📱 Payment Instructions:</strong>
-                1. Enter your mpesa phone number<br>
-                2. Click "Complete Payment"<br>
-                3. Follow the prompt on your phone<br>
-                4. Wait for confirmation message
+                1. Choose "Activate now" to connect this device immediately, or "Voucher" to receive a code via SMS.<br>
+                2. Enter your Mpesa phone number and full name.<br>
+                3. Click "Complete Payment" and approve the prompt on your phone.<br>
+                4. You'll be redirected automatically after confirmation.
             </div>
             <button type="submit" class="btn btn-green">💳 Complete Payment</button>
         </form>

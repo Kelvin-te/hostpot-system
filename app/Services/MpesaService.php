@@ -12,7 +12,6 @@ class MpesaService
 {
     protected $consumerKey;
     protected $consumerSecret;
-    protected $environment;
     protected $shortcode;
     protected $passkey;
     protected $callbackUrl;
@@ -21,7 +20,6 @@ class MpesaService
     {
         $this->consumerKey = config('mpesa.consumer_key');
         $this->consumerSecret = config('mpesa.consumer_secret');
-        $this->environment = config('mpesa.environment', 'sandbox');
         $this->shortcode = config('mpesa.shortcode');
         $this->passkey = config('mpesa.passkey');
         $this->callbackUrl = config('mpesa.callback_url');
@@ -32,24 +30,29 @@ class MpesaService
      */
     public function getAccessToken(): ?string
     {
+        // Validate configuration
+        if (empty($this->consumerKey) || empty($this->consumerSecret)) {
+            Log::error('M-Pesa consumer key/secret not configured');
+            return null;
+        }
 
         try {
-            $url = $this->getBaseUrl() . '/oauth/v1/generate?grant_type=client_credentials';
-            
-            $response = Http::withBasicAuth($this->consumerKey, $this->consumerSecret)
-                ->get($url);
+
+            $url = config('mpesa.urls.oauth');
+            $response = Http::withOptions([
+                'verify' => false,
+            ])->withBasicAuth($this->consumerKey, $this->consumerSecret)->get($url);
+
+            Log::info('M-Pesa access is good', [
+                'response' => $response,
+                'status' => $response->status()
+            ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $accessToken = $data['access_token'];
-                
                 return $accessToken;
             }
-
-            Log::error('Failed to get M-Pesa access token', [
-                'response' => $response->body(),
-                'status' => $response->status()
-            ]);
 
             return null;
 
@@ -73,24 +76,33 @@ class MpesaService
                 'success' => false,
                 'message' => 'Failed to get access token'
             ];
-            Log::error('Failed to get access token');
         }
 
         Log::info('M-Pesa access token retrieved', [
-            'access_token' => $accessToken
+            'token_received' => true, 
+            'token' => $accessToken
         ]);
 
         try {
             // Format phone number (remove leading 0 and add 254)
             $formattedPhone = $this->formatPhoneNumber($phoneNumber);
             
+            // Validate required config for STK Push
+            if (empty($this->shortcode) || empty($this->passkey)) {
+                Log::error('M-Pesa shortcode or passkey not configured');
+                return [
+                    'success' => false,
+                    'message' => 'Payment provider not configured'
+                ];
+            }
+
             // Generate timestamp
-            $timestamp = Carbon::now()->format('YmdHis');
+            $timestamp = date('YmdHis');
             
             // Generate password
             $password = base64_encode($this->shortcode . $this->passkey . $timestamp);
 
-            $url = $this->getBaseUrl() . '/mpesa/stkpush/v1/processrequest';
+            $url = config('mpesa.urls.stk_push');
 
             $requestData = [
                 'BusinessShortCode' => $this->shortcode,
@@ -106,10 +118,20 @@ class MpesaService
                 'TransactionDesc' => $transactionDesc
             ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $accessToken,
-                'Content-Type' => 'application/json'
+            $response = Http::withOptions([
+                'verify' => false,
+                'headers' => [
+                    'Authorization' => 'Bearer '.$accessToken,
+                    'Content-Type' => 'application/json',
+                ]
             ])->post($url, $requestData);
+
+            Log::info('M-Pesa STK Push response', [
+                'token' => $accessToken,
+                'headers' => [
+                    'Authorization' => 'Bearer '.$accessToken,
+                ]
+            ]);
 
             $responseData = $response->json();
 
@@ -143,9 +165,11 @@ class MpesaService
                 ];
             }
 
+            $requestLog = $requestData;
+            unset($requestLog['Password']);
             Log::error('STK Push failed', [
                 'response' => $responseData,
-                'request' => $requestData
+                'request' => $requestLog
             ]);
 
             return [
@@ -182,10 +206,10 @@ class MpesaService
         }
 
         try {
-            $timestamp = Carbon::now()->format('YmdHis');
+            $timestamp = date('YmdHis');
             $password = base64_encode($this->shortcode . $this->passkey . $timestamp);
 
-            $url = $this->getBaseUrl() . '/mpesa/stkpushquery/v1/query';
+            $url = config('mpesa.urls.stk_query');
 
             $requestData = [
                 'BusinessShortCode' => $this->shortcode,
@@ -334,13 +358,4 @@ class MpesaService
         return $phone; // Return as is if format is unclear
     }
 
-    /**
-     * Get base URL based on environment
-     */
-    protected function getBaseUrl(): string
-    {
-        return $this->environment === 'production' 
-            ? 'https://api.safaricom.co.ke'
-            : 'https://sandbox.safaricom.co.ke';
-    }
 }
