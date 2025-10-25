@@ -1,0 +1,29 @@
+# oct/08/2025 15:56:08 by RouterOS 6.48.6
+# software id = R07G-FYY3
+#
+# model = 951Ui-2HnD
+# serial number = DE3F0F1EB742
+/ip hotspot
+add address-pool=hs-pool addresses-per-mac=1 disabled=no interface=bridge1 name=hs-server
+/ip hotspot profile
+set [ find default=yes ] dns-name=login.sterkewifi.com login-by=cookie,http-chap,http-pap
+/ip hotspot user profile
+add address-pool=hs-pool name=1Day1Ddevicce rate-limit=5M/5M session-timeout=1d
+add address-pool=hs-pool name=1minute1Device rate-limit=2m/2m session-timeout=1m
+add idle-timeout=30m name="1 day unlimited" rate-limit=5000000/5000000 session-timeout=1d
+add idle-timeout=30m name="1GB for 7 days" rate-limit=10000000/10000000 session-timeout=1d
+add idle-timeout=1h name="30days Unlimited" rate-limit=5000000/5000000 session-timeout=1d
+add idle-timeout=1h name="1 Month Family Unlimited" rate-limit=5000000/5000000 session-timeout=1d shared-users=4
+add idle-timeout=1h name="1 Week Unlimited" rate-limit=5000000/5000000 session-timeout=1d
+/ip hotspot ip-binding
+add address=192.168.30.2 type=bypassed
+add address=10.10.0.0/20 type=bypassed
+add address=10.5.0.0/24 type=bypassed
+/ip hotspot user
+add name=sterke password=Sterked0420_ profile=1minute1Device server=hs-server
+/ip hotspot walled-garden
+add dst-host=*.msftconnecttest.com
+add dst-host=*.apple.com
+add dst-host=*.neverssl.com
+add dst-host=wifi.sterkedigital.com
+add dst-host=*.sterkedigital.com

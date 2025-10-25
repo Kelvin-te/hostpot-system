@@ -34,7 +34,7 @@ class VintexSmsService
                 throw new Exception('Invalid phone number format');
             }
 
-            $response = Http::withHeaders([
+            $response = Http::asForm()->withHeaders([
                 'Authorization' => 'Bearer ' . $this->bearerToken,
             ])->post($this->apiUrl . '?email=' . $this->email, [
                 'recipients' => $normalizedPhone,

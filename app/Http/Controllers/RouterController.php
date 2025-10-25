@@ -6,7 +6,7 @@ use App\Http\Requests\StoreRouterRequest;
 use App\Http\Requests\UpdateRouterRequest;
 use Illuminate\Http\Request;
 use App\Models\Router;
-use App\Classes\Mikrotik;
+use App\Services\MikroTikService;
 
 class RouterController extends Controller
 {
@@ -70,10 +70,10 @@ class RouterController extends Controller
         $interfaces = null;
         
         try {
-            $mikrotik = new Mikrotik();
+            $mikrotikService = new MikroTikService();
             
             // Test connection and get status
-            $connectionResult = $mikrotik->testConnection($router);
+            $connectionResult = $mikrotikService->testConnection($router);
             $connectionStatus = [
                 'success' => $connectionResult['success'],
                 'message' => $connectionResult['message'] ?? 'Unknown status',
@@ -83,13 +83,13 @@ class RouterController extends Controller
             // If connection is successful, get system info and interfaces
             if ($connectionResult['success']) {
                 // Get system information
-                $systemResult = $mikrotik->getSystemInfo($router);
+                $systemResult = $mikrotikService->getSystemInfo($router);
                 if ($systemResult['success']) {
                     $systemInfo = $systemResult['data'];
                 }
                 
                 // Get interface information
-                $interfaceResult = $mikrotik->getInterfaces($router);
+                $interfaceResult = $mikrotikService->getInterfaces($router);
                 if ($interfaceResult['success']) {
                     $interfaces = $interfaceResult['data'];
                 }
@@ -161,8 +161,8 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotik = new Mikrotik();
-            $result = $mikrotik->testConnection($router);
+            $mikrotikService = new MikroTikService();
+            $result = $mikrotikService->testConnection($router);
             
             return response()->json($result);
         } catch (\Exception $e) {
@@ -183,8 +183,8 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotik = new Mikrotik();
-            $result = $mikrotik->getSystemInfo($router);
+            $mikrotikService = new MikroTikService();
+            $result = $mikrotikService->getSystemInfo($router);
             
             return response()->json($result);
         } catch (\Exception $e) {
@@ -205,8 +205,8 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotik = new Mikrotik();
-            $result = $mikrotik->getInterfaces($router);
+            $mikrotikService = new MikroTikService();
+            $result = $mikrotikService->getInterfaces($router);
             
             return response()->json($result);
         } catch (\Exception $e) {

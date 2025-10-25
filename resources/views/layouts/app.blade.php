@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Sterke Digital') }}</title>
 
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
@@ -21,11 +21,20 @@
 </head>
 <body class="font-sans antialiased">
 <div class="min-h-screen bg-slate-50">
-    @include('layouts.navigation')
     <div class="flex flex-col sm:flex-row w-full">
     @include('layouts.sidebar2')
-        <main class="flex-1 flex flex-col overflow-hidden bg-indigo-50">
-            {{ $slot }}
+        <main class="flex-1 flex flex-col overflow-hidden bg-indigo-50 md:ml-55">
+            @include('layouts.navigation')
+            <div class="overflow-y-scroll max-h-[calc(100vh-70px)]">
+                @isset($header)
+                    <header class="bg-white shadow">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
+                {{ $slot }}
+            </div>
         </main>
     </div>
 </div>

@@ -61,47 +61,118 @@
 
         <form action="{{ route('portal.process-signup') }}" method="POST" id="signupForm">
             @csrf
-            <div class="form-group">
+            <div class="mt-3">
                 <x-input-label for="signupPhone" :value="__('Phone Number')" />
-                <x-text-input id="signupPhone" name="phone" type="tel" class="mt-1 block w-full text-sm text-green-900" required placeholder="Enter your phone number" pattern="[0-9]{10,12}" />
-                <div class="text-sm text-gray-400" style="margin-top: 5px;">We'll send you a verification code</div>
+                <div class="flex gap-2">
+                    <x-text-input id="signupPhone" name="phone" type="tel" class="mt-1 block w-full text-sm text-green-900" required placeholder="e.g., 0712345678" pattern="[0-9]{10,12}" />
+                    <button type="button" id="sendOtpBtn" class="bg-indigo-600 text-white text-sm px-4 py-1 mt-1 rounded whitespace-nowrap" onclick="sendOtp()">
+                        OTP
+                    </button>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">We'll send you a verification code</div>
             </div>
-            <div class="form-group">
+
+            <div class="mt-3" id="otpGroup" style="display: none;">
+                <x-input-label for="signupOtp" :value="__('Verification Code (OTP)')" />
+                <x-text-input id="signupOtp" name="otp" type="text" class="mt-1 block w-full text-sm text-green-900" placeholder="Enter 6-digit code" maxlength="6" pattern="[0-9]{6}" />
+                <div class="text-xs text-green-600 mt-1" id="otpSuccessMsg" style="display: none;">✓ OTP sent successfully! Check your SMS.</div>
+            </div>
+
+            <div class="mt-3">
                 <x-input-label for="signupName" :value="__('Full Name')" />
                 <x-text-input id="signupName" name="name" type="text" class="mt-1 block w-full text-sm text-green-900" required placeholder="Your full name" />
             </div>
-            <div class="form-group">
+            <div class="my-3">
                 <x-input-label for="signupPassword" :value="__('Password')" />
                 <x-text-input id="signupPassword" name="password" type="password" class="mt-1 text-green-900 block w-full text-sm" required placeholder="Create a password" minlength="6" />
                 <div class="text-sm text-gray-400" style="margin-top: 5px;">Minimum 6 characters</div>
             </div>
+
             <div style="background: #e8f5e8; border: 1px solid #c3e6c3; border-radius: 5px; padding: 12px; margin-bottom: 20px; color: #2d5a2d; font-size: 0.85em; line-height: 1.4;">
                 <strong style="color: #1a4a1a; margin-bottom: 8px; display: block;">🎉 Free 500MB Package Includes:</strong>
                 • 500MB of high-speed internet<br>
                 • Valid for 24 hours<br>
                 • Instant activation
             </div>
-            <div class="flex gap-4 justify-end">
-                <button type="button" class="btn bg-red-500 uppercase" onclick="window.location.href='{{ route('portal.index') }}'">← Back</button>
-                <button type="submit" class="btn btn-green uppercase">Sign Up</button>
+            <div class="flex gap-4 justify-between">
+                <button type="button" class="btn p-1 bg-red-500 text-white" onclick="window.location.href='{{ route('portal.index') }}'">← Back</button>
+                <button type="submit" class="btn bg-green-700 text-white">Sign Up</button>
             </div>
         </form>
 
-        @if($errors->any())
-            <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 12px; margin-top: 15px; color: #721c24; font-size: 0.9em;">
-                <strong>Please fix the following errors:</strong>
-                <ul style="margin: 8px 0 0 20px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @if(session('success'))
-            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 12px; margin-top: 15px; color: #155724; font-size: 0.9em;">
-                <strong>Success!</strong> {{ session('success') }}
-            </div>
-        @endif
     </div>
+
+    @push('scripts')
+    <script>
+        let otpSent = false;
+
+        function sendOtp() {
+            const phoneInput = document.getElementById('signupPhone');
+            const phone = phoneInput.value.trim();
+            const sendOtpBtn = document.getElementById('sendOtpBtn');
+            
+            if (!phone || phone.length < 10) {
+                alert('Please enter a valid phone number');
+                return;
+            }
+
+            // Disable button and show loading
+            sendOtpBtn.disabled = true;
+            sendOtpBtn.textContent = 'Sending...';
+
+            // Send OTP via AJAX
+            fetch('{{ route('portal.signup.send-otp') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ phone: phone })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show OTP field
+                    document.getElementById('otpGroup').style.display = 'block';
+                    document.getElementById('otpSuccessMsg').style.display = 'block';
+                    document.getElementById('signupOtp').required = true;
+                    
+                    // Update button
+                    sendOtpBtn.textContent = 'Resend';
+                    sendOtpBtn.disabled = false;
+                    otpSent = true;
+                    
+                    // Focus on OTP input
+                    document.getElementById('signupOtp').focus();
+                } else {
+                    alert(data.message || 'Failed to send OTP. Please try again.');
+                    sendOtpBtn.textContent = 'OTP';
+                    sendOtpBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error. Please check your connection and try again.');
+                sendOtpBtn.textContent = 'OTP';
+                sendOtpBtn.disabled = false;
+            });
+        }
+
+        // Validate form before submission
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            if (!otpSent) {
+                e.preventDefault();
+                alert('Please send and verify OTP first');
+                return false;
+            }
+            
+            const otp = document.getElementById('signupOtp').value;
+            if (!otp || otp.length !== 6) {
+                e.preventDefault();
+                alert('Please enter the 6-digit verification code');
+                return false;
+            }
+        });
+    </script>
+    @endpush
 @endsection

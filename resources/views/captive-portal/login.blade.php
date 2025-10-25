@@ -8,17 +8,14 @@
     .back-btn { margin-bottom: 20px; min-width: fit-content; width: auto; }
     .info-box { background: #e8f5e8; border: 1px solid #c3e6c3; border-radius: 5px; padding: 12px; margin-bottom: 20px; color: #2d5a2d; font-size: .85em; line-height: 1.4; }
     .info-box strong { color: #1a4a1a; margin-bottom: 8px; display: block; }
-    .login-options { text-align: center; margin-bottom: 20px; }
-    .login-options a { color: #0e770e; text-decoration: none; font-size: .9em; transition: color .3s ease; }
-    .login-options a:hover { color: #ff8800; text-decoration: underline; }
     @media (max-width: 480px) { .form-widget { min-width: 300px; max-width: 300px; } }
 @endpush
 
 @section('content')
     <div class="form-widget">
         <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}'">← Back to Packages</button>
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div class="text-lg font-medium text-gray-900" style="margin-bottom: 8px;">Login to Internet</div>
+        <div style="margin-bottom: 20px;">
+            <div class="text-lg font-bold text-green-900" style="margin-bottom: 8px;">Login to the Internet</div>
             <div class="text-sm text-gray-600">Use your voucher code or registered phone number</div>
         </div>
 
@@ -54,27 +51,23 @@
         <form action="{{ route('portal.authenticate') }}" method="POST" id="loginForm">
             @csrf
             <div class="form-group">
-                <x-input-label for="username" :value="__('Voucher Code or Phone Number')" />
-                <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" required placeholder="Enter voucher code or phone number" />
-                <div class="text-sm text-gray-600" style="margin-top: 5px;">Enter your voucher code or the phone number registered in your profile</div>
+                <x-input-label for="username" :value="__('Voucher / Phone Number')" />
+                <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" required placeholder="Enter voucher or phone number" />
             </div>
             <div class="form-group" id="passwordGroup" style="display: none;">
                 <x-input-label for="password" :value="__('Password')" />
                 <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" placeholder="Enter your password" />
-                <div class="text-sm text-gray-600" style="margin-top: 5px;">Password is required when using phone number</div>
             </div>
             <div class="info-box">
-                <strong>🎫 Login Instructions:</strong>
-                • For voucher codes: Enter the code directly<br>
-                • For phone numbers: Enter your registered number and password<br>
-                • Make sure you have an active package or valid voucher
+                <strong>🎫 In Order to Login</strong>
+                Make sure you have an active package or valid voucher to Login
             </div>
-            <button type="submit" class="btn btn-green" id="loginSubmitBtn">🌐 Connect to Internet</button>
+            <button type="submit" class="btn btn-green block" id="loginSubmitBtn">🌐 Connect to Internet</button>
         </form>
 
-        <div class="login-options">
-            <p class="text-sm text-gray-600">Don't have a voucher? <a href="{{ route('portal.index') }}">Purchase a package</a></p>
-            <p class="text-sm text-red-600"><a href="{{ route('portal.forgot-password') }}">Forgot password?</a></p>
+        <div class="login-options mt-3 text-left">
+            <p class="text-gray-600">No voucher? <a href="{{ route('portal.index') }}" class="text-green-700">Purchase Package</a></p>
+            <p class="text-red-600 mt-1"><a href="{{ route('portal.forgot-password') }}">Forgot password?</a></p>
         </div>
     </div>
 @endsection

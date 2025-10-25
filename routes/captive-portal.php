@@ -41,6 +41,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
     
     // Signup for free 500MB package
     Route::get('/signup', [CaptivePortalController::class, 'showSignup'])->name('signup');
+    Route::post('/signup/send-otp', [CaptivePortalController::class, 'sendSignupOtp'])->name('signup.send-otp');
     Route::post('/signup', [CaptivePortalController::class, 'processSignup'])->name('process-signup');
     
     // Session status and management

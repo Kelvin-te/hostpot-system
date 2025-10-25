@@ -26,11 +26,20 @@ class Package extends Model
         'shared_users',
         'rate_limit',
         'validity_days',
-        'validity_hours'
+        'validity_hours',
+        'is_active'
     ];
 
     public function router() {
         return $this->belongsTo(Router::class);
+    }
+
+    public function sessions() {
+        return $this->hasMany(HotspotSession::class);
+    }
+
+    public function transactions() {
+        return $this->hasMany(PaymentTransaction::class);
     }
 
     /**

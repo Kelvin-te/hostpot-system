@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,7 +41,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = $this->getCredentials();
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -50,6 +52,42 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Get credentials for authentication (email or phone)
+     */
+    protected function getCredentials(): array
+    {
+        $login = $this->input('email');
+        
+        // Check if input looks like a phone number (starts with + or digits only)
+        $isPhone = preg_match('/^[0-9+\s\-()]+$/', $login);
+        
+        if ($isPhone) {
+            // Normalize phone number for Kenyan format
+            $phone = preg_replace('/[^\d+]/', '', $login);
+            
+            // Convert to Kenyan format if needed
+            if (str_starts_with($phone, '0')) {
+                $phone = '254' . substr($phone, 1);
+            } elseif (str_starts_with($phone, '254')) {
+                // Already in correct format
+            } elseif (str_starts_with($phone, '+254')) {
+                $phone = substr($phone, 1);
+            }
+            
+            return [
+                'phone' => $phone,
+                'password' => $this->input('password')
+            ];
+        }
+        
+        // Otherwise treat as email
+        return [
+            'email' => $login,
+            'password' => $this->input('password')
+        ];
     }
 
     /**

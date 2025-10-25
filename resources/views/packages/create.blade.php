@@ -1,25 +1,30 @@
 <x-app-layout>
-    <div class="py-6">
-        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-4 sm:p-8">
-                    @if(session('error'))
-                        <div class="alert alert-danger text-red-600">
-                            {{ session('error') }}
-                        </div>
-                    @endif
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Create Package') }}
+        </h2>
+    </x-slot>
 
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight border-b-2 border-slate-100 pb-4">
-                        {{ __('Create Package') }}
-                    </h2>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            
+            @if(session('error'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                    ✗ {{ session('error') }}
+                </div>
+            @endif
+
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">New Internet Package</h3>
+                        <p class="text-sm text-gray-600 mt-1">Configure your new hotspot data package</p>
+                    </div>
+                </div>
+                <div class="p-6">
 
                     <form method="post" action="{{ route('packages.store') }}" class="space-y-6">
                         @csrf
-
-                        <div>
-                            <h2 class="text-lg font-medium text-gray-900">{{ __('Package') }}</h2>
-                            <p class="mt-1 text-sm text-gray-600">{{ __("Add package name and price") }}</p>
-                        </div>
 
                         <div class="grid grid-cols-2 gap-4">
 
@@ -51,8 +56,8 @@
                                 </div>
 
                                 <!-- Bandwidth Settings -->
-                                <div class="bg-gray-50 pt-4 rounded-lg">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-3">Bandwidth Settings</h3>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3">📡 Bandwidth Settings</h3>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <x-input-label for="bandwidth_upload" :value="__('Upload Speed (Mbps)')" class="mt-2"></x-input-label>
@@ -72,7 +77,7 @@
 
                                 <!-- Advanced Settings -->
                                 <div class="bg-green-50 p-4 rounded-lg">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-3">Advanced Settings</h3>
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3">⚙️ Advanced Settings</h3>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <x-input-label for="shared_users" :value="__('Shared Users')" class="mt-2"></x-input-label>
@@ -90,8 +95,8 @@
                         </div>
                                 
                         <!-- Time Limits -->
-                        <div class="bg-blue-50 p-4 my-5 rounded-lg">
-                            <h3 class="text-lg font-medium text-gray-900 mb-3">Time Limits</h3>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h3 class="text-md font-semibold text-gray-900 mb-3">⏰ Time Limits</h3>
                             <div class="grid grid-cols-4 md:grid-cols-3 gap-4">
                                 <div>
                                     <x-input-label for="session_timeout" :value="__('Session Timeout (hours)')" class="mt-2"></x-input-label>
@@ -112,13 +117,16 @@
                         </div>
 
 
-                        <div class="flex items-center gap-4 mt-6">
-                            <x-primary-button>{{ __('Create Hotspot Package') }}</x-primary-button>
-                            <a href="{{ route('packages.index') }}" class="text-gray-600 hover:text-gray-800">{{ __('Cancel') }}</a>
+                        <div class="flex items-center justify-between gap-4 pt-6 border-t border-gray-200">
+                            <a href="{{ route('packages.index') }}" class="text-gray-600 hover:text-gray-800">
+                                ← Back to Packages
+                            </a>
+                            <x-primary-button>{{ __('✓ Create Package') }}</x-primary-button>
                         </div>
                     </form>
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>

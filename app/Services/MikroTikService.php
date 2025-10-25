@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Router;
 use App\Models\HotspotSession;
-use App\Classes\Mikrotik;
 use Illuminate\Support\Facades\Log;
 use RouterOS\Client;
 use RouterOS\Query;
@@ -12,12 +11,6 @@ use Exception;
 
 class MikroTikService
 {
-    protected Mikrotik $mikrotik;
-
-    public function __construct()
-    {
-        $this->mikrotik = new Mikrotik();
-    }
 
     /**
      * Create hotspot user and session on MikroTik router
@@ -45,7 +38,7 @@ class MikroTikService
             $username = $session->username ?: $session->session_id;
             $password = $this->generatePassword();
             
-            $this->createHotspotUser($client, $username, $password, $profileName, $session);
+            $this->createUser($client, $username, $password, $profileName, $session);
             
             // Update session with credentials
             $session->update([
@@ -92,11 +85,11 @@ class MikroTikService
                 return false;
             }
 
-            // Remove active hotspot sessions
-            $this->removeActiveHotspotSessions($client, $session);
+            // Remove active sessions
+            $this->removeActiveSessions($client, $session);
             
-            // Remove hotspot user
-            $this->removeHotspotUser($client, $session);
+            // Remove user
+            $this->removeUser($client, $session);
             
             Log::info('User disconnected from MikroTik', [
                 'session_id' => $session->session_id,
@@ -117,16 +110,19 @@ class MikroTikService
 
     /**
      * Connect to MikroTik router
+     * Returns null on failure for safe error handling
      */
-    protected function connectToRouter(Router $router): ?Client
+    public function connectToRouter(Router $router): ?Client
     {
         try {
             $client = new Client([
-                'host' => $router->ip_address,
+                'host' => $router->ip_address ?? $router->ip,
                 'user' => $router->username,
-                'pass' => $router->password,
+                'pass' => $router->password ?? '',
                 'port' => $router->api_port ?? 8728,
                 'timeout' => 10,
+                'attempts' => 3,
+                'delay' => 1,
             ]);
             
             // Test connection with a simple query
@@ -135,7 +131,7 @@ class MikroTikService
             
             Log::info('Connected to MikroTik router', [
                 'router_id' => $router->id,
-                'ip' => $router->ip_address
+                'ip' => $router->ip_address ?? $router->ip
             ]);
             
             return $client;
@@ -143,13 +139,192 @@ class MikroTikService
         } catch (Exception $e) {
             Log::error('Failed to connect to MikroTik router', [
                 'router_id' => $router->id,
-                'ip' => $router->ip_address,
+                'ip' => $router->ip_address ?? $router->ip,
                 'error' => $e->getMessage()
             ]);
             
             return null;
         }
     }
+
+
+    /**
+     * Test connection to router with detailed diagnostics
+     */
+    public function testConnection(Router $router): array
+    {
+        // Step 1: Test basic network connectivity
+        $pingResult = $this->testPing($router->ip_address ?? $router->ip);
+        
+        // Step 2: Test API port connectivity
+        $portResult = $this->testPort($router->ip_address ?? $router->ip, 8728);
+        
+        // Step 3: Test API authentication
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to connect to router',
+                    'data' => null,
+                    'diagnostics' => [
+                        'ping' => $pingResult,
+                        'port' => $portResult,
+                        'api' => 'Connection failed'
+                    ]
+                ];
+            }
+            
+            // Try to get system resource info to verify connection
+            $query = new Query('/system/resource/print');
+            $response = $client->query($query)->read();
+            
+            return [
+                'success' => true,
+                'message' => 'Connection successful',
+                'data' => $response,
+                'diagnostics' => [
+                    'ping' => $pingResult,
+                    'port' => $portResult,
+                    'api' => 'Connected successfully'
+                ]
+            ];
+        } catch (Exception $exception) {
+            return [
+                'success' => false,
+                'message' => $this->getDetailedErrorMessage($exception),
+                'data' => null,
+                'diagnostics' => [
+                    'ping' => $pingResult,
+                    'port' => $portResult,
+                    'api' => $exception->getMessage()
+                ]
+            ];
+        }
+    }
+
+    /**
+     * Test basic connectivity using socket
+     */
+    private function testPing(string $ip): string
+    {
+        // Use socket connection as a ping alternative
+        $connection = @fsockopen($ip, 80, $errno, $errstr, 3);
+        
+        if ($connection) {
+            fclose($connection);
+            return 'Basic connectivity successful';
+        } else {
+            // Try ICMP ping if available
+            if (function_exists('exec') && !in_array('exec', explode(',', ini_get('disable_functions')))) {
+                $command = "ping -n 1 -w 3000 $ip 2>&1";
+                exec($command, $output, $return_code);
+                $output_string = implode(' ', $output);
+                
+                if ($return_code === 0 && (strpos($output_string, 'TTL=') !== false || strpos($output_string, 'time=') !== false)) {
+                    return 'Ping successful';
+                }
+            }
+            
+            return 'Host unreachable - Check IP address and network connectivity';
+        }
+    }
+
+    /**
+     * Test port connectivity
+     */
+    private function testPort(string $ip, int $port): string
+    {
+        $connection = @fsockopen($ip, $port, $errno, $errstr, 5);
+        
+        if ($connection) {
+            fclose($connection);
+            return "Port $port is open and accepting connections";
+        } else {
+            if ($errno == 111) {
+                return "Port $port is closed - Connection refused";
+            } elseif ($errno == 110) {
+                return "Port $port connection timed out";
+            } else {
+                return "Port $port is not accessible (Error: $errno - $errstr)";
+            }
+        }
+    }
+
+    /**
+     * Get detailed error message based on exception
+     */
+    private function getDetailedErrorMessage(Exception $exception): string
+    {
+        $message = $exception->getMessage();
+        
+        if (strpos($message, 'Connection refused') !== false) {
+            return 'Connection refused - MikroTik API service may be disabled or port 8728 is blocked';
+        } elseif (strpos($message, 'Connection timed out') !== false) {
+            return 'Connection timed out - Router not responding or firewall blocking connection';
+        } elseif (strpos($message, 'No route to host') !== false) {
+            return 'No route to host - Check network connectivity and router IP address';
+        } elseif (strpos($message, 'invalid user name or password') !== false) {
+            return 'Authentication failed - Invalid username or password';
+        } elseif (strpos($message, 'cannot log in') !== false) {
+            return 'Login failed - User may not have API access permissions';
+        } else {
+            return "Connection failed: $message";
+        }
+    }
+
+    /**
+     * Get system information
+     */
+    public function getSystemInfo(Router $router): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return ['success' => false, 'message' => 'Failed to connect to router'];
+            }
+            
+            $query = new Query('/system/resource/print');
+            $response = $client->query($query)->read();
+            
+            if (!empty($response)) {
+                return [
+                    'success' => true,
+                    'data' => $response[0] ?? []
+                ];
+            }
+            
+            return ['success' => false, 'message' => 'No system info received'];
+        } catch (Exception $exception) {
+            return ['success' => false, 'message' => $exception->getMessage()];
+        }
+    }
+
+    /**
+     * Get interface information
+     */
+    public function getInterfaces(Router $router): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return ['success' => false, 'message' => 'Failed to connect to router'];
+            }
+            $query = new Query('/interface/print');
+            $response = $client->query($query)->read();
+            
+            return [
+                'success' => true,
+                'data' => $response
+            ];
+        } catch (Exception $exception) {
+            return ['success' => false, 'message' => $exception->getMessage()];
+        }
+    }
+
 
     /**
      * Create or update user profile for the package
@@ -245,9 +420,9 @@ class MikroTikService
     }
 
     /**
-     * Create hotspot user
+     * Create user on MikroTik
      */
-    protected function createHotspotUser(Client $client, string $username, string $password, string $profileName, HotspotSession $session): void
+    protected function createUser(Client $client, string $username, string $password, string $profileName, HotspotSession $session): void
     {
         $userData = [
             'name' => $username,
@@ -276,9 +451,9 @@ class MikroTikService
     }
 
     /**
-     * Remove active hotspot sessions
+     * Remove active sessions from MikroTik
      */
-    protected function removeActiveHotspotSessions(Client $client, HotspotSession $session): void
+    protected function removeActiveSessions(Client $client, HotspotSession $session): void
     {
         try {
             $query = new Query('/ip/hotspot/active/print');
@@ -307,9 +482,9 @@ class MikroTikService
     }
 
     /**
-     * Remove hotspot user
+     * Remove user from MikroTik
      */
-    protected function removeHotspotUser(Client $client, HotspotSession $session): void
+    protected function removeUser(Client $client, HotspotSession $session): void
     {
         try {
             $username = $session->mikrotik_username ?: $session->username ?: $session->session_id;
@@ -401,30 +576,177 @@ class MikroTikService
         return bin2hex(random_bytes(8)); // 16 character hex password
     }
 
+
     /**
-     * Get active sessions from MikroTik
+     * Get active user details from MikroTik
      */
-    public function getActiveSessions(Router $router): array
+    public function getActiveUserDetails(Router $router, string $username): ?array
     {
         try {
             $client = $this->connectToRouter($router);
             
             if (!$client) {
-                return [];
+                return null;
             }
 
-            $query = new Query('/ip/hotspot/active/print');
+            // Get active session for the user
+            $query = (new Query('/ip/hotspot/active/print'))
+                ->where('user', $username);
+            
             $activeSessions = $client->query($query)->read();
             
-            return $activeSessions;
+            if (empty($activeSessions)) {
+                return null;
+            }
+
+            // Return the first matching session
+            $session = $activeSessions[0];
+            
+            return [
+                'username' => $session['user'] ?? $username,
+                'address' => $session['address'] ?? null,
+                'mac_address' => $session['mac-address'] ?? null,
+                'uptime' => $session['uptime'] ?? '0s',
+                'session_time_left' => $session['session-time-left'] ?? null,
+                'idle_time' => $session['idle-time'] ?? '0s',
+                'bytes_in' => $session['bytes-in'] ?? 0,
+                'bytes_out' => $session['bytes-out'] ?? 0,
+                'packets_in' => $session['packets-in'] ?? 0,
+                'packets_out' => $session['packets-out'] ?? 0,
+                'login_by' => $session['login-by'] ?? null,
+            ];
             
         } catch (Exception $e) {
-            Log::error('Failed to get active sessions from MikroTik', [
+            Log::error('Failed to get active user details from MikroTik', [
+                'router_id' => $router->id,
+                'username' => $username,
+                'error' => $e->getMessage()
+            ]);
+            
+            return null;
+        }
+    }
+
+
+    /**
+     * Sync database sessions with router active sessions
+     * - Creates missing sessions on router
+     * - Marks sessions as expired if they don't exist on router anymore
+     */
+    public function syncSessionsWithRouter(Router $router): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return [
+                    'success' => false,
+                    'message' => 'Cannot connect to router',
+                    'synced' => 0,
+                    'created' => 0,
+                    'expired' => 0,
+                ];
+            }
+
+            // Get all active sessions from router
+            $query = new Query('/ip/hotspot/active/print');
+            $routerSessions = $client->query($query)->read();
+            
+            // Get all hotspot users from router
+            $userQuery = new Query('/ip/hotspot/user/print');
+            $routerUsers = $client->query($userQuery)->read();
+            
+            // Create maps of router sessions and users
+            $routerSessionMap = [];
+            foreach ($routerSessions as $rs) {
+                $user = $rs['user'] ?? null;
+                $mac = strtolower($rs['mac-address'] ?? '');
+                
+                if ($user) {
+                    $routerSessionMap[$user] = true;
+                }
+                if ($mac) {
+                    $routerSessionMap[$mac] = true;
+                }
+            }
+            
+            $routerUserMap = [];
+            foreach ($routerUsers as $ru) {
+                $user = $ru['name'] ?? null;
+                if ($user) {
+                    $routerUserMap[$user] = true;
+                }
+            }
+
+            // Get all active sessions from database for this router
+            $dbSessions = HotspotSession::active()
+                ->whereHas('package', function($q) use ($router) {
+                    $q->where('router_id', $router->id);
+                })
+                ->get();
+
+            $syncedCount = 0;
+            $createdCount = 0;
+            $expiredCount = 0;
+
+            foreach ($dbSessions as $session) {
+                $username = $session->mikrotik_username ?: $session->username ?: $session->session_id;
+                $mac = strtolower($session->mac_address ?: '');
+                
+                // Check if session exists on router (currently active)
+                $existsOnRouter = isset($routerSessionMap[$username]) || 
+                                 ($mac && isset($routerSessionMap[$mac]));
+                
+                // Check if user exists on router (even if not active)
+                $userExistsOnRouter = isset($routerUserMap[$username]);
+                
+                if (!$userExistsOnRouter) {
+                    // User doesn't exist on router at all, create it
+                    try {
+                        $this->createHotspotSession($session);
+                        $createdCount++;
+                        
+                        Log::info('Session created on router during sync', [
+                            'session_id' => $session->session_id,
+                            'username' => $username,
+                        ]);
+                    } catch (Exception $e) {
+                        Log::error('Failed to create session on router during sync', [
+                            'session_id' => $session->session_id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                } elseif ($existsOnRouter) {
+                    // Session is active on router
+                    $syncedCount++;
+                } else {
+                    // User exists but not active - this could be normal (user not logged in yet)
+                    // Don't expire, just count as synced
+                    $syncedCount++;
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => "Synced $syncedCount sessions, created $createdCount missing sessions on router",
+                'synced' => $syncedCount,
+                'created' => $createdCount,
+                'expired' => $expiredCount,
+            ];
+            
+        } catch (Exception $e) {
+            Log::error('Failed to sync sessions with router', [
                 'router_id' => $router->id,
                 'error' => $e->getMessage()
             ]);
             
-            return [];
+            return [
+                'success' => false,
+                'message' => 'Sync failed: ' . $e->getMessage(),
+                'synced' => 0,
+                'created' => 0,
+                'expired' => 0,
+            ];
         }
     }
 }

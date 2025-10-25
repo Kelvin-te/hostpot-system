@@ -24,7 +24,7 @@
                 <div class="w-full sm:max-w-sm mt-6 px-6 py-4 bg-white">
                     <div class="flex justify-center mb-6">
                         <a href="{{ route('dashboard') }}">
-                            <x-application-logo />
+                            <x-application-logo  class="w-full max-w-[190px] h-auto" />
                         </a>
                     </div>
                     {{ $slot }}

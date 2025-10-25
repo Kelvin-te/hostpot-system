@@ -2,7 +2,7 @@
 @section('title', 'Internet Status')
 
 @push('styles')
-    .form-widget { margin-bottom: 30px; min-width: 350px; max-width: 350px; background: #ffffff88; border-radius: 5px; padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    .form-widget { margin-bottom: 30px; min-width: 350px; max-width: 400px; padding: 20px; }
     .status-table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 5px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
     .status-table th { background: #0e770e; color: #fff; letter-spacing: .5px; padding: 10px 12px; text-align: center; font-weight: 500; }
     .status-table td { padding: 8px 12px; border-bottom: 1px solid #e1e8ed; color: #444; }
@@ -15,7 +15,7 @@
     .status-active { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .status-expired { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     .refresh-timer { text-align: center; color: #6c757d; font-size: .8em; margin-top: 10px; }
-    @media (max-width: 480px) { .form-widget { min-width: 300px; max-width: 300px; } }
+    @media (max-width: 480px) { .form-widget { min-width: 350px; max-width: 400px; } }
 @endpush
 
 @section('content')
@@ -68,16 +68,31 @@
                 </tr>
             </tbody>
         </table>
-
+        <div class="flex justify-between">
         @if($sessionStatus['is_active'])
-            <button type="button" class="btn btn-green" onclick="window.open('https://google.com', '_blank')">🌐 Browse Internet</button>
-            <form action="{{ route('portal.disconnect') }}" method="POST" style="margin-top: 10px;">
+             <form action="{{ route('portal.disconnect') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to disconnect?')">🚪 Disconnect</button>
             </form>
+            <button type="button" class="btn btn-green" onclick="window.open('https://google.com', '_blank')">🌐 Browse</button>
         @else
             <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('portal.index') }}'">📦 Select New Package</button>
         @endif
+        </div>
+
+        @auth
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="{{ route('user.dashboard') }}" class="btn bg-indigo-600 text-white">
+                    👤 My Account Portal
+                </a>
+            </div>
+        @else
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="{{ route('login') }}" class="text-indigo-600 text-sm">
+                    Already have an account? <strong>Login to manage your sessions</strong>
+                </a>
+            </div>
+        @endauth
 
         <div class="refresh-timer">Page will refresh in <span id="countdown">30</span> seconds</div>
     </div>

@@ -15,11 +15,14 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentDownload;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RouterController;
+use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShowUser;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\UserDisable;
 use App\Http\Controllers\UserDownload;
 use App\Http\Controllers\UserEnable;
@@ -80,6 +83,31 @@ Route::middleware('auth')->group(function () {
     // Voucher management (admin)
     Route::resource('/vouchers', VoucherController::class)->only(['index','create','store']);
     Route::get('/vouchers/export', [VoucherController::class, 'export'])->name('vouchers.export');
+
+    // Session management (admin)
+    Route::get('/sessions', [SessionController::class, 'index'])->name('sessions.index');
+    Route::get('/sessions/history', [SessionController::class, 'history'])->name('sessions.history');
+    Route::get('/sessions/live-data', [SessionController::class, 'liveData'])->name('sessions.live-data');
+    Route::get('/sessions/export', [SessionController::class, 'export'])->name('sessions.export');
+    Route::post('/sessions/sync', [SessionController::class, 'syncWithRouter'])->name('sessions.sync');
+    Route::get('/sessions/{session}', [SessionController::class, 'show'])->name('sessions.show');
+    Route::post('/sessions/{session}/disconnect', [SessionController::class, 'disconnect'])->name('sessions.disconnect');
+
+    // Reports and Analytics (admin)
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
+    Route::get('/reports/usage', [ReportController::class, 'usage'])->name('reports.usage');
+    Route::get('/reports/packages', [ReportController::class, 'packages'])->name('reports.packages');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+    // User Self-Service Portal
+    Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+    Route::get('/my-sessions', [UserDashboardController::class, 'sessions'])->name('user.sessions');
+    Route::get('/my-purchases', [UserDashboardController::class, 'purchases'])->name('user.purchases');
+    Route::get('/my-recharge', [UserDashboardController::class, 'recharge'])->name('user.recharge');
+    Route::get('/my-settings', [UserDashboardController::class, 'settings'])->name('user.settings');
+    Route::post('/my-settings', [UserDashboardController::class, 'updateSettings'])->name('user.settings.update');
+    Route::get('/my-sessions/live-data', [UserDashboardController::class, 'activeSessionData'])->name('user.sessions.live-data');
 
     Route::group(['middleware' => ['web']], function () {
         // Payment Routes for bKash

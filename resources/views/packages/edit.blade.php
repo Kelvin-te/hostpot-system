@@ -1,29 +1,38 @@
 <x-app-layout>
-    <div class="py-6">
-        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow sm:rounded-lg">
-                <div class="p-4 sm:p-8">
-                    @if(session('error'))
-                        <div class="alert alert-danger text-red-600">
-                            {{ session('error') }}
-                        </div>
-                    @endif
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Edit Package') }}
+        </h2>
+    </x-slot>
 
-                        <h2 class="font-semibold text-xl text-gray-800 leading-tight border-b-2 border-slate-100 pb-4">
-                            {{ __('Edit Package') }}
-                        </h2>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            
+            @if(session('error'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                    ✗ {{ session('error') }}
+                </div>
+            @endif
 
-                    <form method="post" action="{{ route('packages.update', $package->id) }}" class="mt-6 space-y-6">
+            @if(session('success'))
+                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                    ✓ {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Edit Package: {{ $package->name }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">Update package settings and pricing</p>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <form method="post" action="{{ route('packages.update', $package->id) }}" class="space-y-6">
                         @csrf
                         @method('patch')
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Package') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Edit package price") }}</p>
-                            </div>
-
-                            <div class="space-y-4">
+                        <div class="space-y-4">
                                 <!-- Router and Package Info -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
@@ -45,7 +54,7 @@
 
                                 <!-- Bandwidth Settings -->
                                 <div class="bg-gray-50 p-4 rounded-lg">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-3">Bandwidth Settings</h3>
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3">📡 Bandwidth Settings</h3>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <x-input-label for="bandwidth_upload" :value="__('Upload Speed (Mbps)')" class="mt-2"></x-input-label>
@@ -62,7 +71,7 @@
 
                                 <!-- Time Limits -->
                                 <div class="bg-blue-50 p-4 rounded-lg">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-3">Time Limits</h3>
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3">⏰ Time Limits</h3>
                                     <div class="grid grid-cols-3 gap-4">
                                         <div>
                                             <x-input-label for="session_timeout" :value="__('Session Timeout (hours)')" class="mt-2"></x-input-label>
@@ -84,7 +93,7 @@
 
                                 <!-- Advanced Settings -->
                                 <div class="bg-green-50 p-4 rounded-lg">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-3">Advanced Settings</h3>
+                                    <h3 class="text-md font-semibold text-gray-900 mb-3">⚙️ Advanced Settings</h3>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <x-input-label for="shared_users" :value="__('Shared Users')" class="mt-2"></x-input-label>
@@ -99,30 +108,40 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4 mt-6">
-                                    <x-primary-button>{{ __('Update Hotspot Package') }}</x-primary-button>
-                                    <a href="{{ route('packages.index') }}" class="text-gray-600 hover:text-gray-800">{{ __('Cancel') }}</a>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between gap-4 pt-6 border-t border-gray-200">
+                            <a href="{{ route('packages.index') }}" class="text-gray-600 hover:text-gray-800">
+                                ← Back to Packages
+                            </a>
+                            <x-primary-button>{{ __('✓ Update Package') }}</x-primary-button>
                         </div>
                     </form>
-                    <!-- Danger Zone: Delete Package -->
-                    <div class="mt-6 p-4 border border-red-200 bg-red-50 rounded-lg">
-                        <h3 class="text-red-700 font-semibold mb-2">{{ __('Danger Zone') }}</h3>
-                        <p class="text-sm text-red-700 mb-3">
-                            {{ __('Deleting this package will remove it from the database and attempt to remove the corresponding MikroTik profile on router ') }}
-                            <span class="font-semibold">{{ $package->router->name }}</span>.
-                        </p>
-                        <form method="post" action="{{ route('packages.destroy', $package->id) }}" onsubmit="return confirm('{{ __('Are you sure you want to delete this package? This action cannot be undone.') }}');">
+                </div>
+            </div>
+
+            <!-- Danger Zone: Delete Package -->
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg border-2 border-red-200 m-6">
+                <div class="p-6 border-b border-red-200 bg-red-50">
+                    <h3 class="text-lg font-semibold text-red-900">🗑️ Danger Zone</h3>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Delete Package</h4>
+                            <p class="text-sm text-gray-600 mt-1">
+                                Permanently delete this package from database and MikroTik router <strong>{{ $package->router->name }}</strong>. This action cannot be undone.
+                            </p>
+                        </div>
+                        <form method="post" action="{{ route('packages.destroy', $package->id) }}" onsubmit="return confirm('Are you sure you want to delete this package? This action cannot be undone.');">
                             @csrf
                             @method('delete')
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                {{ __('Delete Package') }}
+                            <button type="submit" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                                Delete Package
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>

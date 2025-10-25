@@ -88,10 +88,14 @@
                 <div class="promo-badge promo-badge-bottom">500 MB <span style="color:#ffd82a;">FREE</span></div>
                 <button type="button" class="btn btn-light border mr-1" onclick="window.location.href='{{ route('portal.signup') }}'"> Sign Up</button>
             </div>
-            <button type="button" class="btn bg-orange-600 w-full" onclick="window.location.href='{{ route('portal.login') }}'"> Log In</button>
-        @else
-            <button type="button" class="btn bg-orange-600 w-full" onclick="window.location.href='{{ route('portal.login') }}'"> Log In</button>
         @endif
+        <button type="button" class="btn bg-orange-600 text-white" onclick="window.location.href='{{ route('portal.login') }}'"> Log In</button>
+        
+        @auth
+                <a href="{{ route('user.dashboard') }}" class="btn bg-indigo-600 text-white">
+                    👤 My Account Portal →
+                </a>
+        @endauth
     </div>
 @endsection
 
