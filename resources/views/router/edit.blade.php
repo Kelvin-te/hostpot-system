@@ -17,7 +17,7 @@
                         @csrf
                         @method('patch')
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('Router') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Edit Mikrotik router details") }}</p>
@@ -47,6 +47,12 @@
                                     <x-input-label for="password" :value="__('Router password')" class="mt-4"></x-input-label>
                                     <x-text-input id="password" name="password" type="text" class="mt-1 block w-full" value="{{ $router->password }}" required></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('password')"></x-input-error>
+                                </div>
+                                <div>
+                                    <x-input-label for="api_port" :value="__('API Port')" class="mt-4"></x-input-label>
+                                    <x-text-input id="api_port" name="api_port" type="number" class="mt-1 block w-full" value="{{ $router->api_port ?? 8728 }}" required></x-text-input>
+                                    <p class="mt-1 text-xs text-gray-500">{{ __('Default plain API port is 8728, API-SSL is 8729') }}</p>
+                                    <x-input-error class="mt-2" :messages="$errors->get('api_port')"></x-input-error>
                                 </div>
 
                                 <div class="flex items-center gap-4 mt-4">

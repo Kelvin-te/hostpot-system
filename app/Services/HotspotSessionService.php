@@ -163,9 +163,10 @@ class HotspotSessionService
     {
         $now = now();
 
-        // If package has validity days, use that
-        if ($package->validity_days) {
-            return $now->addDays($package->validity_days);
+        // If package has a validity period (minutes/hours/days), use that
+        $validityMinutes = $package->getValidityMinutes();
+        if ($validityMinutes) {
+            return $now->addMinutes($validityMinutes);
         }
 
         // If package has session timeout (in hours), use that

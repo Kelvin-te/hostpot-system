@@ -112,14 +112,14 @@ class MikroTikService
      * Connect to MikroTik router
      * Returns null on failure for safe error handling
      */
-    public function connectToRouter(Router $router): ?Client
+    public function connectToRouter(Router $router, bool $throw = false): ?Client
     {
         try {
             $client = new Client([
                 'host' => $router->ip_address ?? $router->ip,
                 'user' => $router->username,
                 'pass' => $router->password ?? '',
-                'port' => $router->api_port ?? 8728,
+                'port' => (int) ($router->api_port ?? 8728),
                 'timeout' => 10,
                 'attempts' => 3,
                 'delay' => 1,
@@ -143,6 +143,10 @@ class MikroTikService
                 'error' => $e->getMessage()
             ]);
             
+            if ($throw) {
+                throw $e;
+            }
+            
             return null;
         }
     }
@@ -153,28 +157,18 @@ class MikroTikService
      */
     public function testConnection(Router $router): array
     {
+        $ip = $router->ip_address ?? $router->ip;
+        $apiPort = (int) ($router->api_port ?? 8728);
+
         // Step 1: Test basic network connectivity
-        $pingResult = $this->testPing($router->ip_address ?? $router->ip);
+        $pingResult = $this->testPing($ip, $apiPort);
         
         // Step 2: Test API port connectivity
-        $portResult = $this->testPort($router->ip_address ?? $router->ip, 8728);
+        $portResult = $this->testPort($ip, $apiPort);
         
         // Step 3: Test API authentication
         try {
-            $client = $this->connectToRouter($router);
-            
-            if (!$client) {
-                return [
-                    'success' => false,
-                    'message' => 'Failed to connect to router',
-                    'data' => null,
-                    'diagnostics' => [
-                        'ping' => $pingResult,
-                        'port' => $portResult,
-                        'api' => 'Connection failed'
-                    ]
-                ];
-            }
+            $client = $this->connectToRouter($router, true);
             
             // Try to get system resource info to verify connection
             $query = new Query('/system/resource/print');
@@ -207,10 +201,10 @@ class MikroTikService
     /**
      * Test basic connectivity using socket
      */
-    private function testPing(string $ip): string
+    private function testPing(string $ip, int $port = 80): string
     {
         // Use socket connection as a ping alternative
-        $connection = @fsockopen($ip, 80, $errno, $errstr, 3);
+        $connection = @fsockopen($ip, $port, $errno, $errstr, 3);
         
         if ($connection) {
             fclose($connection);
@@ -259,16 +253,18 @@ class MikroTikService
     {
         $message = $exception->getMessage();
         
-        if (strpos($message, 'Connection refused') !== false) {
-            return 'Connection refused - MikroTik API service may be disabled or port 8728 is blocked';
-        } elseif (strpos($message, 'Connection timed out') !== false) {
+        if (stripos($message, 'Connection refused') !== false) {
+            return 'Connection refused - MikroTik API service may be disabled or the API port is blocked';
+        } elseif (stripos($message, 'Connection timed out') !== false || stripos($message, 'A connection attempt failed') !== false) {
             return 'Connection timed out - Router not responding or firewall blocking connection';
-        } elseif (strpos($message, 'No route to host') !== false) {
+        } elseif (stripos($message, 'No route to host') !== false) {
             return 'No route to host - Check network connectivity and router IP address';
-        } elseif (strpos($message, 'invalid user name or password') !== false) {
-            return 'Authentication failed - Invalid username or password';
-        } elseif (strpos($message, 'cannot log in') !== false) {
-            return 'Login failed - User may not have API access permissions';
+        } elseif (stripos($message, 'invalid user name or password') !== false || stripos($message, 'cannot log in') !== false) {
+            return 'Authentication failed - Invalid username, password, or user lacks API access';
+        } elseif (stripos($message, 'Socket timeout reached') !== false) {
+            return 'Socket read timeout - Router is too slow or the API response was interrupted';
+        } elseif (stripos($message, 'Unable to establish socket session') !== false) {
+            return 'Unable to establish socket session - Check that the MikroTik API service is enabled and reachable';
         } else {
             return "Connection failed: $message";
         }

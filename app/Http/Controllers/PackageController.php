@@ -62,8 +62,11 @@ class PackageController extends Controller
             'idle_timeout' => 'nullable|integer|min:0',
             'shared_users' => 'nullable|integer|min:1',
             'rate_limit' => 'nullable|string|max:50',
-            'validity_days' => 'nullable|integer|min:1'
+            'duration_value' => 'nullable|integer|min:1',
+            'duration_unit' => 'nullable|in:minutes,hours,days',
         ]);
+
+        $validated = array_merge($validated, $this->resolveValidityFromDuration($request));
 
         $router = Router::where("id", $request->router_id)->firstOrFail();
 
@@ -140,8 +143,11 @@ class PackageController extends Controller
             'idle_timeout' => 'nullable|integer|min:0',
             'shared_users' => 'nullable|integer|min:1',
             'rate_limit' => 'nullable|string|max:50',
-            'validity_days' => 'nullable|integer|min:1'
+            'duration_value' => 'nullable|integer|min:1',
+            'duration_unit' => 'nullable|in:minutes,hours,days',
         ]);
+
+        $validated = array_merge($validated, $this->resolveValidityFromDuration($request));
 
         // Update the package in the database
         $package->fill($validated);
@@ -231,6 +237,38 @@ class PackageController extends Controller
         $package->delete();
 
         return redirect()->route('packages.index')->with('success', __('Package deleted successfully'));
+    }
+
+    /**
+     * Resolve a flexible duration_value + duration_unit input into the
+     * validity_minutes/validity_hours/validity_days columns.
+     * Supports anywhere from 1 minute up to 90 days.
+     */
+    protected function resolveValidityFromDuration(Request $request): array
+    {
+        if (!$request->filled('duration_value') || !$request->filled('duration_unit')) {
+            return [];
+        }
+
+        $value = (int) $request->input('duration_value');
+        $unit = $request->input('duration_unit');
+
+        $minutes = match ($unit) {
+            'minutes' => $value,
+            'hours' => $value * 60,
+            'days' => $value * 60 * 24,
+            default => null,
+        };
+
+        if ($minutes === null || $minutes < 1 || $minutes > 90 * 24 * 60) {
+            return [];
+        }
+
+        return [
+            'validity_minutes' => $minutes,
+            'validity_hours' => null,
+            'validity_days' => $unit === 'days' ? $value : null,
+        ];
     }
 
     /**

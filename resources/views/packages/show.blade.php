@@ -11,13 +11,13 @@
             <!-- Package Overview Card -->
             <div class="bg-white overflow-hidden shadow-sm rounded-lg">
                 <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900">{{ $package->name }}</h3>
                             <p class="text-sm text-gray-600 mt-1">Complete package information and settings</p>
                         </div>
                         @if(auth()->user()->isAdmin())
-                            <div class="flex space-x-2">
+                            <div class="flex flex-wrap gap-2">
                                 <a href="{{ route('packages.edit', $package->id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
                                     ✏️ Edit Package
                                 </a>
@@ -95,7 +95,7 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Validity:</span>
-                                    <span class="font-semibold text-gray-900">{{ $package->validity_days ?? 'N/A' }} days</span>
+                                    <span class="font-semibold text-gray-900">{{ $package->getValidityDisplay() }}</span>
                                 </div>
                             </div>
                         </div>

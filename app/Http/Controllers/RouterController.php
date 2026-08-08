@@ -46,6 +46,7 @@ class RouterController extends Controller
             'ip'=> 'required|ip',
             'username'=> 'required',
             'password'=> 'required',
+            'api_port'=> 'nullable|integer|min:1|max:65535',
         ]);
 
         $router = new Router();
@@ -127,12 +128,14 @@ class RouterController extends Controller
             'ip'=> 'required|ip',
             'username'=> 'required',
             'password'=> 'required',
+            'api_port'=> 'nullable|integer|min:1|max:65535',
         ]);
 
         $router->location = $validated['location'] ? $request->location : $router->location;
         $router->ip = $validated['ip'] ? $request->ip : $router->ip;
         $router->username = $validated['username'] ? $request->username : $router->username;
         $router->password = $validated['password'] ? $request->password : $router->password;
+        $router->api_port = $validated['api_port'] ?? $router->api_port;
         $router->save();
 
         return redirect('router')->with('success', __('Router updated successfully'));

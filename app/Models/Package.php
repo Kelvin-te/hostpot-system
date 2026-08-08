@@ -27,6 +27,7 @@ class Package extends Model
         'rate_limit',
         'validity_days',
         'validity_hours',
+        'validity_minutes',
         'is_active'
     ];
 
@@ -43,20 +44,35 @@ class Package extends Model
     }
 
     /**
+     * Get the effective validity period in minutes
+     * Priority: validity_minutes > validity_hours > validity_days
+     */
+    public function getValidityMinutes()
+    {
+        if ($this->validity_minutes) {
+            return $this->validity_minutes;
+        }
+
+        if ($this->validity_hours) {
+            return $this->validity_hours * 60;
+        }
+
+        if ($this->validity_days) {
+            return $this->validity_days * 24 * 60;
+        }
+
+        return null;
+    }
+
+    /**
      * Get the effective validity period in hours
-     * Priority: validity_hours > validity_days
+     * Priority: validity_minutes > validity_hours > validity_days
      */
     public function getValidityHours()
     {
-        if ($this->validity_hours) {
-            return $this->validity_hours;
-        }
-        
-        if ($this->validity_days) {
-            return $this->validity_days * 24;
-        }
-        
-        return null;
+        $minutes = $this->getValidityMinutes();
+
+        return $minutes ? $minutes / 60 : null;
     }
 
     /**
@@ -64,17 +80,22 @@ class Package extends Model
      */
     public function getValidityDisplay()
     {
-        $hours = $this->getValidityHours();
-        
-        if (!$hours) {
+        $minutes = $this->getValidityMinutes();
+
+        if (!$minutes) {
             return 'No expiry';
         }
-        
-        if ($hours < 24) {
+
+        if ($minutes < 60) {
+            return $minutes . ' minute' . ($minutes > 1 ? 's' : '');
+        }
+
+        if ($minutes < 1440) {
+            $hours = $minutes / 60;
             return $hours . ' hour' . ($hours > 1 ? 's' : '');
         }
-        
-        $days = $hours / 24;
+
+        $days = $minutes / 1440;
         return $days . ' day' . ($days > 1 ? 's' : '');
     }
 }
