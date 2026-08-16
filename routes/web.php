@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/router/{router}/test-connection', [RouterController::class, 'testConnection'])->name('router.test-connection');
     Route::get('/router/{router}/system-info', [RouterController::class, 'getSystemInfo'])->name('router.system-info');
     Route::get('/router/{router}/interfaces', [RouterController::class, 'getInterfaces'])->name('router.interfaces');
+    Route::get('/router/status/all', [RouterController::class, 'getAllStatuses'])->name('router.status.all');
 
     Route::get('/payment/create/{param}', [PaymentController::class, 'create'])->name('payment.create');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');

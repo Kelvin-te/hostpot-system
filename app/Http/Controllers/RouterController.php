@@ -219,4 +219,50 @@ class RouterController extends Controller
             ]);
         }
     }
+
+    /**
+     * Get status for all routers (for dashboard async loading)
+     */
+    public function getAllStatuses()
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $routers = Router::all();
+        $mikrotikService = new MikroTikService();
+        $statuses = [];
+
+        foreach ($routers as $router) {
+            try {
+                $result = $mikrotikService->testConnection($router);
+                $statuses[$router->id] = [
+                    'id' => $router->id,
+                    'name' => $router->name,
+                    'ip_address' => $router->ip_address ?? $router->ip,
+                    'online' => $result['success'],
+                    'status' => $result['success'] ? 'online' : 'offline',
+                    'message' => $result['message'],
+                    'diagnostics' => $result['diagnostics'] ?? null,
+                    'data' => $result['data'] ?? null,
+                ];
+            } catch (\Exception $e) {
+                $statuses[$router->id] = [
+                    'id' => $router->id,
+                    'name' => $router->name,
+                    'ip_address' => $router->ip_address ?? $router->ip,
+                    'online' => false,
+                    'status' => 'error',
+                    'message' => 'Connection test failed: ' . $e->getMessage(),
+                    'diagnostics' => null,
+                    'data' => null,
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'routers' => $statuses
+        ]);
+    }
 }

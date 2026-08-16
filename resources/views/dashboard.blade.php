@@ -101,72 +101,21 @@
                     </div>
                     <div class="p-6">
                         @if($routers->count() > 0)
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div id="router-status-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach($routers as $router)
-                                    @php
-                                        try {
-                                            $status = $router->checkStatus();
-                                        } catch (\Exception $e) {
-                                            $status = [
-                                                'online' => false,
-                                                'status' => 'error',
-                                                'message' => 'Unable to check status',
-                                            ];
-                                        }
-                                    @endphp
-                                    <div class="border rounded-lg p-4 {{ $status['online'] ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50' }}">
+                                    <div id="router-{{ $router->id }}" class="border rounded-lg p-4 border-gray-200 bg-gray-50">
                                         <div class="flex justify-between items-start mb-2">
                                             <div>
                                                 <h4 class="font-semibold text-gray-900">{{ $router->name }}</h4>
                                                 <p class="text-xs text-gray-600">{{ $router->ip_address }}</p>
                                             </div>
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $status['online'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $status['online'] ? '🟢 Online' : '🔴 Offline' }}
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                ⏳ Checking...
                                             </span>
                                         </div>
-                                        @if($status['online'])
-                                            <div class="mt-3 space-y-1 text-xs">
-                                                @if(isset($status['data'][0]))
-                                                    @php $sysInfo = $status['data'][0]; @endphp
-                                                    <div class="flex justify-between">
-                                                        <span class="text-gray-600">Version:</span>
-                                                        <span class="font-medium text-gray-900">{{ $sysInfo['version'] ?? 'N/A' }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between">
-                                                        <span class="text-gray-600">Uptime:</span>
-                                                        <span class="font-medium text-gray-900">{{ $sysInfo['uptime'] ?? 'N/A' }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between">
-                                                        <span class="text-gray-600">CPU Load:</span>
-                                                        <span class="font-medium text-gray-900">{{ $sysInfo['cpu-load'] ?? '0' }}%</span>
-                                                    </div>
-                                                @else
-                                                    <div class="text-green-700 font-medium">✓ Connected</div>
-                                                @endif
-                                                @if(isset($status['diagnostics']))
-                                                    <div class="flex justify-between pt-1 border-t border-green-200">
-                                                        <span class="text-gray-600">Ping:</span>
-                                                        <span class="font-medium text-gray-900">{{ $status['diagnostics']['ping'] ?? 'N/A' }}</span>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <div class="mt-2 text-xs text-red-700">
-                                                {{ $status['message'] }}
-                                            </div>
-                                            @if(isset($status['diagnostics']))
-                                                <div class="mt-2 pt-2 border-t border-red-200 text-xs space-y-1">
-                                                    <div class="flex justify-between">
-                                                        <span class="text-gray-600">Ping:</span>
-                                                        <span class="font-medium">{{ $status['diagnostics']['ping'] ?? 'N/A' }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between">
-                                                        <span class="text-gray-600">Port 8728:</span>
-                                                        <span class="font-medium">{{ $status['diagnostics']['port'] ?? 'N/A' }}</span>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endif
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            Loading status...
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -181,6 +130,99 @@
                         @endif
                     </div>
                 </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Load router status asynchronously
+                        fetch('{{ route('router.status.all') }}')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success && data.routers) {
+                                    Object.values(data.routers).forEach(router => {
+                                        const container = document.getElementById('router-' + router.id);
+                                        if (container) {
+                                            const isOnline = router.online;
+                                            container.className = 'border rounded-lg p-4 ' + (isOnline ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50');
+
+                                            let detailsHtml = '';
+                                            if (isOnline) {
+                                                detailsHtml = '<div class="mt-3 space-y-1 text-xs">';
+                                                if (router.data && router.data[0]) {
+                                                    const sysInfo = router.data[0];
+                                                    detailsHtml += `
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">Version:</span>
+                                                            <span class="font-medium text-gray-900">${sysInfo['version'] || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">Uptime:</span>
+                                                            <span class="font-medium text-gray-900">${sysInfo['uptime'] || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">CPU Load:</span>
+                                                            <span class="font-medium text-gray-900">${sysInfo['cpu-load'] || '0'}%</span>
+                                                        </div>
+                                                    `;
+                                                } else {
+                                                    detailsHtml += '<div class="text-green-700 font-medium">✓ Connected</div>';
+                                                }
+                                                if (router.diagnostics) {
+                                                    detailsHtml += `
+                                                        <div class="flex justify-between pt-1 border-t border-green-200">
+                                                            <span class="text-gray-600">Ping:</span>
+                                                            <span class="font-medium text-gray-900">${router.diagnostics.ping || 'N/A'}</span>
+                                                        </div>
+                                                    `;
+                                                }
+                                                detailsHtml += '</div>';
+                                            } else {
+                                                detailsHtml = `
+                                                    <div class="mt-2 text-xs text-red-700">
+                                                        ${router.message}
+                                                    </div>
+                                                `;
+                                                if (router.diagnostics) {
+                                                    detailsHtml += `
+                                                        <div class="mt-2 pt-2 border-t border-red-200 text-xs space-y-1">
+                                                            <div class="flex justify-between">
+                                                                <span class="text-gray-600">Ping:</span>
+                                                                <span class="font-medium">${router.diagnostics.ping || 'N/A'}</span>
+                                                            </div>
+                                                            <div class="flex justify-between">
+                                                                <span class="text-gray-600">Port 8728:</span>
+                                                                <span class="font-medium">${router.diagnostics.port || 'N/A'}</span>
+                                                            </div>
+                                                        </div>
+                                                    `;
+                                                }
+                                            }
+
+                                            container.innerHTML = `
+                                                <div class="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h4 class="font-semibold text-gray-900">${router.name}</h4>
+                                                        <p class="text-xs text-gray-600">${router.ip_address}</p>
+                                                    </div>
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                                        ${isOnline ? '🟢 Online' : '🔴 Offline'}
+                                                    </span>
+                                                </div>
+                                                ${detailsHtml}
+                                            `;
+                                        }
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Failed to load router status:', error);
+                                document.getElementById('router-status-container').innerHTML = `
+                                    <div class="col-span-full text-center py-4 text-red-600">
+                                        Failed to load router status. <a href="{{ route('router.index') }}" class="text-indigo-600 hover:underline">Check routers manually →</a>
+                                    </div>
+                                `;
+                            });
+                    });
+                </script>
 
                 <!-- Quick Actions -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">

@@ -120,9 +120,9 @@ class MikroTikService
                 'user' => $router->username,
                 'pass' => $router->password ?? '',
                 'port' => (int) ($router->api_port ?? 8728),
-                'timeout' => 10,
-                'attempts' => 3,
-                'delay' => 1,
+                'timeout' => 5,
+                'attempts' => 1,
+                'delay' => 0,
             ]);
             
             // Test connection with a simple query
@@ -230,7 +230,7 @@ class MikroTikService
      */
     private function testPort(string $ip, int $port): string
     {
-        $connection = @fsockopen($ip, $port, $errno, $errstr, 5);
+        $connection = @fsockopen($ip, $port, $errno, $errstr, 2);
         
         if ($connection) {
             fclose($connection);
