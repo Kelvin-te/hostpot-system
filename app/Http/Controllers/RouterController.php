@@ -404,7 +404,7 @@ class RouterController extends Controller
                     'sync_status' => $syncStatus,
                     'synced_count' => $syncedCount,
                     'total_packages' => $totalPackages,
-                    'last_synced_at' => $router->last_synced_at?->format('Y-m-d H:i:s') ?? null,
+                    'last_synced_at' => $router->last_synced_at ? ($router->last_synced_at instanceof \Carbon\Carbon ? $router->last_synced_at->format('Y-m-d H:i:s') : \Carbon\Carbon::parse($router->last_synced_at)->format('Y-m-d H:i:s')) : null,
                 ];
             } catch (\Exception $e) {
                 $statuses[$router->id] = [

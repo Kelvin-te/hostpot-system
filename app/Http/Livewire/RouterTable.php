@@ -37,8 +37,9 @@ class RouterTable extends DataTableComponent
                 ->sortable(),
             Column::make("Last Synced", "last_synced_at")
                 ->format(function ($value) {
-                    return $value ? $value->format('M d, H:i') : 'Never';
+                    return $value ? \Carbon\Carbon::parse($value)->format('M d, H:i') : 'Never';
                 }),
+
             Column::make("Actions", "id")
                 ->format(function ($value, $row) {
                     return '<a href="' . route('router.show', $row->id) . '" class="text-blue-600 hover:text-blue-800">View</a>';

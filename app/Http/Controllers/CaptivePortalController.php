@@ -189,6 +189,44 @@ class CaptivePortalController extends Controller
         $package = Package::with('router')->findOrFail($packageId);
         $router = $this->detectRouter($request);
         
+        // Debug: Log package price
+        Log::info('Package purchase attempt', [
+            'package_id' => $package->id,
+            'package_name' => $package->name,
+            'package_price' => $package->price,
+            'price_type' => gettype($package->price),
+            'price_zero_check' => (floatval($package->price) == 0)
+        ]);
+        
+        // If package is free (price = 0), activate immediately without payment
+        if (floatval($package->price) == 0) {
+            try {
+                // Create session for the free package
+                $session = $this->sessionService->createSessionForPackage(
+                    $request, 
+                    $package, 
+                    null, // user (for guest purchases)
+                    'guest-' . time() // username/identifier
+                );
+
+                Log::info('Free package activated without payment', [
+                    'session_id' => $session->session_id,
+                    'package_id' => $package->id,
+                    'device_info' => $this->deviceService->getDeviceInfo($request)
+                ]);
+
+                return redirect()->route('portal.status')->with('success', 'Free package activated successfully! You are now connected to the internet.');
+                
+            } catch (\Exception $e) {
+                Log::error('Failed to activate free package', [
+                    'error' => $e->getMessage(),
+                    'package_id' => $package->id
+                ]);
+                
+                return back()->with('error', 'Failed to activate free package. Please try again.');
+            }
+        }
+        
         // Prefill phone from session or authenticated user if available
         $defaultPhone = session('customer_phone') ?? (auth()->check() ? (auth()->user()->phone ?? null) : null);
 

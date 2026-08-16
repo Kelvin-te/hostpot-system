@@ -113,7 +113,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!row.dataset.package) return;
         row.addEventListener('click', function() {
             const packageId = this.dataset.package;
-            window.location.href = `{{ url('/') }}/portal/package/${packageId}`;
+            const packagePrice = parseFloat(this.dataset.price);
+            
+            // If package is free, activate directly without going to purchase page
+            if (packagePrice === 0) {
+                // Call the purchase endpoint which will handle free packages
+                window.location.href = `{{ url('/') }}/portal/package/${packageId}/purchase`;
+            } else {
+                // Go to package details page for paid packages
+                window.location.href = `{{ url('/') }}/portal/package/${packageId}`;
+            }
         });
     });
     const signupForm = document.getElementById('signupForm');

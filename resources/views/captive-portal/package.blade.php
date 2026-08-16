@@ -61,7 +61,11 @@
             </tbody>
         </table>
         <div class="flex">
-            <a href="{{ route('portal.purchase', $package) }}" class="btn bg-green-800 text-white text-center">💳 Subscribe</a>
+            @if($package->price == 0)
+                <a href="{{ route('portal.purchase', $package) }}" class="btn bg-green-800 text-white text-center">🆓 Activate Free</a>
+            @else
+                <a href="{{ route('portal.purchase', $package) }}" class="btn bg-green-800 text-white text-center">💳 Subscribe</a>
+            @endif
         </div>
     </div>
 @endsection
