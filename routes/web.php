@@ -6,7 +6,7 @@ use App\Http\Controllers\BillingDownload;
 use App\Http\Controllers\CaptivePortalController;
 use App\Http\Controllers\ChangePackageController;
 use App\Http\Controllers\CloseTicket;
-use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisableDueUser;
 use App\Http\Controllers\InvoiceDownload;
@@ -45,20 +45,35 @@ Route::middleware('auth')->group(function () {
     Route::resource('/billing', BillingController::class);
     Route::resource('/payment', PaymentController::class)->only(['index', 'store']);
     Route::resource('/ticket', TicketController::class);
-    Route::resource('/router', RouterController::class);
-    Route::post('/router/{router}/test-connection', [RouterController::class, 'testConnection'])->name('router.test-connection');
-    Route::get('/router/{router}/system-info', [RouterController::class, 'getSystemInfo'])->name('router.system-info');
-    Route::get('/router/{router}/interfaces', [RouterController::class, 'getInterfaces'])->name('router.interfaces');
+    
+    // Router routes - use explicit routes to avoid conflicts
+    Route::get('/router', [RouterController::class, 'index'])->name('router.index');
+    Route::get('/router/create', [RouterController::class, 'create'])->name('router.create');
+    Route::post('/router', [RouterController::class, 'store'])->name('router.store');
+    Route::get('/router/{router}/edit', [RouterController::class, 'edit'])->name('router.edit');
+    Route::put('/router/{router}', [RouterController::class, 'update'])->name('router.update');
+    Route::delete('/router/{router}', [RouterController::class, 'destroy'])->name('router.destroy');
+    
+    // Custom router routes - use specific patterns before show route
+    Route::post('/router/test-connection', [RouterController::class, 'testConnection'])->name('router.test-connection');
+    Route::get('/router/{router}/system-info', [RouterController::class, 'getSystemInfo'])->name('router.system-info')->where('router', '[0-9]+');
+    Route::get('/router/{router}/interfaces', [RouterController::class, 'getInterfaces'])->name('router.interfaces')->where('router', '[0-9]+');
     Route::get('/router/status/all', [RouterController::class, 'getAllStatuses'])->name('router.status.all');
+    Route::post('/router/{router}/sync-packages', [RouterController::class, 'syncPackages'])->name('router.sync-packages')->where('router', '[0-9]+');
+    Route::post('/router/{router}/apply-walled-garden', [RouterController::class, 'applyWalledGarden'])->name('router.apply-walled-garden')->where('router', '[0-9]+');
+    Route::post('/router/{router}/reboot', [RouterController::class, 'reboot'])->name('router.reboot')->where('router', '[0-9]+');
+    Route::post('/router/{router}/backup', [RouterController::class, 'backup'])->name('router.backup')->where('router', '[0-9]+');
+    Route::get('/router/{router}/config', [RouterController::class, 'getConfig'])->name('router.config')->where('router', '[0-9]+');
+    Route::get('/router/{router}/diagnostics', [RouterController::class, 'getDiagnostics'])->name('router.diagnostics')->where('router', '[0-9]+');
+    
+    // Show route must be last to avoid conflicts with specific routes
+    Route::get('/router/{router}', [RouterController::class, 'show'])->name('router.show')->where('router', '[0-9]+');
 
     Route::get('/payment/create/{param}', [PaymentController::class, 'create'])->name('payment.create');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 
-    Route::get('/isp', [CompanyController::class, 'edit'])->name('company.edit');
-    Route::patch('/isp', [CompanyController::class, 'update'])->name('company.update');
-
-    Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
-    // Route::patch('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -114,6 +114,18 @@ class PackageController extends Controller
         $package->fill($validated);
         $package->save();
 
+        // Sync package to router
+        try {
+            $mikrotikService = new \App\Services\MikroTikService();
+            $mikrotikService->syncPackageToRouter($package, $router);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to sync new package to router', [
+                'package_id' => $package->id,
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return redirect('packages')->with('success', __('Hotspot package successfully created'));
     }
 
@@ -152,6 +164,18 @@ class PackageController extends Controller
         // Update the package in the database
         $package->fill($validated);
         $package->save();
+
+        // Sync package changes to router
+        try {
+            $mikrotikService = new \App\Services\MikroTikService();
+            $mikrotikService->syncPackageToRouter($package, $package->router);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to sync package update to router', [
+                'package_id' => $package->id,
+                'router_id' => $package->router_id,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         // Update the hotspot profile on the router
         try {
@@ -234,14 +258,26 @@ class PackageController extends Controller
         }
 
         // Delete package (hotspot_sessions have FK with cascade delete)
+        
+        // Remove from router first
+        try {
+            $mikrotikService = new \App\Services\MikroTikService();
+            $mikrotikService->removePackageFromRouter($package, $package->router);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to remove package from router during deletion', [
+                'package_id' => $package->id,
+                'router_id' => $package->router_id,
+                'error' => $e->getMessage()
+            ]);
+        }
+        
         $package->delete();
 
         return redirect()->route('packages.index')->with('success', __('Package deleted successfully'));
     }
 
     /**
-     * Resolve a flexible duration_value + duration_unit input into the
-     * validity_minutes/validity_hours/validity_days columns.
+     * Resolve a flexible duration_value + duration_unit input into validity_minutes.
      * Supports anywhere from 1 minute up to 90 days.
      */
     protected function resolveValidityFromDuration(Request $request): array
@@ -266,8 +302,6 @@ class PackageController extends Controller
 
         return [
             'validity_minutes' => $minutes,
-            'validity_hours' => null,
-            'validity_days' => $unit === 'days' ? $value : null,
         ];
     }
 
@@ -357,8 +391,7 @@ class PackageController extends Controller
                         $existing->idle_timeout = $pkg->idle_timeout;
                         $existing->shared_users = $pkg->shared_users;
                         $existing->rate_limit = $pkg->rate_limit;
-                        $existing->validity_days = $pkg->validity_days;
-                        $existing->validity_hours = $pkg->validity_hours;
+                        $existing->validity_minutes = $pkg->validity_minutes;
                         $existing->save();
                         $updated++;
                     } else {
@@ -377,8 +410,7 @@ class PackageController extends Controller
                         'idle_timeout' => $pkg->idle_timeout,
                         'shared_users' => $pkg->shared_users,
                         'rate_limit' => $pkg->rate_limit,
-                        'validity_days' => $pkg->validity_days,
-                        'validity_hours' => $pkg->validity_hours,
+                        'validity_minutes' => $pkg->validity_minutes,
                     ]);
                     $created++;
                 }

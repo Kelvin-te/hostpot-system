@@ -20,37 +20,35 @@ class RouterTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id", "id")
-                ->sortable(),
             Column::make("Name", "name")
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make("Location", "location")
-                ->sortable(),
-            Column::make("Ip", "ip")
-                ->sortable(),
-            Column::make("Username", "username")
-                ->sortable(),
-            Column::make("Password", "password")
-                ->sortable(),
-            Column::make("Created at", "created_at")
+                ->sortable()
+                ->searchable(),
+            Column::make("IP Address", "ip")
+                ->sortable()
+                ->searchable(),
+            Column::make("Hotspot", "hotspot_enabled")
                 ->format(function ($value) {
-                    return Carbon::parse($value)->format('Y-m-d');
-                })
+                    return $value ? '✓' : '✗';
+                }),
+            Column::make("Synced", "packages_sync_count")
                 ->sortable(),
-            Column::make("Updated at", "updated_at")
+            Column::make("Last Synced", "last_synced_at")
                 ->format(function ($value) {
-                return Carbon::parse($value)->format("Y-m-d");
+                    return $value ? $value->format('M d, H:i') : 'Never';
+                }),
+            Column::make("Actions", "id")
+                ->format(function ($value, $row) {
+                    return '<a href="' . route('router.show', $row->id) . '" class="text-blue-600 hover:text-blue-800">View</a>';
                 })
-                ->sortable(),
-            LinkColumn::make('View')
-                ->title(fn($row) => 'View')
-                ->location(fn($row) => route('router.show', $row)),
-            LinkColumn::make('Action')
-                ->title(fn($row) => 'Edit')
-                ->location(fn($row) => route('router.edit', $row)),
-            LinkColumn::make('View log')
-                ->title(fn($row) => 'Logs')
-                ->location(fn($row) => route('log', ['param' => $row])),
+                ->html(),
         ];
+    }
+
+    public function rowClicked($routerId)
+    {
+        return redirect()->route('router.show', $routerId);
     }
 }

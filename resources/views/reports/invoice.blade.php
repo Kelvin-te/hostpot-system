@@ -63,10 +63,10 @@
 <div class="details-row">
     <div class="details-column">
         <h5>{{ __('ISP Details:') }}</h5>
-        <p>{{ $company->name }}</p>
-        <p>{{ __('Address: ') . $company->address }}</p>
-        <p>{{ __('Phone: ') . $company->phone }}</p>
-        <p>{{ __('Email: ') . $company->email }}</p>
+        <p>{{ $company->company_name }}</p>
+        <p>{{ __('Address: ') . $company->company_address }}</p>
+        <p>{{ __('Phone: ') . $company->company_phone }}</p>
+        <p>{{ __('Email: ') . $company->company_email }}</p>
     </div>
 
     <div class="details-column">

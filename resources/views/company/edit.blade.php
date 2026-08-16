@@ -19,7 +19,7 @@
                             {{ __('Company Information') }}
                         </h2>
 
-                    <form method="post" action="{{ route('company.update', $company ? $company->id : null) }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('settings.update') }}" class="mt-6 space-y-6">
                         @csrf
                         @method('patch')
 
@@ -31,27 +31,27 @@
 
                             <div>
                                 <div>
-                                    <x-input-label for="name" value="{{ __('ISP name') }}" class="mt-4"></x-input-label>
-                                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" value="{{ old('name', $company ? $company->name : '') }}" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('name')"></x-input-error>
+                                    <x-input-label for="company_name" value="{{ __('ISP name') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="company_name" name="company_name" type="text" class="mt-1 block w-full" value="{{ old('company_name', $settings->company_name ?? '') }}" required></x-text-input>
+                                    <x-input-error class="mt-2" :messages="$errors->get('company_name')"></x-input-error>
                                 </div>
 
                                 <div>
-                                    <x-input-label for="address" value="{{ __('Address') }}" class="mt-4"></x-input-label>
-                                    <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" value="{{ old('address', $company ? $company->address : '') }}" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('address')"></x-input-error>
+                                    <x-input-label for="company_address" value="{{ __('Address') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="company_address" name="company_address" type="text" class="mt-1 block w-full" value="{{ old('company_address', $settings->company_address ?? '') }}" required></x-text-input>
+                                    <x-input-error class="mt-2" :messages="$errors->get('company_address')"></x-input-error>
                                 </div>
 
                                 <div>
-                                    <x-input-label for="email" value="{{ __('Email address') }}" class="mt-4"></x-input-label>
-                                    <x-text-input id="email" name="email" type="text" class="mt-1 block w-full" value="{{ old('email', $company ? $company->email : '') }}" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('email')"></x-input-error>
+                                    <x-input-label for="company_email" value="{{ __('Email address') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="company_email" name="company_email" type="text" class="mt-1 block w-full" value="{{ old('company_email', $settings->company_email ?? '') }}" required></x-text-input>
+                                    <x-input-error class="mt-2" :messages="$errors->get('company_email')"></x-input-error>
                                 </div>
 
                                 <div>
-                                    <x-input-label for="phone" value="{{ __('Phone number') }}" class="mt-4"></x-input-label>
-                                    <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" value="{{ old('phone', $company ? $company->phone : '') }}" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('phone')"></x-input-error>
+                                    <x-input-label for="company_phone" value="{{ __('Phone number') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="company_phone" name="company_phone" type="text" class="mt-1 block w-full" value="{{ old('company_phone', $settings->company_phone ?? '') }}" required></x-text-input>
+                                    <x-input-error class="mt-2" :messages="$errors->get('company_phone')"></x-input-error>
                                 </div>
 
                                 <div class="flex items-center gap-4 mt-4">

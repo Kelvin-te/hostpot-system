@@ -49,11 +49,73 @@ class RouterController extends Controller
             'api_port'=> 'nullable|integer|min:1|max:65535',
         ]);
 
+        // Validate router connection before saving
+        $validationResult = $this->validateRouterConnection($request);
+        if (!$validationResult['success']) {
+            return back()->with('error', $validationResult['message'])->withInput();
+        }
+
         $router = new Router();
         $router->fill($validated);
         $router->save();
 
+        // Update router with hotspot status
+        $mikrotikService = new MikroTikService();
+        $hotspotResult = $mikrotikService->testHotspotService($router);
+        if ($hotspotResult['success']) {
+            $router->hotspot_enabled = $hotspotResult['enabled'];
+            $router->hotspot_interface = $hotspotResult['interface'];
+            $router->hotspot_server_ip = $hotspotResult['server_ip'];
+            $router->save();
+        }
+
         return redirect('router')->with('success', __('Router successfully added'));
+    }
+
+    /**
+     * Validate router connection before saving
+     */
+    private function validateRouterConnection(Request $request): array
+    {
+        try {
+            $mikrotikService = new MikroTikService();
+            
+            // Create temporary router object for testing
+            $tempRouter = new Router();
+            $tempRouter->ip = $request->ip;
+            $tempRouter->username = $request->username;
+            $tempRouter->password = $request->password;
+            $tempRouter->api_port = $request->api_port ?? 8728;
+
+            // Test connection
+            $connectionResult = $mikrotikService->testConnection($tempRouter);
+            if (!$connectionResult['success']) {
+                return [
+                    'success' => false,
+                    'message' => 'Cannot connect to router: ' . $connectionResult['message']
+                ];
+            }
+
+            // Test hotspot service
+            $hotspotResult = $mikrotikService->testHotspotService($tempRouter);
+            if (!$hotspotResult['enabled']) {
+                return [
+                    'success' => false,
+                    'message' => 'Hotspot service is not enabled on this router'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Router validation successful'
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Validation failed: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -221,6 +283,87 @@ class RouterController extends Controller
     }
 
     /**
+     * Reboot the router
+     */
+    public function reboot(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $mikrotikService = new MikroTikService();
+            $result = $mikrotikService->rebootRouter($router);
+            
+            if ($result['success']) {
+                return response()->json(['success' => true, 'message' => 'Router reboot initiated successfully']);
+            } else {
+                return response()->json(['success' => false, 'message' => $result['message'] ?? 'Failed to reboot router']);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Router reboot failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Reboot failed: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Backup the router configuration
+     */
+    public function backup(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $mikrotikService = new MikroTikService();
+            $result = $mikrotikService->backupRouter($router);
+            
+            if ($result['success']) {
+                return response()->json(['success' => true, 'message' => 'Router backup created successfully', 'backup_file' => $result['backup_file'] ?? null]);
+            } else {
+                return response()->json(['success' => false, 'message' => $result['message'] ?? 'Failed to backup router']);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Router backup failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Backup failed: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get router configuration
+     */
+    public function getConfig(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $mikrotikService = new MikroTikService();
+            $result = $mikrotikService->getRouterConfig($router);
+            
+            if ($result['success']) {
+                return response()->json(['success' => true, 'config' => $result['config'] ?? null]);
+            } else {
+                return response()->json(['success' => false, 'message' => $result['message'] ?? 'Failed to get router config']);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Get router config failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Failed to get config: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
      * Get status for all routers (for dashboard async loading)
      */
     public function getAllStatuses()
@@ -236,6 +379,19 @@ class RouterController extends Controller
         foreach ($routers as $router) {
             try {
                 $result = $mikrotikService->testConnection($router);
+                
+                // Calculate sync status
+                $totalPackages = \App\Models\Package::where('router_id', $router->id)->count();
+                $syncedCount = $router->packages_sync_count ?? 0;
+                $unsyncCount = $router->packages_unsync_count ?? 0;
+                
+                $syncStatus = 'unsynced';
+                if ($totalPackages > 0 && $syncedCount === $totalPackages) {
+                    $syncStatus = 'synced';
+                } elseif ($syncedCount > 0) {
+                    $syncStatus = 'partial';
+                }
+                
                 $statuses[$router->id] = [
                     'id' => $router->id,
                     'name' => $router->name,
@@ -245,6 +401,10 @@ class RouterController extends Controller
                     'message' => $result['message'],
                     'diagnostics' => $result['diagnostics'] ?? null,
                     'data' => $result['data'] ?? null,
+                    'sync_status' => $syncStatus,
+                    'synced_count' => $syncedCount,
+                    'total_packages' => $totalPackages,
+                    'last_synced_at' => $router->last_synced_at?->format('Y-m-d H:i:s') ?? null,
                 ];
             } catch (\Exception $e) {
                 $statuses[$router->id] = [
@@ -256,6 +416,10 @@ class RouterController extends Controller
                     'message' => 'Connection test failed: ' . $e->getMessage(),
                     'diagnostics' => null,
                     'data' => null,
+                    'sync_status' => 'unsynced',
+                    'synced_count' => 0,
+                    'total_packages' => \App\Models\Package::where('router_id', $router->id)->count(),
+                    'last_synced_at' => null,
                 ];
             }
         }
@@ -264,5 +428,132 @@ class RouterController extends Controller
             'success' => true,
             'routers' => $statuses
         ]);
+    }
+
+    /**
+     * Sync all packages to router
+     */
+    public function syncPackages(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $mikrotikService = new MikroTikService();
+            $packages = \App\Models\Package::where('router_id', $router->id)->get();
+            
+            $synced = 0;
+            $failed = 0;
+            
+            foreach ($packages as $package) {
+                if ($mikrotikService->syncPackageToRouter($package, $router)) {
+                    $synced++;
+                } else {
+                    $failed++;
+                }
+            }
+            
+            // Update router sync tracking
+            $router->last_synced_at = now();
+            $router->packages_sync_count = $synced;
+            $router->packages_unsync_count = $failed;
+            $router->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Synced $synced packages, $failed failed",
+                'synced' => $synced,
+                'failed' => $failed,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync failed: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Apply walled garden settings to router
+     */
+    public function applyWalledGarden(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $mikrotikService = new MikroTikService();
+            
+            // Get walled garden settings from app settings
+            $settings = \App\Models\Setting::first();
+            
+            if (!$settings || !$settings->walled_garden_enabled) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Walled garden is not enabled in settings'
+                ]);
+            }
+            
+            $domains = $settings->walled_garden_domains ?? [];
+            $ips = $settings->walled_garden_ips ?? [];
+            
+            // Add predefined domains
+            $predefinedDomains = [
+                request()->getHost(),
+                'wingufi.net',
+                'wingufi.co.ke',
+                'wingufi.com',
+                '*.sterkedigital.com',
+                '*.vintextechnologies.com',
+            ];
+            
+            $allDomains = array_merge($predefinedDomains, $domains);
+            
+            if ($mikrotikService->applyWalledGarden($router, $allDomains, $ips)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Walled garden applied successfully',
+                    'domains_count' => count($allDomains),
+                    'ips_count' => count($ips),
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to apply walled garden'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error applying walled garden: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get comprehensive router diagnostics
+     */
+    public function getDiagnostics(Router $router)
+    {
+        try {
+            $mikrotikService = new MikroTikService();
+            $diagnostics = $mikrotikService->getRouterDiagnostics($router);
+            
+            return response()->json([
+                'success' => true,
+                'diagnostics' => $diagnostics
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Get diagnostics failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get diagnostics: ' . $e->getMessage()
+            ]);
+        }
     }
 }

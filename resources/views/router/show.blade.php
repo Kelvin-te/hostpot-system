@@ -24,19 +24,36 @@
                             <p class="text-sm text-gray-600 mt-1">MikroTik Router Details</p>
                         </div>
                         <div class="flex space-x-3">
-                            <a href="{{ route('router.edit', $router) }}" 
+                            <a href="{{ route('router.edit', $router) }}"
                                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                                 Edit
                             </a>
-                            <a href="{{ route('router.index') }}" 
+                            <a href="{{ route('log', ['param' => $router]) }}"
+                               class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Logs
+                            </a>
+                            <form action="{{ route('router.destroy', $router) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this router? This action cannot be undone.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Delete
+                                </button>
+                            </form>
+                            <a href="{{ route('router.index') }}"
                                class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                                 </svg>
-                                Back to List
+                                Back
                             </a>
                         </div>
                     </div>
@@ -58,19 +75,19 @@
                                     </svg>
                                     View Logs
                                 </a>
-                                <button class="inline-flex items-center justify-center px-4 py-2 text-yellow font-medium rounded text-sm transition duration-200">
+                                <button id="reboot-btn" class="inline-flex items-center justify-center px-4 py-2 text-yellow-600 font-medium rounded text-sm transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                     </svg>
                                     Reboot
                                 </button>
-                                <button class="inline-flex items-center justify-center px-4 py-2 text-red-600 font-medium rounded text-sm transition duration-200">
+                                <button id="backup-btn" class="inline-flex items-center justify-center px-4 py-2 text-red-600 font-medium rounded text-sm transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>
                                     Backup
                                 </button>
-                                <button class="inline-flex items-center justify-center px-4 py-2 text-blue-600 font-medium rounded text-sm transition duration-200">
+                                <button id="config-btn" class="inline-flex items-center justify-center px-4 py-2 text-blue-600 font-medium rounded text-sm transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -375,6 +392,108 @@
 
                     </div>
 
+                    <!-- Diagnostic Cards -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                        <!-- Hotspot Status Card -->
+                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-gray-200">
+                                <div class="flex items-center">
+                                    <div class="pe-2 text-orange-600 rounded">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-800 ml-2">Hotspot Status</h3>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <div class="space-y-2 text-sm" id="hotspot-status">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Service:</span>
+                                        <span class="text-gray-900 font-medium" id="hotspot-enabled">Loading...</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Interface:</span>
+                                        <span class="text-gray-900 font-medium" id="hotspot-interface">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Server IP:</span>
+                                        <span class="text-gray-900 font-medium" id="hotspot-server-ip">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Package Sync Card -->
+                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="pe-2 text-teal-600 rounded">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-sm font-semibold text-gray-800 ml-2">Package Sync</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <div class="space-y-2 text-sm" id="package-sync">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Synced:</span>
+                                        <span class="text-gray-900 font-medium" id="synced-count">{{ $router->packages_sync_count ?? 0 }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Unsynced:</span>
+                                        <span class="text-gray-900 font-medium" id="unsynced-count">{{ $router->packages_unsync_count ?? 0 }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Last Synced:</span>
+                                        <span class="text-gray-900 font-medium" id="last-synced">
+                                            {{ $router->last_synced_at ? (is_string($router->last_synced_at) ? \Carbon\Carbon::parse($router->last_synced_at)->format('M d, Y H:i') : $router->last_synced_at->format('M d, Y H:i')) : 'Never' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <button id="sync-packages-btn" class="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
+                                    Sync Packages
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Walled Garden Card -->
+                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-gray-200">
+                                <div class="flex items-center">
+                                    <div class="pe-2 text-pink-600 rounded">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-sm font-semibold text-gray-800 ml-2">Walled Garden</h3>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <div class="space-y-2 text-sm" id="walled-garden">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Status:</span>
+                                        <span class="text-gray-900 font-medium" id="walled-garden-status">Loading...</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Domains:</span>
+                                        <span class="text-gray-900 font-medium" id="walled-garden-domains">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">IPs:</span>
+                                        <span class="text-gray-900 font-medium" id="walled-garden-ips">-</span>
+                                    </div>
+                                </div>
+                                <button id="apply-walled-garden-btn" class="w-full mt-3 bg-pink-600 hover:bg-pink-700 text-white font-medium py-1.5 px-3 py-2 rounded text-sm transition duration-200">
+                                    Apply Walled Garden
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Recent Activity -->
                     <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
                         <div class="px-6 py-4 border-b border-gray-200">
@@ -545,6 +664,314 @@
                     btn.textContent = originalText;
                 });
             });
+            
+            // Sync Packages Button
+            document.getElementById('sync-packages-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Syncing...';
+                btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+                btn.classList.add('bg-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/sync-packages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('synced-count').textContent = data.synced;
+                        document.getElementById('unsynced-count').textContent = data.failed;
+                        document.getElementById('last-synced').textContent = new Date().toLocaleString();
+                        showNotification(data.message, 'success');
+                    } else {
+                        showNotification(data.message || 'Sync failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Sync failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-gray-400');
+                    btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                });
+            });
+            
+            // Apply Walled Garden Button
+            document.getElementById('apply-walled-garden-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Applying...';
+                btn.classList.remove('bg-pink-600', 'hover:bg-pink-700');
+                btn.classList.add('bg-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/apply-walled-garden`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('walled-garden-status').textContent = 'Configured';
+                        document.getElementById('walled-garden-domains').textContent = data.domains_count;
+                        document.getElementById('walled-garden-ips').textContent = data.ips_count;
+                        showNotification(data.message, 'success');
+                    } else {
+                        showNotification(data.message || 'Failed to apply walled garden', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Failed to apply walled garden: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-gray-400');
+                    btn.classList.add('bg-pink-600', 'hover:bg-pink-700');
+                });
+            });
+            
+            // Load Diagnostics on Page Load
+            loadDiagnostics();
+            
+            // Reboot Button
+            document.getElementById('reboot-btn').addEventListener('click', function() {
+                if (!confirm('Are you sure you want to reboot this router? This will disconnect all users.')) {
+                    return;
+                }
+                
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Rebooting...';
+                btn.classList.remove('text-yellow-600');
+                btn.classList.add('text-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/reboot`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Router reboot initiated successfully', 'success');
+                    } else {
+                        showNotification(data.message || 'Reboot failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Reboot failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('text-gray-400');
+                    btn.classList.add('text-yellow-600');
+                });
+            });
+            
+            // Backup Button
+            document.getElementById('backup-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Backing up...';
+                btn.classList.remove('text-red-600');
+                btn.classList.add('text-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/backup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Router backup created successfully', 'success');
+                    } else {
+                        showNotification(data.message || 'Backup failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Backup failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('text-gray-400');
+                    btn.classList.add('text-red-600');
+                });
+            });
+            
+            // Config Button
+            document.getElementById('config-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Loading...';
+                btn.classList.remove('text-blue-600');
+                btn.classList.add('text-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/config`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.config) {
+                        // Display config in a modal or new window
+                        const configWindow = window.open('', '_blank');
+                        configWindow.document.write('<pre>' + data.config + '</pre>');
+                        configWindow.document.close();
+                        showNotification('Router configuration loaded', 'success');
+                    } else {
+                        showNotification(data.message || 'Failed to load config', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Failed to load config: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('text-gray-400');
+                    btn.classList.add('text-blue-600');
+                });
+            });
+            
+            // Sync Packages Button
+            document.getElementById('sync-packages-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Syncing...';
+                btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+                btn.classList.add('bg-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/sync-packages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Packages synced successfully', 'success');
+                        // Update sync counts
+                        document.getElementById('synced-count').textContent = data.synced_count || 0;
+                        document.getElementById('unsynced-count').textContent = data.unsynced_count || 0;
+                        document.getElementById('last-synced').textContent = data.last_synced_at || 'Just now';
+                    } else {
+                        showNotification(data.message || 'Sync failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Sync failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-gray-400');
+                    btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                });
+            });
+            
+            // Apply Walled Garden Button
+            document.getElementById('apply-walled-garden-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Applying...';
+                btn.classList.remove('bg-pink-600', 'hover:bg-pink-700');
+                btn.classList.add('bg-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/apply-walled-garden`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Walled garden applied successfully', 'success');
+                        // Update walled garden status
+                        document.getElementById('walled-garden-status').textContent = 'Configured';
+                        document.getElementById('walled-garden-domains').textContent = data.domains_count || 0;
+                        document.getElementById('walled-garden-ips').textContent = data.ips_count || 0;
+                    } else {
+                        showNotification(data.message || 'Apply failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Apply failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-gray-400');
+                    btn.classList.add('bg-pink-600', 'hover:bg-pink-700');
+                });
+            });
+            
+            function loadDiagnostics() {
+                fetch(`{{ url('/') }}/router/${routerId}/diagnostics`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.diagnostics) {
+                        updateHotspotStatus(data.diagnostics.hotspot);
+                        updateWalledGardenStatus(data.diagnostics.walled_garden);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading diagnostics:', error);
+                });
+            }
+            
+            function updateHotspotStatus(hotspot) {
+                if (hotspot) {
+                    document.getElementById('hotspot-enabled').textContent = hotspot.enabled ? 'Enabled' : 'Disabled';
+                    document.getElementById('hotspot-interface').textContent = hotspot.interface || '-';
+                    document.getElementById('hotspot-server-ip').textContent = hotspot.server_ip || '-';
+                }
+            }
+            
+            function updateWalledGardenStatus(walledGarden) {
+                if (walledGarden) {
+                    document.getElementById('walled-garden-status').textContent = walledGarden.configured ? 'Configured' : 'Not Configured';
+                    document.getElementById('walled-garden-domains').textContent = walledGarden.domains?.length || 0;
+                    document.getElementById('walled-garden-ips').textContent = walledGarden.ips?.length || 0;
+                }
+            }
             
             function updateConnectionStatus(status, message) {
                 const statusElement = document.querySelector('.inline-flex.items-center.px-2.py-0\\.5');

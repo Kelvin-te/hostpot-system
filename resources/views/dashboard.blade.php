@@ -116,6 +116,11 @@
                                         <div class="mt-2 text-xs text-gray-500">
                                             Loading status...
                                         </div>
+                                        <!-- Sync Status Indicator -->
+                                        <div class="mt-2 flex items-center space-x-2 text-xs">
+                                            <span class="text-gray-600">Sync:</span>
+                                            <span id="sync-status-{{ $router->id }}" class="text-gray-500">Loading...</span>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -208,6 +213,14 @@
                                                     </span>
                                                 </div>
                                                 ${detailsHtml}
+                                                <div class="mt-2 flex items-center space-x-2 text-xs">
+                                                    <span class="text-gray-600">Sync:</span>
+                                                    <span class="${router.sync_status === 'synced' ? 'text-green-600' : router.sync_status === 'partial' ? 'text-yellow-600' : 'text-red-600'}">
+                                                        ${router.sync_status === 'synced' ? '✓ Synced' : router.sync_status === 'partial' ? '⚠ Partial' : '✗ Unsynced'}
+                                                    </span>
+                                                    <span class="text-gray-400">|</span>
+                                                    <span class="text-gray-500">${router.synced_count || 0}/${router.total_packages || 0}</span>
+                                                </div>
                                             `;
                                         }
                                     });

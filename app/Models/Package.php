@@ -16,17 +16,15 @@ class Package extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 
-        'price', 
+        'name',
+        'price',
         'router_id',
         'bandwidth_upload',
-        'bandwidth_download', 
+        'bandwidth_download',
         'session_timeout',
         'idle_timeout',
         'shared_users',
         'rate_limit',
-        'validity_days',
-        'validity_hours',
         'validity_minutes',
         'is_active'
     ];
@@ -45,34 +43,18 @@ class Package extends Model
 
     /**
      * Get the effective validity period in minutes
-     * Priority: validity_minutes > validity_hours > validity_days
      */
     public function getValidityMinutes()
     {
-        if ($this->validity_minutes) {
-            return $this->validity_minutes;
-        }
-
-        if ($this->validity_hours) {
-            return $this->validity_hours * 60;
-        }
-
-        if ($this->validity_days) {
-            return $this->validity_days * 24 * 60;
-        }
-
-        return null;
+        return $this->validity_minutes;
     }
 
     /**
      * Get the effective validity period in hours
-     * Priority: validity_minutes > validity_hours > validity_days
      */
     public function getValidityHours()
     {
-        $minutes = $this->getValidityMinutes();
-
-        return $minutes ? $minutes / 60 : null;
+        return $this->validity_minutes ? $this->validity_minutes / 60 : null;
     }
 
     /**
@@ -80,7 +62,7 @@ class Package extends Model
      */
     public function getValidityDisplay()
     {
-        $minutes = $this->getValidityMinutes();
+        $minutes = $this->validity_minutes;
 
         if (!$minutes) {
             return 'No expiry';

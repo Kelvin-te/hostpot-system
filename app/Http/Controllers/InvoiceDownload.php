@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Http\Request;
@@ -14,11 +14,11 @@ class InvoiceDownload extends Controller
     {
         $invoice = Payment::where('invoice', $request->row)->with('billing')->firstOrFail();
 
-        if (Company::doesntExist()) {
+        if (Setting::doesntExist()) {
             return redirect()->back()->with('error','Insert ISP information first');
         }
 
-        $company = Company::firstOrFail();
+        $company = Setting::firstOrFail();
 
         $pdf = PDF::loadview('reports.invoice', compact('invoice', 'company'));
 

@@ -160,13 +160,11 @@ class MikroTikService
         $ip = $router->ip_address ?? $router->ip;
         $apiPort = (int) ($router->api_port ?? 8728);
 
-        // Step 1: Test basic network connectivity
-        $pingResult = $this->testPing($ip, $apiPort);
+        // Test API port connectivity
+        $apiPortStatus = $this->testPort($ip, $apiPort);
+        $apiPortOpen = stripos($apiPortStatus, 'open') !== false;
         
-        // Step 2: Test API port connectivity
-        $portResult = $this->testPort($ip, $apiPort);
-        
-        // Step 3: Test API authentication
+        // Step 2: Test API authentication
         try {
             $client = $this->connectToRouter($router, true);
             
@@ -174,14 +172,15 @@ class MikroTikService
             $query = new Query('/system/resource/print');
             $response = $client->query($query)->read();
             
+            // If API connection succeeds, mark API port as open regardless of port test
+            $apiPortOpen = true;
+            
             return [
                 'success' => true,
                 'message' => 'Connection successful',
                 'data' => $response,
                 'diagnostics' => [
-                    'ping' => $pingResult,
-                    'port' => $portResult,
-                    'api' => 'Connected successfully'
+                    'api_port' => $apiPortOpen,
                 ]
             ];
         } catch (Exception $exception) {
@@ -190,9 +189,7 @@ class MikroTikService
                 'message' => $this->getDetailedErrorMessage($exception),
                 'data' => null,
                 'diagnostics' => [
-                    'ping' => $pingResult,
-                    'port' => $portResult,
-                    'api' => $exception->getMessage()
+                    'api_port' => $apiPortOpen,
                 ]
             ];
         }
@@ -240,6 +237,8 @@ class MikroTikService
                 return "Port $port is closed - Connection refused";
             } elseif ($errno == 110) {
                 return "Port $port connection timed out";
+            } elseif ($errno == 0) {
+                return "Port $port is not accessible - No error but connection failed";
             } else {
                 return "Port $port is not accessible (Error: $errno - $errstr)";
             }
@@ -742,6 +741,486 @@ class MikroTikService
                 'synced' => 0,
                 'created' => 0,
                 'expired' => 0,
+            ];
+        }
+    }
+
+    /**
+     * Test if hotspot service is enabled on router
+     */
+    public function testHotspotService(Router $router): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return [
+                    'success' => false,
+                    'enabled' => false,
+                    'message' => 'Cannot connect to router',
+                    'interface' => null,
+                    'server_ip' => null,
+                ];
+            }
+
+            // Check if hotspot service is running
+            $query = new Query('/ip/hotspot/print');
+            $hotspotInfo = $client->query($query)->read();
+            
+            if (empty($hotspotInfo)) {
+                return [
+                    'success' => true,
+                    'enabled' => false,
+                    'message' => 'Hotspot service is not configured',
+                    'interface' => null,
+                    'server_ip' => null,
+                ];
+            }
+
+            $hotspot = $hotspotInfo[0];
+            
+            // Get hotspot server info
+            $serverQuery = new Query('/ip/hotspot/aaa/print');
+            $aaaInfo = $client->query($serverQuery)->read();
+            
+            $interface = $hotspot['interface'] ?? null;
+            $serverIp = !empty($aaaInfo) ? ($aaaInfo[0]['use-radius'] ?? null) : null;
+
+            return [
+                'success' => true,
+                'enabled' => true,
+                'message' => 'Hotspot service is enabled',
+                'interface' => $interface,
+                'server_ip' => $serverIp,
+            ];
+            
+        } catch (Exception $e) {
+            Log::error('Failed to test hotspot service', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'enabled' => false,
+                'message' => 'Error checking hotspot service: ' . $e->getMessage(),
+                'interface' => null,
+                'server_ip' => null,
+            ];
+        }
+    }
+
+    /**
+     * Check walled garden status on router
+     */
+    public function checkWalledGardenStatus(Router $router): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return [
+                    'success' => false,
+                    'configured' => false,
+                    'domains' => [],
+                    'ips' => [],
+                    'message' => 'Cannot connect to router',
+                ];
+            }
+
+            // Get walled garden entries
+            $query = new Query('/ip/hotspot/walled-garden/print');
+            $entries = $client->query($query)->read();
+            
+            $domains = [];
+            $ips = [];
+            
+            foreach ($entries as $entry) {
+                if (isset($entry['dst-host']) && $entry['dst-host']) {
+                    $domains[] = $entry['dst-host'];
+                }
+                if (isset($entry['dst-address']) && $entry['dst-address']) {
+                    $ips[] = $entry['dst-address'];
+                }
+            }
+
+            return [
+                'success' => true,
+                'configured' => !empty($entries),
+                'domains' => $domains,
+                'ips' => $ips,
+                'message' => count($entries) . ' walled garden entries found',
+            ];
+            
+        } catch (Exception $e) {
+            Log::error('Failed to check walled garden status', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'success' => false,
+                'configured' => false,
+                'domains' => [],
+                'ips' => [],
+                'message' => 'Error checking walled garden: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Sync a single package to router
+     */
+    public function syncPackageToRouter(\App\Models\Package $package, Router $router): bool
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return false;
+            }
+
+            // Check if profile exists
+            $query = new Query('/ip/hotspot/user/profile/print');
+            $query->where('name', $package->name);
+            $profiles = $client->query($query)->read();
+            
+            // Calculate rate limit
+            $rateLimit = null;
+            if ($package->bandwidth_upload && $package->bandwidth_download) {
+                $rateLimit = ($package->bandwidth_upload * 1000000) . "/" . ($package->bandwidth_download * 1000000);
+            } elseif ($package->rate_limit) {
+                $rateLimit = $package->rate_limit;
+            }
+
+            if (!empty($profiles)) {
+                // Update existing profile
+                $profileId = $profiles[0]['.id'] ?? null;
+                if ($profileId) {
+                    $setQuery = new Query('/ip/hotspot/user/profile/set');
+                    $setQuery->equal('.id', $profileId);
+                    if ($rateLimit) { $setQuery->equal('rate-limit', $rateLimit); }
+                    if ($package->session_timeout) { $setQuery->equal('session-timeout', $package->session_timeout * 3600); }
+                    if ($package->idle_timeout) { $setQuery->equal('idle-timeout', $package->idle_timeout * 60); }
+                    if ($package->shared_users) { $setQuery->equal('shared-users', $package->shared_users); }
+                    $client->query($setQuery)->read();
+                }
+            } else {
+                // Create new profile
+                $addQuery = new Query('/ip/hotspot/user/profile/add');
+                $addQuery->equal('name', $package->name);
+                if ($rateLimit) { $addQuery->equal('rate-limit', $rateLimit); }
+                if ($package->session_timeout) { $addQuery->equal('session-timeout', $package->session_timeout * 3600); }
+                if ($package->idle_timeout) { $addQuery->equal('idle-timeout', $package->idle_timeout * 60); }
+                if ($package->shared_users) { $addQuery->equal('shared-users', $package->shared_users); }
+                $client->query($addQuery)->read();
+            }
+            
+            Log::info('Package synced to router', [
+                'package_id' => $package->id,
+                'router_id' => $router->id,
+                'package_name' => $package->name,
+            ]);
+            
+            return true;
+            
+        } catch (Exception $e) {
+            Log::error('Failed to sync package to router', [
+                'package_id' => $package->id,
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return false;
+        }
+    }
+
+    /**
+     * Remove package from router
+     */
+    public function removePackageFromRouter(\App\Models\Package $package, Router $router): bool
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return false;
+            }
+
+            // Check for active users using this profile
+            $query = new Query('/ip/hotspot/active/print');
+            $activeUsers = $client->query($query)->read();
+            
+            $activeCount = 0;
+            foreach ($activeUsers as $user) {
+                if (($user['profile'] ?? '') === $package->name) {
+                    $activeCount++;
+                }
+            }
+
+            if ($activeCount > 0) {
+                Log::warning('Cannot remove profile - active users exist', [
+                    'package_id' => $package->id,
+                    'router_id' => $router->id,
+                    'active_users' => $activeCount,
+                ]);
+                return false;
+            }
+
+            // Find and remove profile
+            $query = new Query('/ip/hotspot/user/profile/print');
+            $query->where('name', $package->name);
+            $profiles = $client->query($query)->read();
+            
+            if (!empty($profiles) && isset($profiles[0]['.id'])) {
+                $removeQuery = new Query('/ip/hotspot/user/profile/remove');
+                $removeQuery->equal('.id', $profiles[0]['.id']);
+                $client->query($removeQuery)->read();
+            }
+            
+            Log::info('Package removed from router', [
+                'package_id' => $package->id,
+                'router_id' => $router->id,
+                'package_name' => $package->name,
+            ]);
+            
+            return true;
+            
+        } catch (Exception $e) {
+            Log::error('Failed to remove package from router', [
+                'package_id' => $package->id,
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return false;
+        }
+    }
+
+    /**
+     * Apply walled garden settings to router
+     */
+    public function applyWalledGarden(Router $router, array $domains, array $ips): bool
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            
+            if (!$client) {
+                return false;
+            }
+
+            // Clear existing walled garden entries
+            $query = new Query('/ip/hotspot/walled-garden/print');
+            $entries = $client->query($query)->read();
+            
+            foreach ($entries as $entry) {
+                if (isset($entry['.id'])) {
+                    $removeQuery = new Query('/ip/hotspot/walled-garden/remove');
+                    $removeQuery->equal('.id', $entry['.id']);
+                    $client->query($removeQuery)->read();
+                }
+            }
+
+            // Add new domain entries
+            foreach ($domains as $domain) {
+                if (empty($domain)) continue;
+                
+                $addQuery = new Query('/ip/hotspot/walled-garden/add');
+                $addQuery->equal('dst-host', $domain);
+                $addQuery->equal('action', 'accept');
+                $client->query($addQuery)->read();
+            }
+
+            // Add new IP entries
+            foreach ($ips as $ip) {
+                if (empty($ip)) continue;
+                
+                $addQuery = new Query('/ip/hotspot/walled-garden/add');
+                $addQuery->equal('dst-address', $ip);
+                $addQuery->equal('action', 'accept');
+                $client->query($addQuery)->read();
+            }
+            
+            Log::info('Walled garden applied to router', [
+                'router_id' => $router->id,
+                'domains_count' => count($domains),
+                'ips_count' => count($ips),
+            ]);
+            
+            return true;
+            
+        } catch (Exception $e) {
+            Log::error('Failed to apply walled garden to router', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return false;
+        }
+    }
+
+    /**
+     * Get comprehensive router diagnostics
+     */
+    public function getRouterDiagnostics(Router $router): array
+    {
+        try {
+            $connection = $this->testConnection($router);
+            $hotspot = $this->testHotspotService($router);
+            $walledGarden = $this->checkWalledGardenStatus($router);
+            
+            // Get package sync status
+            $totalPackages = \App\Models\Package::where('router_id', $router->id)->count();
+            $syncedCount = $router->packages_sync_count ?? 0;
+            $unsyncCount = $router->packages_unsync_count ?? 0;
+            
+            $lastSyncedAt = $router->last_synced_at;
+            if ($lastSyncedAt && is_string($lastSyncedAt)) {
+                $lastSyncedAt = \Carbon\Carbon::parse($lastSyncedAt)->format('Y-m-d H:i:s');
+            } elseif ($lastSyncedAt) {
+                $lastSyncedAt = $lastSyncedAt->format('Y-m-d H:i:s');
+            }
+            
+            return [
+                'connection' => $connection,
+                'hotspot' => $hotspot,
+                'walled_garden' => $walledGarden,
+                'sync' => [
+                    'total' => $totalPackages,
+                    'synced' => $syncedCount,
+                    'unsynced' => $unsyncCount,
+                    'last_synced_at' => $lastSyncedAt,
+                ],
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Get router diagnostics failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return [
+                'connection' => [
+                    'success' => false,
+                    'message' => 'Diagnostics failed: ' . $e->getMessage(),
+                    'diagnostics' => [
+                        'api_port' => false,
+                        'http_port' => false,
+                        'https_port' => false,
+                    ]
+                ],
+                'hotspot' => null,
+                'walled_garden' => null,
+                'sync' => null,
+            ];
+        }
+    }
+
+    /**
+     * Reboot the router
+     */
+    public function rebootRouter(Router $router): array
+    {
+        try {
+            $client = new Client([
+                "host" => $router->ip,
+                "user" => $router->username,
+                "pass" => $router->password,
+            ]);
+
+            $query = (new Query('/system/reboot'));
+            $client->query($query)->read();
+
+            return [
+                'success' => true,
+                'message' => 'Router reboot initiated'
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Router reboot failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'message' => 'Failed to reboot router: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Backup the router configuration
+     */
+    public function backupRouter(Router $router): array
+    {
+        try {
+            $client = new Client([
+                "host" => $router->ip,
+                "user" => $router->username,
+                "pass" => $router->password,
+            ]);
+
+            $query = (new Query('/system/backup/save'));
+            $client->query($query)->read();
+
+            return [
+                'success' => true,
+                'message' => 'Backup created successfully',
+                'backup_file' => 'backup.backup'
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Router backup failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'message' => 'Failed to backup router: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Get router configuration
+     */
+    public function getRouterConfig(Router $router): array
+    {
+        try {
+            $client = new Client([
+                "host" => $router->ip,
+                "user" => $router->username,
+                "pass" => $router->password,
+            ]);
+
+            // Try to get basic system info instead of full export
+            $query = (new Query('/system/resource/print'));
+            $result = $client->query($query)->read();
+
+            $config = "# Router Configuration Export\n";
+            $config .= "# Router: " . $router->name . "\n";
+            $config .= "# IP: " . $router->ip . "\n";
+            $config .= "# Generated: " . now()->format('Y-m-d H:i:s') . "\n\n";
+            
+            if (!empty($result)) {
+                $config .= "# System Resources:\n";
+                foreach ($result[0] as $key => $value) {
+                    if ($key !== '.tag') {
+                        $config .= "# {$key}: {$value}\n";
+                    }
+                }
+            }
+
+            return [
+                'success' => true,
+                'config' => $config
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Get router config failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'message' => 'Failed to get config: ' . $e->getMessage()
             ];
         }
     }

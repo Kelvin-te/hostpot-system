@@ -80,20 +80,6 @@
         @endif
         </div>
 
-        @auth
-            <div style="margin-top: 15px; text-align: center;">
-                <a href="{{ route('user.dashboard') }}" class="btn bg-indigo-600 text-white">
-                    👤 My Account Portal
-                </a>
-            </div>
-        @else
-            <div style="margin-top: 15px; text-align: center;">
-                <a href="{{ route('login') }}" class="text-indigo-600 text-sm">
-                    Already have an account? <strong>Login to manage your sessions</strong>
-                </a>
-            </div>
-        @endauth
-
         <div class="refresh-timer">Page will refresh in <span id="countdown">30</span> seconds</div>
     </div>
 @endsection

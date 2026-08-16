@@ -10,7 +10,21 @@ class Router extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'location', 'ip_address', 'username', 'password', 'api_port', 'ip'];
+    protected $fillable = [
+        'name',
+        'location',
+        'ip_address',
+        'username',
+        'password',
+        'api_port',
+        'ip',
+        'hotspot_enabled',
+        'hotspot_interface',
+        'hotspot_server_ip',
+        'last_synced_at',
+        'packages_sync_count',
+        'packages_unsync_count'
+    ];
 
     protected $appends = ['is_online'];
 
