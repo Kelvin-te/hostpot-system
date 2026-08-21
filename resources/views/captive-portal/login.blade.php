@@ -75,7 +75,8 @@
 @section('after')
     @include('captive-portal.components.contact-section', [
         'message' => 'Need help logging in? Contact support',
-        'fallbackMessage' => 'for assistance with your login'
+        'fallbackMessage' => 'for assistance with your login',
+        'router' => $router ?? null
     ])
 @endsection
 

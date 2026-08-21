@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotspot Status</title>
+    <link rel="stylesheet" href="css/hotspot.css">
+</head>
+<body>
+
+<div class="card">
+    <div class="brand"></div>
+    <h2>Your Status</h2>
+
+    <ul class="status-list">
+        <li><span class="label">IP address</span><span class="value">$(ip)</span></li>
+        <li><span class="label">MAC address</span><span class="value">$(mac)</span></li>
+        <li><span class="label">Connected</span><span class="value">$(uptime)</span></li>
+        <li><span class="label">Download</span><span class="value">$(bytes-out-nice)</span></li>
+        <li><span class="label">Upload</span><span class="value">$(bytes-in-nice)</span></li>
+    </ul>
+
+    <a href="$(link-logout)">Logout</a>
+</div>
+
+</body>
+</html>

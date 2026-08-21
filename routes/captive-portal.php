@@ -44,6 +44,9 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::post('/signup/send-otp', [CaptivePortalController::class, 'sendSignupOtp'])->name('signup.send-otp');
     Route::post('/signup', [CaptivePortalController::class, 'processSignup'])->name('process-signup');
     
+    // MikroTik handoff
+    Route::get('/handoff/{session}', [CaptivePortalController::class, 'handoff'])->name('handoff');
+
     // Session status and management
     Route::get('/status', [CaptivePortalController::class, 'showStatus'])->name('status');
     Route::post('/disconnect', [CaptivePortalController::class, 'disconnect'])->name('disconnect');

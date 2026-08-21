@@ -12,14 +12,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-//         \App\Models\User::factory()->create();
-
-         \App\Models\User::factory()->create([
-             'name' => 'Admin',
-             'email' => 'admin@betternet.com',
-             'role' => 'admin',
-         ]);
-
+        $this->call(StaffSeeder::class);
         $this->call(TimeZoneSeeder::class);
     }
 }

@@ -13,12 +13,12 @@ use Carbon\Carbon;
 class HotspotSessionService
 {
     protected DeviceIdentificationService $deviceService;
-    protected MikroTikService $mikrotikService;
+    protected HotspotAuthorizationService $authorizationService;
 
-    public function __construct(DeviceIdentificationService $deviceService, MikroTikService $mikrotikService)
+    public function __construct(DeviceIdentificationService $deviceService, HotspotAuthorizationService $authorizationService)
     {
         $this->deviceService = $deviceService;
-        $this->mikrotikService = $mikrotikService;
+        $this->authorizationService = $authorizationService;
     }
 
     /**
@@ -42,13 +42,30 @@ class HotspotSessionService
 
     /**
      * Create a new session for a package purchase
+     * NOTE: This now creates authorization first, then session from authorization
      */
-    public function createSessionForPackage(Request $request, Package $package, ?User $user = null, ?string $username = null): HotspotSession
+    public function createSessionForPackage(Request $request, Package $package, ?User $user = null, ?string $username = null, ?int $paymentTransactionId = null): HotspotSession
     {
         $deviceInfo = $this->deviceService->getDeviceInfo($request);
-        
+
+        // Idempotency: if an active session already exists for this device/package, return it
+        if ($existing = $this->getActiveSession($request)) {
+            if ($existing->package_id === $package->id) {
+                return $existing;
+            }
+        }
+
+        // Create authorization first
+        $authorization = $this->authorizationService->createFromPackage(
+            $package,
+            $user,
+            $username,
+            $deviceInfo['mac_address'] ?? null,
+            $paymentTransactionId
+        );
+
         // Calculate expiry time
-        $expiresAt = $this->calculateExpiryTime($package);
+        $expiresAt = $authorization->expires_at ?? $this->calculateExpiryTime($package);
 
         $sessionData = [
             'mac_address' => $deviceInfo['mac_address'],
@@ -56,6 +73,7 @@ class HotspotSessionService
             'user_agent' => $deviceInfo['user_agent'],
             'device_fingerprint' => $deviceInfo['device_fingerprint'],
             'package_id' => $package->id,
+            'authorization_id' => $authorization->id,
             'user_id' => $user?->id,
             'username' => $username,
             'expires_at' => $expiresAt,
@@ -63,8 +81,7 @@ class HotspotSessionService
 
         $session = HotspotSession::createSession($sessionData);
         
-        // Create session on MikroTik router
-        $this->mikrotikService->createHotspotSession($session);
+        // NOTE: Direct MikroTik API call removed - will be handled by WinguFi Core + FreeRADIUS in future
         
         return $session;
     }
@@ -85,6 +102,7 @@ class HotspotSessionService
 
     /**
      * Authenticate with voucher code
+     * NOTE: This now creates authorization first, then session from authorization
      */
     protected function authenticateWithVoucher(Request $request, string $voucherCode): ?HotspotSession
     {
@@ -110,8 +128,25 @@ class HotspotSessionService
         // Get device info
         $deviceInfo = $this->deviceService->getDeviceInfo($request);
 
-        // Create new session for the voucher's package
-        $session = $this->createSessionForPackage($request, $voucher->package, null, $voucherCode);
+        // Create authorization first
+        $authorization = $this->authorizationService->createFromVoucher(
+            $voucher,
+            $deviceInfo['mac_address'] ?? null
+        );
+
+        // Create session from authorization
+        $sessionData = [
+            'mac_address' => $deviceInfo['mac_address'],
+            'ip_address' => $deviceInfo['ip_address'],
+            'user_agent' => $deviceInfo['user_agent'],
+            'device_fingerprint' => $deviceInfo['device_fingerprint'],
+            'package_id' => $voucher->package_id,
+            'authorization_id' => $authorization->id,
+            'username' => $voucherCode,
+            'expires_at' => $authorization->expires_at,
+        ];
+
+        $session = HotspotSession::createSession($sessionData);
 
         // Mark voucher as used
         $voucher->markAsUsed(
@@ -119,6 +154,8 @@ class HotspotSessionService
             $deviceInfo['ip_address'],
             $session->id
         );
+
+        // NOTE: Direct MikroTik API call removed - will be handled by WinguFi Core + FreeRADIUS in future
 
         return $session;
     }
@@ -180,23 +217,18 @@ class HotspotSessionService
 
     /**
      * Terminate a session
+     * NOTE: Direct MikroTik disconnect removed - will be handled by WinguFi Core + FreeRADIUS in future
      */
     public function terminateSession(HotspotSession $session): bool
     {
-        // Disconnect user from MikroTik router first
-        $mikrotikDisconnected = $this->mikrotikService->disconnectUser($session);
-        
         // Update session status in database
         $session->update([
             'status' => 'expired',
             'expires_at' => now(),
         ]);
 
-        if (!$mikrotikDisconnected) {
-            Log::warning('Session terminated in database but MikroTik disconnection failed', [
-                'session_id' => $session->session_id
-            ]);
-        }
+        // NOTE: MikroTik disconnection removed - will be handled by WinguFi Core + FreeRADIUS in future
+        // Future: Send revocation signal to WinguFi Core which will notify FreeRADIUS
 
         return true;
     }

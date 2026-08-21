@@ -1,0 +1,49 @@
+<!--
+    IMPORTANT: The value of the hidden "router" field below MUST match this
+    router's unique identifier as shown in the admin panel
+    (Routers > [this router] > "Hotspot Login Identifier" card, or the
+    disabled "Router identifier" field on the router edit page).
+
+    Each physical MikroTik gets its own copy of this file with only the
+    "router" value changed to that router's identifier. Do not reuse the
+    same identifier across multiple routers.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connecting...</title>
+    <link rel="stylesheet" href="css/hotspot.css">
+</head>
+<body>
+
+<div class="card">
+    <div class="brand"></div>
+    <div class="spinner"></div>
+    <h2>Connecting...</h2>
+    <p>Please wait while we redirect you to the portal.</p>
+
+    <form id="portal" method="get"
+          action="https://hotspot.sterkedigital.com/public" style="display: none;">
+
+    <input type="hidden" name="router" value="0317825ff130">
+
+    <input type="hidden" name="mac" value="$(mac)">
+    <input type="hidden" name="ip" value="$(ip)">
+    <input type="hidden" name="link_login" value="$(link-login)">
+    <input type="hidden" name="link_orig" value="$(link-orig)">
+    <input type="hidden" name="chap_id" value="$(chap-id)">
+    <input type="hidden" name="chap_challenge" value="$(chap-challenge)">
+
+</form>
+
+    <small>$(mac) &middot; $(ip)</small>
+</div>
+
+<script>
+    document.getElementById('portal').submit();
+</script>
+
+</body>
+</html>

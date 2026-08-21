@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\Package;
@@ -10,8 +11,6 @@ use Rappasoft\LaravelLivewireTables\Views\Columns\LinkColumn;
 
 class PackageTable extends DataTableComponent
 {
-    protected $model = Package::class;
-
     public function configure(): void
     {
         $this->setPrimaryKey('id')
@@ -19,6 +18,11 @@ class PackageTable extends DataTableComponent
             ->setTableRowUrl(function($row) {
                 return route('packages.show', $row);
             });
+    }
+
+    public function builder(): Builder
+    {
+        return Package::query()->with('router');
     }
 
     public function columns(): array

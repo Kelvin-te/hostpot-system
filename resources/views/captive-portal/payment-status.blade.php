@@ -58,7 +58,7 @@
         </div>
 
         <div id="successActions" style="display:none;">
-            <a href="{{ route('portal.status') }}" class="btn btn-green">🌐 Go to Internet Status</a>
+            <a href="#" id="continueHandoffBtn" class="btn btn-green">🌐 Continue to Internet</a>
             <a href="{{ route('portal.index') }}" class="btn btn-light">← Back to Packages</a>
         </div>
     </div>
@@ -160,7 +160,10 @@ function handlePaymentSuccess(data) {
     document.getElementById('countdown').style.display = 'none';
     document.getElementById('actionButtons').style.display = 'none';
     document.getElementById('successActions').style.display = 'block';
-    setTimeout(function(){ if (data.redirect_url) window.location.href = data.redirect_url; }, 3000);
+    if (data.redirect_url) {
+        document.getElementById('continueHandoffBtn').href = data.redirect_url;
+        setTimeout(function(){ window.location.href = data.redirect_url; }, 3000);
+    }
 }
 
 function handlePaymentFailure(data) {

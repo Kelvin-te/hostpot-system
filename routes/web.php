@@ -20,6 +20,8 @@ use App\Http\Controllers\RouterController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShowUser;
+use App\Http\Controllers\StaffAuthController;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserDashboardController;
@@ -32,7 +34,7 @@ use Illuminate\Support\Facades\Route;
 // Public landing page -> Captive Portal
 Route::get('/', [CaptivePortalController::class, 'index'])->name('portal.landing');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Admin Dashboard now at /dashboard (keeps name 'dashboard')
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/administration', function () {return view('administration');})->name('administration');
@@ -116,7 +118,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/packages', [ReportController::class, 'packages'])->name('reports.packages');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 
-    // User Self-Service Portal
+}); // end staff admin routes
+
+// User Self-Service Portal
+Route::middleware('auth')->group(function () {
     Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
     Route::get('/my-sessions', [UserDashboardController::class, 'sessions'])->name('user.sessions');
     Route::get('/my-purchases', [UserDashboardController::class, 'purchases'])->name('user.purchases');
@@ -125,23 +130,43 @@ Route::middleware('auth')->group(function () {
     Route::post('/my-settings', [UserDashboardController::class, 'updateSettings'])->name('user.settings.update');
     Route::get('/my-sessions/live-data', [UserDashboardController::class, 'activeSessionData'])->name('user.sessions.live-data');
 
-    Route::group(['middleware' => ['web']], function () {
-        // Payment Routes for bKash
-        Route::get('/bkash/payment', [App\Http\Controllers\BkashTokenizePaymentController::class,'index']);
-        Route::get('/bkash/create-payment/{param}', [App\Http\Controllers\BkashTokenizePaymentController::class,'createPayment'])->name('bkash-create-payment');
-        Route::get('/bkash/callback', [App\Http\Controllers\BkashTokenizePaymentController::class,'callBack'])->name('bkash-callBack');
-    
-        //search payment
-        Route::get('/bkash/search/{trxID}', [App\Http\Controllers\BkashTokenizePaymentController::class,'searchTnx'])->name('bkash-serach');
-    
-        //refund payment routes
-        Route::get('/bkash/refund', [App\Http\Controllers\BkashTokenizePaymentController::class,'refund'])->name('bkash-refund');
-        Route::get('/bkash/refund/status', [App\Http\Controllers\BkashTokenizePaymentController::class,'refundStatus'])->name('bkash-refund-status');
-    
-    });
+    // Payment Routes for bKash
+    Route::get('/bkash/payment', [App\Http\Controllers\BkashTokenizePaymentController::class,'index']);
+    Route::get('/bkash/create-payment/{param}', [App\Http\Controllers\BkashTokenizePaymentController::class,'createPayment'])->name('bkash-create-payment');
+    Route::get('/bkash/callback', [App\Http\Controllers\BkashTokenizePaymentController::class,'callBack'])->name('bkash-callBack');
+    Route::get('/bkash/search/{trxID}', [App\Http\Controllers\BkashTokenizePaymentController::class,'searchTnx'])->name('bkash-serach');
+    Route::get('/bkash/refund', [App\Http\Controllers\BkashTokenizePaymentController::class,'refund'])->name('bkash-refund');
+    Route::get('/bkash/refund/status', [App\Http\Controllers\BkashTokenizePaymentController::class,'refundStatus'])->name('bkash-refund-status');
 });
 
 require __DIR__.'/auth.php';
+
+// Staff authentication and management
+Route::get('/staff/login', [StaffAuthController::class, 'create'])->name('staff.login')->middleware('guest:staff');
+Route::post('/staff/login', [StaffAuthController::class, 'store'])->name('staff.login.store')->middleware('guest:staff');
+
+Route::get('/staff/forgot-password', [\App\Http\Controllers\Staff\ForgotPasswordController::class, 'create'])
+    ->middleware('guest:staff')
+    ->name('staff.password.request');
+Route::post('/staff/forgot-password', [\App\Http\Controllers\Staff\ForgotPasswordController::class, 'store'])
+    ->middleware('guest:staff')
+    ->name('staff.password.email');
+Route::get('/staff/reset-password/{token}', [\App\Http\Controllers\Staff\ResetPasswordController::class, 'create'])
+    ->middleware('guest:staff')
+    ->name('staff.password.reset');
+Route::post('/staff/reset-password', [\App\Http\Controllers\Staff\ResetPasswordController::class, 'store'])
+    ->middleware('guest:staff')
+    ->name('staff.password.update');
+
+Route::middleware('auth:staff')->prefix('staff')->name('staff.')->group(function () {
+    Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
+    Route::get('/', [StaffController::class, 'index'])->name('index');
+    Route::get('/create', [StaffController::class, 'create'])->name('create');
+    Route::post('/', [StaffController::class, 'store'])->name('store');
+    Route::get('/{staff}/edit', [StaffController::class, 'edit'])->name('edit');
+    Route::put('/{staff}', [StaffController::class, 'update'])->name('update');
+    Route::delete('/{staff}', [StaffController::class, 'destroy'])->name('destroy');
+});
 
 // M-Pesa Callback Route (Public - No Authentication Required)
 Route::post('/api/mpesa/callback', [CaptivePortalController::class, 'mpesaCallback'])->name('mpesa.callback');

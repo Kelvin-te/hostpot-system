@@ -24,7 +24,7 @@
             <div style="font-size: 1.2em; font-weight: 500; color: #2c3e50; margin-bottom: 8px;">Internet Status</div>
             <div class="status-indicator {{ $sessionStatus['is_active'] ? 'status-active' : 'status-expired' }}">
                 @if($sessionStatus['is_active'])
-                    🟢 Connected & Active
+                    🟢 Package Active
                 @else
                     🔴 Session Expired
                 @endif
@@ -87,7 +87,8 @@
 @section('after')
     @include('captive-portal.components.contact-section', [
         'message' => 'Need help? Contact support',
-        'fallbackMessage' => 'for assistance with your connection'
+        'fallbackMessage' => 'for assistance with your connection',
+        'router' => $router ?? null
     ])
 @endsection
 

@@ -18,6 +18,8 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    @rappasoftTableStyles
+    @rappasoftTableThirdPartyStyles
 </head>
 <body class="font-sans antialiased">
 <div class="min-h-screen bg-slate-50">
@@ -38,6 +40,8 @@
         </main>
     </div>
 </div>
+@rappasoftTableScripts
+@rappasoftTableThirdPartyScripts
 @livewireScripts
 @stack('scripts')
 </body>

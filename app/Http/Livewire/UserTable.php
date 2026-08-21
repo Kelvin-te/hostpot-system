@@ -27,13 +27,10 @@ class UserTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Name", "name")
-                ->sortable()
-            ->searchable(),
-            Column::make("Email", "email")
+            Column::make("Phone", "phone")
                 ->sortable()
                 ->searchable(),
-            Column::make("Router","detail.router_name")
+            Column::make("Router", "detail.router_name")
                 ->sortable()
                 ->searchable(),
             Column::make("Package", "detail.package_name")
@@ -58,6 +55,6 @@ class UserTable extends DataTableComponent
 
     public function builder(): Builder
     {
-        return User::query()->where('role', 'user')->select();
+        return User::query()->select();
     }
 }

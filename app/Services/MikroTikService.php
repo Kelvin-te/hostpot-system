@@ -9,6 +9,15 @@ use RouterOS\Client;
 use RouterOS\Query;
 use Exception;
 
+/**
+ * MikroTik router service.
+ *
+ * Note: Methods that create, update or remove hotspot users directly on the
+ * router (createHotspotSession, createUser, createUserProfile, etc.) are
+ * legacy and must not be used for new captive-portal customer flows.
+ * The current flow creates local RADIUS credentials and relies on WinguFi Core
+ * / FreeRADIUS to authenticate the customer.
+ */
 class MikroTikService
 {
 

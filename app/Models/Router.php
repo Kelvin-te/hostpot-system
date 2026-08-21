@@ -12,6 +12,7 @@ class Router extends Model
 
     protected $fillable = [
         'name',
+        'identifier',
         'location',
         'ip_address',
         'username',
@@ -21,12 +22,14 @@ class Router extends Model
         'hotspot_enabled',
         'hotspot_interface',
         'hotspot_server_ip',
+        'is_active',
         'last_synced_at',
         'packages_sync_count',
         'packages_unsync_count'
     ];
 
-    protected $appends = ['is_online'];
+    // NOTE: is_online is intentionally NOT appended. Calling checkStatus() performs
+    // a live network request to the router, so it must only be invoked explicitly.
 
     public function packages() {
         return $this->hasMany(Package::class);

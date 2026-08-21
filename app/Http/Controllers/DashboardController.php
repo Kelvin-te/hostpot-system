@@ -21,9 +21,9 @@ class DashboardController extends Controller
         $totalPackages = Package::count();
         $totalBills = Billing::sum('package_price');
         $totalPayments  = Payment::sum('package_price');
-        $totalUsers = User::where('role', 'user')->count();
+        $totalUsers = User::count();
         $openTickets = Ticket::where('status', 'Open')->count();
-        $recentUsers = User::with('detail')->where('role', 'user')->with(['billing', 'detail'])->latest()->take(5)->get();
+        $recentUsers = User::with('detail')->with(['billing', 'detail'])->latest()->take(5)->get();
         $recentPayments = Payment::with('user')->latest()->take(5)->get();
         $recentTickets = Ticket::latest()->take(5)->get();
         $paymentsThisMonth = Payment::whereMonth('created_at', now()->month)->sum('package_price');
@@ -31,11 +31,11 @@ class DashboardController extends Controller
         $paymentsThisYear = Payment::whereYear('created_at', now()->year)->sum('package_price');
         $billsThisYear = Billing::whereYear('created_at', now()->year)->sum('package_price');
 
-        $usersWithDueCount = User::with('detail')->where('role', 'user')->get()
+        $usersWithDueCount = User::with('detail')->get()
             ->filter(function ($user) {
-            return $user->due_amount($user->id) > 0;
-        })->count();
-        $usersWithDueList = User::with('detail')->where('role', 'user')->get()
+                return $user->due_amount($user->id) > 0;
+            })->count();
+        $usersWithDueList = User::with('detail')->get()
             ->filter(function ($user) {
                 return $user->due_amount($user->id) > 0;
             });

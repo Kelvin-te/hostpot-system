@@ -21,8 +21,7 @@ class BillingController extends Controller
             return redirect('/');
         }
 
-        $users = User::where('role', 'user')
-            ->with('detail')
+        $users = User::with('detail')
             ->whereHas('detail', function (Builder $query) {
                 $query->where('status', 'active');
             })->orderBy('name')->get();

@@ -11,13 +11,13 @@ return [
     |
     */
 
-    'consumer_key' => env('MPESA_CONSUMER_KEY', 'vbiS87DmgC60wt0hqF7JcXZjtH1rowOj25yEZhDqVeXcaCgF'),
-    'consumer_secret' => env('MPESA_CONSUMER_SECRET', 'NOCOOn2ZhXAqILPwl7DhUYrjyKnPA0PQaMQ1qjhTrIziZuwN1QGwM9rcIUOKpDN1'),
+    'consumer_key' => env('MPESA_CONSUMER_KEY'),
+    'consumer_secret' => env('MPESA_CONSUMER_SECRET'),
 
-    'shortcode' => env('MPESA_SHORTCODE', '4140993'), // Your paybill or till number
-    'passkey' => env('MPESA_PASSKEY', '7593a57c40743af7f4d26c1310bbfa0255fbe525b0a3cf4a0b5674ec3bfeaaa2'), // STK Push passkey
+    'shortcode' => env('MPESA_SHORTCODE'), // Your paybill or till number
+    'passkey' => env('MPESA_PASSKEY'), // STK Push passkey
 
-    'callback_url' => env('MPESA_CALLBACK_URL', 'https://www.sterkedigital.com/hooks/mobile/incomingPayment.php'),
+    'callback_url' => env('MPESA_CALLBACK_URL'),
 
     /*
     |--------------------------------------------------------------------------

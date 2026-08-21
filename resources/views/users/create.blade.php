@@ -19,73 +19,33 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ __('Account') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __("Add user account information") }}</p>
+                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __("The phone number is the customer's hotspot login identity.") }}</p>
                             </div>
 
                             <div>
                                 <div>
-                                    <x-input-label for="name" :value="__('User name')" class="mt-4"></x-input-label>
-                                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('name')"></x-input-error>
-                                </div>
-
-                                <div>
-                                    <x-input-label for="email" :value="__('Email address')" class="mt-4"></x-input-label>
-                                    <x-text-input id="email" name="email" type="text" class="mt-1 block w-full" :value="old('email')" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('email')"></x-input-error>
-                                </div>
-
-                                <div>
-                                    <x-input-label for="password" :value="__('Password')" class="mt-4"></x-input-label>
-                                    <x-text-input name="password" type="password" class="mt-1 block w-full" value=""></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('password')"></x-input-error>
-                                </div>
-
-                                <div>
-                                    <x-input-label for="password_confirmation" :value="__('Password confirm')" class="mt-4"></x-input-label>
-                                    <x-text-input name="password_confirmation" type="password" class="mt-1 block w-full" value=""></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('password_confirmation')"></x-input-error>
-                                </div>
-
-                                <div>
-                                    <x-input-label for="address" :value="__('Address')" class="mt-4"></x-input-label>
-                                    <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" :value="old('address')" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('address')"></x-input-error>
-                                </div>
-
-                                <div>
                                     <x-input-label for="phone" :value="__('Phone number')" class="mt-4"></x-input-label>
                                     <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone')" required></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('phone')"></x-input-error>
-                                </div>
-
-                                <div>
-                                    <x-input-label for="dob" :value="__('Date of birth')" class="mt-4"></x-input-label>
-                                    <x-text-input id="dob" name="dob" type="date" class="mt-1 block w-full" :value="old('dob')" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('dob')"></x-input-error>
-                                </div>
-
-                                <div>
-                                    <x-input-label for="pin" :value="__('Personal Identification Number')" class="mt-4"></x-input-label>
-                                    <x-text-input id="pin" name="pin" type="text" class="mt-1 block w-full" :value="old('pin')" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('pin')"></x-input-error>
                                 </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ __('Subscription') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __("Add subscription details") }}</p>
+                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __("Select the package to activate for this user.") }}</p>
                             </div>
 
                             <div>
                                 <div>
-                                    <livewire:router-packages-dropdown />
-                                </div>
-                                <div>
-                                    <x-input-label for="router_password" :value="__('Mikrotik password')" class="mt-4"></x-input-label>
-                                    <x-text-input id="router_password" name="router_password" type="text" class="mt-1 block w-full" :value="old('router_password')" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('router_password')"></x-input-error>
+                                    <x-input-label for="package_id" :value="__('Package')" class="mt-4"></x-input-label>
+                                    <select id="package_id" name="package_id" class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" required>
+                                        <option value="">{{ __('Select package') }}</option>
+                                        @foreach($packages as $package)
+                                            <option value="{{ $package->id }}" {{ old('package_id') == $package->id ? 'selected' : '' }}>{{ $package->name }} - {{ config('app.currency') }} {{ $package->price }}</option>
+                                        @endforeach
+                                    </select>
+                                    <x-input-error class="mt-2" :messages="$errors->get('package_id')"></x-input-error>
                                 </div>
 
                                 <div class="flex items-center gap-4 mt-4">

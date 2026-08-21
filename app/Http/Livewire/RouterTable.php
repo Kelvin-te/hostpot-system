@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\Router;
@@ -10,11 +11,14 @@ use Rappasoft\LaravelLivewireTables\Views\Columns\LinkColumn;
 
 class RouterTable extends DataTableComponent
 {
-    protected $model = Router::class;
-
     public function configure(): void
     {
         $this->setPrimaryKey('id');
+    }
+
+    public function builder(): Builder
+    {
+        return Router::query();
     }
 
     public function columns(): array
@@ -46,10 +50,5 @@ class RouterTable extends DataTableComponent
                 })
                 ->html(),
         ];
-    }
-
-    public function rowClicked($routerId)
-    {
-        return redirect()->route('router.show', $routerId);
     }
 }

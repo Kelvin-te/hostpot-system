@@ -28,7 +28,6 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
-        'role',
     ];
 
     /**
@@ -50,14 +49,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function isAdmin()
+    public function isAdmin(): bool
     {
-        return $this->role == 'admin';
+        return false;
     }
 
-    public function isUser()
+    public function isUser(): bool
     {
-        return $this->role == 'user';
+        return true;
     }
 
     public function due_amount($id){

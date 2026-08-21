@@ -29,6 +29,11 @@
                                     <x-text-input id="name" name="name" type="text" class="mt-1 block w-full bg-gray-100" value="{{ $router->name }}" disabled></x-text-input>
                                 </div>
                                 <div>
+                                    <x-input-label for="identifier" :value="__('Router identifier')" class="mt-4"></x-input-label>
+                                    <x-text-input id="identifier" name="identifier" type="text" class="mt-1 block w-full bg-gray-100 font-mono" value="{{ $router->identifier }}" disabled></x-text-input>
+                                    <p class="mt-1 text-xs text-gray-500">{{ __('Auto-generated. Copy this value into the router\'s MikroTik login.html file (the "router" hidden field) so the hotspot login page identifies this router correctly.') }}</p>
+                                </div>
+                                <div>
                                     <x-input-label for="location" :value="__('Location')" class="mt-4"></x-input-label>
                                     <x-text-input id="location" name="location" type="text" class="mt-1 block w-full" value="{{ $router->location }}"></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('location')"></x-input-error>

@@ -9,14 +9,14 @@ use Exception;
 class VintexSmsService
 {
     protected string $apiUrl;
-    protected string $email;
-    protected string $bearerToken;
+    protected ?string $email;
+    protected ?string $bearerToken;
     protected string $senderId;
 
     public function __construct()
     {
         $this->apiUrl = config('services.vintex.api_url', 'https://sms.vintextechnologies.com/api/sendMessage');
-        $this->email = config('services.vintex.email', 'admin@vintextechnologies.com');
+        $this->email = config('services.vintex.email');
         $this->bearerToken = config('services.vintex.bearer_token');
         $this->senderId = config('services.vintex.sender_id', 'STERKE');
     }
@@ -27,6 +27,15 @@ class VintexSmsService
     public function sendSms(string $phone, string $message): array
     {
         try {
+            if (empty($this->email) || empty($this->bearerToken)) {
+                Log::error('Vintex SMS credentials are not configured');
+                return [
+                    'success' => false,
+                    'message' => 'SMS credentials not configured',
+                    'data' => null,
+                ];
+            }
+
             // Normalize phone number
             $normalizedPhone = $this->normalizePhoneNumber($phone);
             

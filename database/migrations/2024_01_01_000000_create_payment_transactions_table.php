@@ -41,9 +41,9 @@ return new class extends Migration
             $table->foreignId('package_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             $table->string('session_id')->nullable(); // Reference to hotspot session
-            
+
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['status', 'created_at']);
             $table->index('phone_number');

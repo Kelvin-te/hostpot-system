@@ -32,7 +32,7 @@
                         </x-dropdown-link>
 
                         <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ Auth::guard('staff')->check() ? route('staff.logout') : route('logout') }}">
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
@@ -108,7 +108,7 @@
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ Auth::guard('staff')->check() ? route('staff.logout') : route('logout') }}">
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"

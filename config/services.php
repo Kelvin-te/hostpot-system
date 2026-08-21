@@ -43,9 +43,16 @@ return [
 
     'vintex' => [
         'api_url' => env('VINTEX_API_URL', 'https://sms.vintextechnologies.com/api/sendMessage'),
-        'email' => env('VINTEX_EMAIL', 'admin@vintextechnologies.com'),
-        'bearer_token' => env('VINTEX_BEARER_TOKEN', 'MGNlYzE4NzlkNTEzZGZmNGI2MWY4MDY2ODlkM2NlNmU='),
+        'email' => env('VINTEX_EMAIL'),
+        'bearer_token' => env('VINTEX_BEARER_TOKEN'),
         'sender_id' => env('VINTEX_SENDER_ID', 'STERKE'),
+    ],
+
+    'wingufi' => [
+        'base_url' => env('WINGUFI_CORE_BASE_URL', 'https://wingufi-core.test/api/v1'),
+        'token' => env('WINGUFI_CORE_API_TOKEN'),
+        'source_system' => env('WINGUFI_SOURCE_SYSTEM', config('app.name', 'admin')),
+        'enabled' => env('WINGUFI_CORE_ENABLED', true),
     ],
 
 ];

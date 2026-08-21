@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateRouterRequest;
 use Illuminate\Http\Request;
 use App\Models\Router;
 use App\Services\MikroTikService;
+use App\Services\RouterIdentificationService;
 
 class RouterController extends Controller
 {
@@ -16,7 +17,7 @@ class RouterController extends Controller
     public function index()
     {
         if (!auth()->user()->isAdmin()) {
-            redirect('/');
+            return redirect('/');
         }
         
         $routers = Router::orderBy("name","asc")->get();
@@ -56,6 +57,7 @@ class RouterController extends Controller
         }
 
         $router = new Router();
+        $router->identifier = RouterIdentificationService::generateIdentifier();
         $router->fill($validated);
         $router->save();
 

@@ -39,12 +39,9 @@ class MpesaService
         try {
 
             $url = config('mpesa.urls.oauth');
-            $response = Http::withOptions([
-                'verify' => false,
-            ])->withBasicAuth($this->consumerKey, $this->consumerSecret)->get($url);
+            $response = Http::withBasicAuth($this->consumerKey, $this->consumerSecret)->get($url);
 
-            Log::info('M-Pesa access is good', [
-                'response' => $response,
+            Log::info('M-Pesa access token response received', [
                 'status' => $response->status()
             ]);
 
@@ -79,8 +76,7 @@ class MpesaService
         }
 
         Log::info('M-Pesa access token retrieved', [
-            'token_received' => true, 
-            'token' => $accessToken
+            'token_received' => true,
         ]);
 
         try {
@@ -118,20 +114,12 @@ class MpesaService
                 'TransactionDesc' => $transactionDesc
             ];
 
-            $response = Http::withOptions([
-                'verify' => false,
-                'headers' => [
-                    'Authorization' => 'Bearer '.$accessToken,
-                    'Content-Type' => 'application/json',
-                ]
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$accessToken,
+                'Content-Type' => 'application/json',
             ])->post($url, $requestData);
 
-            Log::info('M-Pesa STK Push response', [
-                'token' => $accessToken,
-                'headers' => [
-                    'Authorization' => 'Bearer '.$accessToken,
-                ]
-            ]);
+            Log::info('M-Pesa STK Push response received');
 
             $responseData = $response->json();
 

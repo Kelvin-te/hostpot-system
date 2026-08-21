@@ -7,9 +7,13 @@
         @else
             {{ $fallbackMessage ?? 'for assistance' }}
         @endif
-        @if(isset($router))
-            <br><small>Connected through: {{ $router->name }} ({{ $router->ip }})</small>
-        @endif
+        <br><small>
+            @if(isset($router) && $router)
+                Connected through: {{ $router->name }} ({{ $router->ip }})
+            @else
+                Connected through: Router not Identified
+            @endif
+        </small>
     </div>
 </div>
 

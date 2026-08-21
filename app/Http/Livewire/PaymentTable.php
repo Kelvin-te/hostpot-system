@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\Payment;
@@ -10,11 +11,14 @@ use Rappasoft\LaravelLivewireTables\Views\Columns\LinkColumn;
 
 class PaymentTable extends DataTableComponent
 {
-    protected $model = Payment::class;
-
     public function configure(): void
     {
         $this->setPrimaryKey('id');
+    }
+
+    public function builder(): Builder
+    {
+        return Payment::query()->with(['user', 'billing']);
     }
 
     public function columns(): array
@@ -37,7 +41,8 @@ class PaymentTable extends DataTableComponent
             Column::make("Date", "created_at")
                 ->format(function ($value) {
                     return Carbon::parse($value)->format('Y-m-d');
-                }),
+                })
+                ->html(),
             LinkColumn::make('Action')
                 ->title(fn($row) => 'Download')
                 ->location(fn($row) => route('invoice.download', $row->invoice)),

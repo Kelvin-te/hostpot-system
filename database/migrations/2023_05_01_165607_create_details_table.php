@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('phone');
             $table->date('dob');
             $table->string('pin')->nullable();
-            $table->string('router_password');
+            $table->string('router_name')->nullable();
             $table->string('package_name');
             $table->unsignedInteger('package_price');
             $table->date('package_start');

@@ -17,8 +17,12 @@ class HotspotSession extends Model
         'user_agent',
         'device_fingerprint',
         'package_id',
+        'authorization_id',
         'user_id',
         'username',
+        'mikrotik_username',
+        'mikrotik_password',
+        'mikrotik_profile',
         'session_id',
         'started_at',
         'expires_at',
@@ -27,9 +31,6 @@ class HotspotSession extends Model
         'bytes_total',
         'status',
         'mikrotik_data',
-        'mikrotik_username',
-        'mikrotik_password',
-        'mikrotik_profile',
     ];
 
     protected $casts = [
@@ -50,11 +51,27 @@ class HotspotSession extends Model
     }
 
     /**
+     * Get the authorization associated with this session
+     */
+    public function authorization(): BelongsTo
+    {
+        return $this->belongsTo(HotspotAuthorization::class, 'authorization_id');
+    }
+
+    /**
      * Get the user associated with this session (if any)
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the captive portal session that triggered this hotspot session.
+     */
+    public function captivePortalSession()
+    {
+        return $this->hasOne(CaptivePortalSession::class, 'hotspot_session_id');
     }
 
     /**

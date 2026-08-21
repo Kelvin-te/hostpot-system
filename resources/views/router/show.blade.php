@@ -130,6 +130,27 @@
                             </div>
                         </div>
 
+                        <!-- Hotspot Identifier Card -->
+                        <div class="bg-amber-50 rounded-lg p-4 border border-amber-200 shadow-sm">
+                            <div class="flex items-center mb-3">
+                                <div class="pe-2 text-amber-600 rounded">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-800 ml-2">Hotspot Login Identifier</h3>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Identifier:</span>
+                                    <span class="text-gray-900 font-mono bg-white border border-amber-300 px-2 py-0.5 rounded text-xs">{{ $router->identifier }}</span>
+                                </div>
+                                <p class="text-xs text-amber-800">
+                                    {{ __('This value must be copied into this router\'s MikroTik login.html file, in the hidden "router" field, so the hotspot login page correctly identifies this router when redirecting to the packages page.') }}
+                                </p>
+                            </div>
+                        </div>
+
                         <!-- Connection Status Card -->
                         <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                             <div class="flex items-center mb-3">

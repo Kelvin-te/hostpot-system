@@ -22,7 +22,6 @@ class Detail extends Model
         'phone',
         'dob',
         'pin',
-        'router_password',
         'package_name',
         'package_price',
         'package_start',

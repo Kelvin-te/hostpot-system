@@ -9,28 +9,43 @@ use App\Models\PaymentTransaction;
 use App\Models\Voucher;
 use App\Models\User;
 use App\Models\SmsVerification;
+use App\Models\CaptivePortalSession;
 use App\Services\DeviceIdentificationService;
 use App\Services\HotspotSessionService;
-use App\Services\MikroTikService;
+use App\Services\CaptivePortalService;
+use App\Services\HotspotAuthorizationService;
+use App\Services\RouterIdentificationService;
 use App\Services\MpesaService;
 use App\Services\VintexSmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 
 class CaptivePortalController extends Controller
 {
     protected HotspotSessionService $sessionService;
     protected DeviceIdentificationService $deviceService;
-    protected MikroTikService $mikrotikService;
+    protected CaptivePortalService $portalService;
+    protected HotspotAuthorizationService $authorizationService;
+    protected RouterIdentificationService $routerIdentificationService;
     protected MpesaService $mpesaService;
     protected VintexSmsService $smsService;
 
-    public function __construct(HotspotSessionService $sessionService, DeviceIdentificationService $deviceService, MikroTikService $mikrotikService, MpesaService $mpesaService, VintexSmsService $smsService)
-    {
+    public function __construct(
+        HotspotSessionService $sessionService,
+        DeviceIdentificationService $deviceService,
+        CaptivePortalService $portalService,
+        HotspotAuthorizationService $authorizationService,
+        RouterIdentificationService $routerIdentificationService,
+        MpesaService $mpesaService,
+        VintexSmsService $smsService
+    ) {
         $this->sessionService = $sessionService;
         $this->deviceService = $deviceService;
-        $this->mikrotikService = $mikrotikService;
+        $this->portalService = $portalService;
+        $this->authorizationService = $authorizationService;
+        $this->routerIdentificationService = $routerIdentificationService;
         $this->mpesaService = $mpesaService;
         $this->smsService = $smsService;
     }
@@ -40,7 +55,8 @@ class CaptivePortalController extends Controller
      */
     public function showForgotPassword(Request $request)
     {
-        return view('captive-portal.forgot-password');
+        $router = $this->routerIdentificationService->resolveRouter($request);
+        return view('captive-portal.forgot-password', compact('router'));
     }
 
     /**
@@ -130,6 +146,7 @@ class CaptivePortalController extends Controller
 
     /**
      * Display the captive portal page with packages
+     * NOTE: Updated to use RouterIdentificationService and CaptivePortalService
      */
     public function index(Request $request)
     {
@@ -141,8 +158,8 @@ class CaptivePortalController extends Controller
             return $this->showSessionStatus($activeSession);
         }
 
-        // Try to detect router by various methods
-        $router = $this->detectRouter($request);
+        // Resolve router using identifier from URL parameter
+        $router = $this->routerIdentificationService->resolveRouter($request);
         
         if (!$router) {
             // Fallback: show all packages if router can't be detected
@@ -160,22 +177,27 @@ class CaptivePortalController extends Controller
         // Check if user has already used free package (for signup button visibility)
         $hasUsedFreePackage = $this->hasUsedFreePackage($request);
 
-        return view('captive-portal.index', compact('packages', 'routerName', 'router', 'hasUsedFreePackage'));
+        // Create captive portal session to preserve MikroTik parameters
+        $portalSession = $this->portalService->createSession($request, $router);
+
+        return view('captive-portal.index', compact('packages', 'routerName', 'router', 'hasUsedFreePackage', 'portalSession'));
     }
 
     /**
      * Show package details
+     * NOTE: Updated to use RouterIdentificationService
      */
     public function package(Request $request, $packageId)
     {
         $package = Package::with('router')->findOrFail($packageId);
-        $router = $this->detectRouter($request);
+        $router = $this->routerIdentificationService->resolveRouter($request);
         
         return view('captive-portal.package', compact('package', 'router'));
     }
 
     /**
      * Handle package purchase/selection
+     * NOTE: Updated to use RouterIdentificationService and authorization-based approach
      */
     public function purchase(Request $request, $packageId)
     {
@@ -187,7 +209,7 @@ class CaptivePortalController extends Controller
         }
 
         $package = Package::with('router')->findOrFail($packageId);
-        $router = $this->detectRouter($request);
+        $router = $this->routerIdentificationService->resolveRouter($request);
         
         // Debug: Log package price
         Log::info('Package purchase attempt', [
@@ -201,13 +223,16 @@ class CaptivePortalController extends Controller
         // If package is free (price = 0), activate immediately without payment
         if (floatval($package->price) == 0) {
             try {
-                // Create session for the free package
+                // NOTE: This now creates authorization first, then session
                 $session = $this->sessionService->createSessionForPackage(
-                    $request, 
-                    $package, 
+                    $request,
+                    $package,
                     null, // user (for guest purchases)
                     'guest-' . time() // username/identifier
                 );
+
+                $portalSession = $this->portalService->createSession($request, $router);
+                $this->portalService->linkSession($portalSession, $session);
 
                 Log::info('Free package activated without payment', [
                     'session_id' => $session->session_id,
@@ -215,7 +240,9 @@ class CaptivePortalController extends Controller
                     'device_info' => $this->deviceService->getDeviceInfo($request)
                 ]);
 
-                return redirect()->route('portal.status')->with('success', 'Free package activated successfully! You are now connected to the internet.');
+                return redirect()->to(
+                    URL::signedRoute('portal.handoff', ['session' => $session->session_id], now()->addMinutes(5))
+                );
                 
             } catch (\Exception $e) {
                 Log::error('Failed to activate free package', [
@@ -235,6 +262,7 @@ class CaptivePortalController extends Controller
 
     /**
      * Process payment for a package
+     * NOTE: Updated to use authorization-based approach, removed direct MikroTik user creation
      */
     public function processPayment(Request $request, $packageId)
     {
@@ -317,6 +345,7 @@ class CaptivePortalController extends Controller
 
     /**
      * Show payment status page
+     * NOTE: Updated to use RouterIdentificationService
      */
     public function showPaymentStatus(Request $request)
     {
@@ -329,7 +358,7 @@ class CaptivePortalController extends Controller
 
         $package = Package::findOrFail($packageId);
         $transaction = PaymentTransaction::where('checkout_request_id', $checkoutRequestId)->first();
-        $router = $this->detectRouter($request);
+        $router = $this->routerIdentificationService->resolveRouter($request);
 
         return view('captive-portal.payment-status', compact('package', 'transaction', 'router', 'checkoutRequestId'));
     }
@@ -339,8 +368,9 @@ class CaptivePortalController extends Controller
      */
     public function checkPaymentStatus(Request $request)
     {
+        $router = $this->routerIdentificationService->resolveRouter($request);
         $checkoutRequestId = $request->input('checkout_request_id') ?? session('checkout_request_id');
-        
+
         if (!$checkoutRequestId) {
             return response()->json([
                 'success' => false,
@@ -416,13 +446,17 @@ class CaptivePortalController extends Controller
                         'redirect_url' => route('portal.index')
                     ]);
                 } else {
-                    // Create hotspot session (activate now)
+                    // NOTE: This now creates authorization first, then session
                     $session = $this->sessionService->createSessionForPackage(
                         $request,
                         $transaction->package,
                         null, // user (for guest purchases)
-                        session('customer_phone') // username/identifier
+                        session('customer_phone'), // username/identifier
+                        $transaction->id
                     );
+
+                    $portalSession = $this->portalService->createSession($request, $router);
+                    $this->portalService->linkSession($portalSession, $session);
 
                     // Update transaction with session ID
                     $transaction->update(['session_id' => $session->session_id]);
@@ -439,8 +473,8 @@ class CaptivePortalController extends Controller
                     return response()->json([
                         'success' => true,
                         'status' => 'completed',
-                        'message' => 'Payment successful! You are now connected to the internet.',
-                        'redirect_url' => route('portal.status')
+                        'message' => 'Payment successful! Please wait while we connect you.',
+                        'redirect_url' => URL::signedRoute('portal.handoff', ['session' => $session->session_id], now()->addMinutes(5))
                     ]);
                 }
 
@@ -450,10 +484,14 @@ class CaptivePortalController extends Controller
                     'transaction_id' => $transaction->id
                 ]);
 
+                $message = app()->hasDebugModeEnabled()
+                    ? 'Payment successful but failed to activate internet: ' . $e->getMessage()
+                    : 'Payment successful but failed to activate internet. Please contact support.';
+
                 return response()->json([
                     'success' => false,
                     'status' => 'error',
-                    'message' => 'Payment successful but failed to activate internet. Please contact support.'
+                    'message' => $message
                 ]);
             }
         }
@@ -487,7 +525,8 @@ class CaptivePortalController extends Controller
      */
     public function showLogin(Request $request)
     {
-        return view('captive-portal.login');
+        $router = $this->routerIdentificationService->resolveRouter($request);
+        return view('captive-portal.login', compact('router'));
     }
 
     /**
@@ -495,11 +534,13 @@ class CaptivePortalController extends Controller
      */
     public function showSignup(Request $request)
     {
-        return view('captive-portal.signup');
+        $router = $this->routerIdentificationService->resolveRouter($request);
+        return view('captive-portal.signup', compact('router'));
     }
 
     /**
      * Authenticate user with voucher or credentials
+     * NOTE: This uses sessionService which now creates authorization first
      */
     public function authenticate(Request $request)
     {
@@ -513,6 +554,7 @@ class CaptivePortalController extends Controller
         }
 
         try {
+            // NOTE: This now creates authorization first, then session
             $session = $this->sessionService->authenticateUser(
                 $request,
                 $request->username,
@@ -523,13 +565,18 @@ class CaptivePortalController extends Controller
                 return back()->with('error', 'Invalid voucher code or credentials. Please check and try again.');
             }
 
+            $portalSession = $this->portalService->createSession($request, null);
+            $this->portalService->linkSession($portalSession, $session);
+
             Log::info('User authenticated successfully', [
                 'session_id' => $session->session_id,
                 'username' => $request->username,
                 'device_info' => $this->deviceService->getDeviceInfo($request)
             ]);
 
-            return redirect()->route('portal.status')->with('success', 'Login successful! You are now connected to the internet.');
+            return redirect()->to(
+                URL::signedRoute('portal.handoff', ['session' => $session->session_id], now()->addMinutes(5))
+            );
             
         } catch (\Exception $e) {
             Log::error('Authentication failed', [
@@ -553,7 +600,7 @@ class CaptivePortalController extends Controller
         }
 
         $sessionStatus = $this->sessionService->getSessionStatus($activeSession);
-        $router = $this->detectRouter($request);
+        $router = $this->routerIdentificationService->resolveRouter($request);
 
         return view('captive-portal.status', compact('activeSession', 'sessionStatus', 'router'));
     }
@@ -570,6 +617,85 @@ class CaptivePortalController extends Controller
 
         // Redirect to status page
         return redirect()->route('portal.status');
+    }
+
+    /**
+     * Render the MikroTik captive-portal handoff page.
+     *
+     * This signed route receives a HotspotSession and auto-submits the RADIUS
+     * credentials back to the original MikroTik link_login URL.
+     */
+    public function handoff(Request $request, string $session)
+    {
+        if (!$request->hasValidSignature()) {
+            abort(401, 'Invalid or expired handoff link.');
+        }
+
+        $session = HotspotSession::with(['authorization', 'package.router'])
+            ->where('session_id', $session)
+            ->firstOrFail();
+
+        if (!$session->isActive()) {
+            return redirect()->route('portal.index')->with('error', 'Your session is no longer active.');
+        }
+
+        $authorization = $session->authorization;
+        if (!$authorization || !$authorization->isActive()) {
+            return redirect()->route('portal.index')->with('error', 'No active authorization found.');
+        }
+
+        $deviceInfo = $this->deviceService->getDeviceInfo($request);
+        if ($session->ip_address && $session->ip_address !== $deviceInfo['ip_address']) {
+            Log::warning('Handoff IP address mismatch', [
+                'session_id' => $session->session_id,
+                'expected' => $session->ip_address,
+                'actual' => $deviceInfo['ip_address'],
+            ]);
+
+            return redirect()->route('portal.index')->with('error', 'Device mismatch. Please start again.');
+        }
+
+        $portalSession = $session->captivePortalSession;
+        if (!$portalSession || !$portalSession->link_login) {
+            return redirect()->route('portal.index')->with('error', 'MikroTik login link is missing.');
+        }
+
+        $router = $session->package?->router;
+        if ($router) {
+            $host = parse_url($portalSession->link_login, PHP_URL_HOST);
+            $routerIp = $router->ip_address ?? $router->ip;
+            if ($host && $host !== $routerIp) {
+                Log::warning('Handoff link_login host does not match router', [
+                    'session_id' => $session->session_id,
+                    'router_id' => $router->id,
+                    'link_login' => $portalSession->link_login,
+                    'router_ip' => $routerIp,
+                ]);
+
+                return redirect()->route('portal.index')->with('error', 'Invalid router configuration.');
+            }
+        }
+
+        try {
+            $password = $authorization->radiusPassword();
+        } catch (\Exception $e) {
+            Log::error('Failed to decrypt RADIUS password for handoff', [
+                'authorization_id' => $authorization->id,
+                'session_id' => $session->session_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('portal.index')->with('error', 'Unable to retrieve login credentials.');
+        }
+
+        return view('captive-portal.handoff', [
+            'linkLogin' => $portalSession->link_login,
+            'linkOrig' => $portalSession->link_orig,
+            'chapId' => $portalSession->chap_id,
+            'chapChallenge' => $portalSession->chap_challenge,
+            'username' => $authorization->radius_username,
+            'password' => $password,
+        ]);
     }
 
     /**
@@ -648,11 +774,14 @@ class CaptivePortalController extends Controller
 
             // Create session for the free package
             $session = $this->sessionService->createSessionForPackage(
-                $request, 
-                $freePackage, 
+                $request,
+                $freePackage,
                 $user,
                 $normalizedPhone
             );
+
+            $portalSession = $this->portalService->createSession($request, $freePackage->router);
+            $this->portalService->linkSession($portalSession, $session);
 
             // Send welcome SMS
             $this->smsService->sendWelcomeSms($normalizedPhone, $request->name);
@@ -664,7 +793,9 @@ class CaptivePortalController extends Controller
                 'device_info' => $this->deviceService->getDeviceInfo($request)
             ]);
 
-            return redirect()->route('portal.status')->with('success', 'Account created successfully! You now have 500MB of free internet access.');
+            return redirect()->to(
+                URL::signedRoute('portal.handoff', ['session' => $session->session_id], now()->addMinutes(5))
+            );
             
         } catch (\Exception $e) {
             Log::error('Signup failed', [
@@ -928,6 +1059,7 @@ class CaptivePortalController extends Controller
 
     /**
      * Debug endpoint to show device information
+     * NOTE: Updated to use RouterIdentificationService
      */
     public function debugDevice(Request $request)
     {
@@ -941,91 +1073,20 @@ class CaptivePortalController extends Controller
         return response()->json([
             'device_info' => $deviceInfo,
             'active_session' => $activeSession,
-            'router_detection' => $this->detectRouter($request),
+            'router_detection' => $this->routerIdentificationService->resolveRouter($request),
         ]);
-    }
-
-    /**
-     * Detect which router the user is connected through
-     */
-    private function detectRouter(Request $request)
-    {
-        // Method 1: Check if router_id is passed as parameter
-        if ($request->has('router_id')) {
-            $router = Router::find($request->router_id);
-            if ($router) {
-                return $router;
-            }
-        }
-
-        // Method 2: Check if router IP is passed as parameter (common in MikroTik)
-        if ($request->has('router_ip')) {
-            $router = Router::where('ip', $request->router_ip)->first();
-            if ($router) {
-                return $router;
-            }
-        }
-
-        // Method 3: Try to detect by HTTP_HOST or SERVER_NAME
-        $serverName = $request->server('HTTP_HOST') ?? $request->server('SERVER_NAME');
-        if ($serverName) {
-            $router = Router::where('ip', $serverName)->first();
-            if ($router) {
-                return $router;
-            }
-        }
-
-        // Method 4: Check X-Forwarded-For or other headers that might contain router IP
-        $forwardedFor = $request->header('X-Forwarded-For');
-        if ($forwardedFor) {
-            $ips = explode(',', $forwardedFor);
-            foreach ($ips as $ip) {
-                $ip = trim($ip);
-                $router = Router::where('ip', $ip)->first();
-                if ($router) {
-                    return $router;
-                }
-            }
-        }
-
-        // Method 5: Check client IP ranges (if routers use specific IP ranges)
-        $clientIp = $request->ip();
-        if ($clientIp) {
-            // Try to match router by IP subnet (basic implementation)
-            $routers = Router::all();
-            foreach ($routers as $router) {
-                // Simple check if client IP starts with router IP subnet
-                $routerSubnet = substr($router->ip, 0, strrpos($router->ip, '.'));
-                $clientSubnet = substr($clientIp, 0, strrpos($clientIp, '.'));
-                
-                if ($routerSubnet === $clientSubnet) {
-                    return $router;
-                }
-            }
-        }
-
-        // Log the detection attempt for debugging
-        Log::info('Router detection failed', [
-            'router_id' => $request->get('router_id'),
-            'router_ip' => $request->get('router_ip'),
-            'http_host' => $request->server('HTTP_HOST'),
-            'server_name' => $request->server('SERVER_NAME'),
-            'client_ip' => $request->ip(),
-            'x_forwarded_for' => $request->header('X-Forwarded-For'),
-        ]);
-
-        return null;
     }
 
     /**
      * API endpoint to get packages for a specific router
+     * NOTE: Updated to use RouterIdentificationService
      */
     public function apiPackages(Request $request, $routerId = null)
     {
         if ($routerId) {
             $packages = Package::where('router_id', $routerId)->orderBy('price')->get();
         } else {
-            $router = $this->detectRouter($request);
+            $router = $this->routerIdentificationService->resolveRouter($request);
             if ($router) {
                 $packages = Package::where('router_id', $router->id)->orderBy('price')->get();
             } else {
