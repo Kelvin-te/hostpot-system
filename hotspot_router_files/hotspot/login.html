@@ -1,12 +1,9 @@
 <!--
-    IMPORTANT: The value of the hidden "router" field below MUST match this
-    router's unique identifier as shown in the admin panel
-    (Routers > [this router] > "Hotspot Login Identifier" card, or the
-    disabled "Router identifier" field on the router edit page).
-
-    Each physical MikroTik gets its own copy of this file with only the
-    "router" value changed to that router's identifier. Do not reuse the
-    same identifier across multiple routers.
+    This is a GENERATED template. Placeholders such as {RouterIdentifier} and
+    {PortalUrl} are auto-filled per router by
+    RouterController::downloadHotspotFiles() / HotspotFileGeneratorService.
+    Do not hand-edit and reuse this file across multiple routers - always
+    (re)generate it from the admin panel so the identifier stays unique.
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -25,16 +22,16 @@
     <p>Please wait while we redirect you to the portal.</p>
 
     <form id="portal" method="get"
-          action="https://hotspot.sterkedigital.com/public" style="display: none;">
+          action="{PortalUrl}" style="display: none;">
 
-    <input type="hidden" name="router" value="0317825ff130">
+    <input type="hidden" name="router" value="{RouterIdentifier}">
 
     <input type="hidden" name="mac" value="$(mac)">
     <input type="hidden" name="ip" value="$(ip)">
-    <input type="hidden" name="link_login" value="$(link-login)">
-    <input type="hidden" name="link_orig" value="$(link-orig)">
-    <input type="hidden" name="chap_id" value="$(chap-id)">
-    <input type="hidden" name="chap_challenge" value="$(chap-challenge)">
+    <input type="hidden" name="link-login" value="$(link-login)">
+    <input type="hidden" name="link-orig" value="$(link-orig)">
+    <input type="hidden" name="chap-id" value="$(chap-id)">
+    <input type="hidden" name="chap-challenge" value="$(chap-challenge)">
 
 </form>
 

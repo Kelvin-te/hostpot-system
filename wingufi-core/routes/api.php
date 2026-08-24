@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AccountingController;
 use App\Http\Controllers\Api\V1\AuthorizationController;
 use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\PackageController;
 use App\Http\Controllers\Api\V1\RouterController;
+use App\Http\Controllers\Api\V1\SessionController;
 use App\Http\Middleware\AuthenticateTenantCredential;
 use Illuminate\Support\Facades\Route;
 
@@ -17,5 +19,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/packages', [PackageController::class, 'store']);
         Route::post('/authorizations', [AuthorizationController::class, 'store']);
         Route::patch('/authorizations/{external_id}', [AuthorizationController::class, 'update']);
+        Route::get('/sessions', [SessionController::class, 'index']);
+        Route::get('/accounting', [AccountingController::class, 'index']);
     });
 });

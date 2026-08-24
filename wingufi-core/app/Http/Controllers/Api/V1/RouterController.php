@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\RadiusNas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 
 class RouterController extends Controller
@@ -18,6 +19,9 @@ class RouterController extends Controller
             'nasname' => ['required', 'string', 'max:100'],
             'type' => ['required', 'string', 'max:50'],
             'status' => ['required', 'in:active,inactive'],
+            'radius_secret' => ['required', 'string', 'min:8'],
+            'auth_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
+            'acct_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
         ]);
 
         if ($validator->fails()) {
@@ -36,7 +40,13 @@ class RouterController extends Controller
                 'nasname' => $request->input('nasname'),
                 'type' => $request->input('type'),
                 'status' => $request->input('status'),
-                'radius_secret_encrypted' => 'placeholder', // Phase 3 will manage real secrets
+                'radius_secret_encrypted' => Crypt::encryptString($request->input('radius_secret')),
+                // Plaintext, restricted to FreeRADIUS's own least-privilege SQL
+                // user via database grants (see FREERADIUS_SQL_CLIENTS.md). Never
+                // exposed via this API's responses.
+                'radius_secret_plain' => $request->input('radius_secret'),
+                'auth_port' => $request->input('auth_port', 1812),
+                'acct_port' => $request->input('acct_port', 1813),
             ]
         );
 

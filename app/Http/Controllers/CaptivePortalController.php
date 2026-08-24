@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ActiveSessionConflictException;
 use App\Models\Package;
 use App\Models\Router;
 use App\Models\HotspotSession;
@@ -162,9 +163,13 @@ class CaptivePortalController extends Controller
         $router = $this->routerIdentificationService->resolveRouter($request);
         
         if (!$router) {
-            // Fallback: show all packages if router can't be detected
-            $packages = Package::with('router')->orderBy('price')->get();
-            $routerName = 'Available Packages';
+            // Router could not be identified - do NOT show packages from other
+            // routers. Selecting/paying for a package tied to a different
+            // router than the one the guest is actually connected to would
+            // fail at handoff time (or worse, charge them for a package they
+            // can never activate).
+            $packages = collect();
+            $routerName = 'Router Not Identified';
         } else {
             // Show packages for the detected router
             $packages = Package::where('router_id', $router->id)->orderBy('price')->get();
@@ -174,8 +179,11 @@ class CaptivePortalController extends Controller
         // Filter out free packages if user has already used them
         $packages = $this->filterFreePackagesForDevice($request, $packages);
 
-        // Check if user has already used free package (for signup button visibility)
-        $hasUsedFreePackage = $this->hasUsedFreePackage($request);
+        // Check if user has already used the signup free package (for signup button visibility)
+        $signupFreePackage = Package::where('name', 'Free 500MB')->where('price', 0)->first();
+        $hasUsedFreePackage = $signupFreePackage
+            ? $this->hasUsedFreePackage($request, $signupFreePackage->id)
+            : false;
 
         // Create captive portal session to preserve MikroTik parameters
         $portalSession = $this->portalService->createSession($request, $router);
@@ -189,6 +197,13 @@ class CaptivePortalController extends Controller
      */
     public function package(Request $request, $packageId)
     {
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'package:entry',
+            'path' => $request->path(),
+            'package_id' => $packageId,
+            'has_captive_portal_session_token' => (bool) session('captive_portal_session_token'),
+        ]);
+
         $package = Package::with('router')->findOrFail($packageId);
         $router = $this->routerIdentificationService->resolveRouter($request);
         
@@ -201,6 +216,14 @@ class CaptivePortalController extends Controller
      */
     public function purchase(Request $request, $packageId)
     {
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'purchase:entry',
+            'path' => $request->path(),
+            'package_id' => $packageId,
+            'query_params' => $request->query(),
+            'has_captive_portal_session_token' => (bool) session('captive_portal_session_token'),
+        ]);
+
         // Check if device already has an active session
         $activeSession = $this->sessionService->getActiveSession($request);
         
@@ -210,7 +233,17 @@ class CaptivePortalController extends Controller
 
         $package = Package::with('router')->findOrFail($packageId);
         $router = $this->routerIdentificationService->resolveRouter($request);
-        
+
+        if (!$router || $router->id !== $package->router_id) {
+            Log::warning('Purchase blocked: router not identified or mismatched with package', [
+                'package_id' => $package->id,
+                'package_router_id' => $package->router_id,
+                'resolved_router_id' => $router?->id,
+            ]);
+
+            return redirect()->route('portal.index')->with('error', 'We could not verify your connection. Please reconnect via the WiFi hotspot and try again.');
+        }
+
         // Debug: Log package price
         Log::info('Package purchase attempt', [
             'package_id' => $package->id,
@@ -228,7 +261,7 @@ class CaptivePortalController extends Controller
                     $request,
                     $package,
                     null, // user (for guest purchases)
-                    'guest-' . time() // username/identifier
+                    $this->deviceService->getStableClientIdentifier($request) // username/identifier
                 );
 
                 $portalSession = $this->portalService->createSession($request, $router);
@@ -243,7 +276,10 @@ class CaptivePortalController extends Controller
                 return redirect()->to(
                     URL::signedRoute('portal.handoff', ['session' => $session->session_id], now()->addMinutes(5))
                 );
-                
+
+            } catch (ActiveSessionConflictException $e) {
+                return $this->showSessionStatus($e->existingSession)
+                    ->with('info', 'You already have an active session on a different package.');
             } catch (\Exception $e) {
                 Log::error('Failed to activate free package', [
                     'error' => $e->getMessage(),
@@ -277,7 +313,18 @@ class CaptivePortalController extends Controller
         }
 
         $package = Package::findOrFail($packageId);
-        
+        $router = $this->routerIdentificationService->resolveRouter($request);
+
+        if (!$router || $router->id !== $package->router_id) {
+            Log::warning('Payment blocked: router not identified or mismatched with package', [
+                'package_id' => $package->id,
+                'package_router_id' => $package->router_id,
+                'resolved_router_id' => $router?->id,
+            ]);
+
+            return redirect()->route('portal.index')->with('error', 'We could not verify your connection. Please reconnect via the WiFi hotspot and try again.');
+        }
+
         // Check if device already has an active session
         $activeSession = $this->sessionService->getActiveSession($request);
         if ($activeSession) {
@@ -478,6 +525,13 @@ class CaptivePortalController extends Controller
                     ]);
                 }
 
+            } catch (ActiveSessionConflictException $e) {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'completed',
+                    'message' => 'You already have an active session on a different package.',
+                    'redirect_url' => route('portal.status')
+                ]);
             } catch (\Exception $e) {
                 Log::error('Failed to create session after payment', [
                     'error' => $e->getMessage(),
@@ -656,20 +710,65 @@ class CaptivePortalController extends Controller
         }
 
         $portalSession = $session->captivePortalSession;
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'handoff:portal_session_resolved',
+            'hotspot_session_id' => $session->session_id,
+            'captive_portal_session_id' => $portalSession?->id,
+            'captive_portal_session_token_matches_laravel_session' => $portalSession
+                ? ($portalSession->session_token === session('captive_portal_session_token'))
+                : null,
+            'has_link_login' => (bool) $portalSession?->link_login,
+        ]);
+
         if (!$portalSession || !$portalSession->link_login) {
+            // DIAGNOSTIC: this is the most likely failing boundary. If this fires,
+            // the handoff form is NEVER rendered and MikroTik never receives a
+            // login attempt, even though the authorization/session look "active".
+            Log::warning('Handoff aborted: MikroTik login link is missing', [
+                'session_id' => $session->session_id,
+                'authorization_id' => $authorization->id,
+                'router_id' => $session->package?->router_id,
+                'captive_portal_session_id' => $portalSession?->id,
+                'captive_portal_session_status' => $portalSession?->status,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+
             return redirect()->route('portal.index')->with('error', 'MikroTik login link is missing.');
         }
 
         $router = $session->package?->router;
         if ($router) {
             $host = parse_url($portalSession->link_login, PHP_URL_HOST);
-            $routerIp = $router->ip_address ?? $router->ip;
-            if ($host && $host !== $routerIp) {
+
+            // The MikroTik management/API/WireGuard IP (router.ip) is NOT the
+            // address MikroTik uses to generate link-login - that comes from
+            // the HotSpot server's own gateway IP (router.hotspot_server_ip),
+            // which is intentionally a different, LAN-side address. Only fall
+            // back to the management IP if the HotSpot IP was never detected
+            // (e.g. router not yet synced), to avoid hard-locking existing
+            // deployments that haven't run hotspot detection yet.
+            $expectedHosts = array_filter([
+                $router->hotspot_server_ip,
+                $router->ip_address ?? $router->ip,
+            ]);
+
+            Log::info('CAPTIVE_FLOW_TRACE', [
+                'stage' => 'handoff:link_login_host_validation',
+                'session_id' => $session->session_id,
+                'router_id' => $router->id,
+                'link_login_host' => $host,
+                'hotspot_server_ip' => $router->hotspot_server_ip,
+                'router_management_ip' => $router->ip_address ?? $router->ip,
+                'accepted' => $host && in_array($host, $expectedHosts, true),
+            ]);
+
+            if ($host && !in_array($host, $expectedHosts, true)) {
                 Log::warning('Handoff link_login host does not match router', [
                     'session_id' => $session->session_id,
                     'router_id' => $router->id,
                     'link_login' => $portalSession->link_login,
-                    'router_ip' => $routerIp,
+                    'expected_hosts' => $expectedHosts,
                 ]);
 
                 return redirect()->route('portal.index')->with('error', 'Invalid router configuration.');
@@ -687,6 +786,23 @@ class CaptivePortalController extends Controller
 
             return redirect()->route('portal.index')->with('error', 'Unable to retrieve login credentials.');
         }
+
+        // DIAGNOSTIC: confirms the handoff form was actually built and handed to
+        // the browser, and shows exactly which PAP/CHAP fields will be submitted
+        // to MikroTik. Never logs password or RADIUS secret values.
+        Log::info('Handoff form rendered for MikroTik link_login submission', [
+            'session_id' => $session->session_id,
+            'authorization_id' => $authorization->id,
+            'router_id' => $router?->id,
+            'router_identifier' => $router?->identifier,
+            'mikrotik_host' => parse_url($portalSession->link_login, PHP_URL_HOST),
+            'link_login' => $portalSession->link_login,
+            'username' => $authorization->radius_username,
+            'has_link_orig' => (bool) $portalSession->link_orig,
+            'has_chap_id' => (bool) $portalSession->chap_id,
+            'has_chap_challenge' => (bool) $portalSession->chap_challenge,
+            'timestamp' => now()->toIso8601String(),
+        ]);
 
         return view('captive-portal.handoff', [
             'linkLogin' => $portalSession->link_login,
@@ -740,8 +856,9 @@ class CaptivePortalController extends Controller
                 return back()->with('error', 'Invalid phone number format.')->withInput();
             }
 
-            // Check if phone has already been used for free package
-            if ($this->hasPhoneUsedFreePackage($normalizedPhone)) {
+            // Check if phone has already been used for the signup free package
+            $freePackageForCheck = $this->getOrCreateFreePackage();
+            if ($this->hasPhoneUsedFreePackage($normalizedPhone, $freePackageForCheck->id)) {
                 return back()->with('error', 'This phone number has already been used for a free package.')->withInput();
             }
 
@@ -796,7 +913,9 @@ class CaptivePortalController extends Controller
             return redirect()->to(
                 URL::signedRoute('portal.handoff', ['session' => $session->session_id], now()->addMinutes(5))
             );
-            
+
+        } catch (ActiveSessionConflictException $e) {
+            return redirect()->route('portal.status')->with('info', 'You already have an active session on a different package.');
         } catch (\Exception $e) {
             Log::error('Signup failed', [
                 'error' => $e->getMessage(),
@@ -833,8 +952,9 @@ class CaptivePortalController extends Controller
                 ]);
             }
 
-            // Check if phone has already been used for free package
-            if ($this->hasPhoneUsedFreePackage($normalizedPhone)) {
+            // Check if phone has already been used for the signup free package
+            $freePackageForCheck = $this->getOrCreateFreePackage();
+            if ($this->hasPhoneUsedFreePackage($normalizedPhone, $freePackageForCheck->id)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'This phone number has already been used for a free package.'
@@ -920,26 +1040,25 @@ class CaptivePortalController extends Controller
      */
     protected function filterFreePackagesForDevice(Request $request, $packages)
     {
-        $hasUsedFreePackage = $this->hasUsedFreePackage($request);
-        
-        if ($hasUsedFreePackage) {
-            // Filter out free packages (price = 0)
-            $packages = $packages->filter(function ($package) {
-                return $package->price > 0;
-            });
-        }
-        
-        return $packages;
+        return $packages->filter(function ($package) use ($request) {
+            if ($package->price > 0) {
+                return true;
+            }
+
+            // Free packages are evaluated per package_id (rule B): using one
+            // free package must not hide a different free package.
+            return !$this->hasUsedFreePackage($request, $package->id);
+        })->values();
     }
 
     /**
-     * Check if user/device has already used a free package (comprehensive approach)
+     * Check if user/device has already used a specific free package (comprehensive approach)
      */
-    protected function hasUsedFreePackage(Request $request): bool
+    protected function hasUsedFreePackage(Request $request, int $packageId): bool
     {
         // Method 1: Check by IP address for recent usage (strongest protection against MAC spoofing)
         $clientIp = $request->ip();
-        if ($this->hasRecentFreeUsageFromIP($clientIp)) {
+        if ($this->hasRecentFreeUsageFromIP($clientIp, $packageId)) {
             return true;
         }
 
@@ -947,11 +1066,12 @@ class CaptivePortalController extends Controller
         $deviceFingerprint = $this->deviceService->generateDeviceFingerprint($request);
         $macAddress = $this->deviceService->getMacAddress($request);
         
-        if ($this->hasDeviceUsedFreePackage($deviceFingerprint, $macAddress)) {
+        if ($this->hasDeviceUsedFreePackage($deviceFingerprint, $macAddress, $packageId)) {
             return true;
         }
 
-        // Method 3: Check for suspicious behavior patterns
+        // Method 3: Check for suspicious behavior patterns (not package-specific; a
+        // device flagged as suspicious is blocked from every free package)
         if ($this->detectSuspiciousBehavior($request)) {
             return true;
         }
@@ -960,19 +1080,17 @@ class CaptivePortalController extends Controller
     }
 
     /**
-     * Check if a device has already used a free package (legacy method)
+     * Check if a device has already used this specific free package (legacy method)
      */
-    protected function hasDeviceUsedFreePackage(?string $deviceFingerprint, ?string $macAddress): bool
+    protected function hasDeviceUsedFreePackage(?string $deviceFingerprint, ?string $macAddress, int $packageId): bool
     {
         // If neither fingerprint nor MAC is available, we can't identify the device
         if (!$deviceFingerprint && !$macAddress) {
             return false;
         }
 
-        // Build query to check for sessions with free packages
-        $query = HotspotSession::whereHas('package', function ($q) {
-            $q->where('price', 0);
-        });
+        // Build query to check for sessions with this specific free package
+        $query = HotspotSession::where('package_id', $packageId);
 
         // Add device identification conditions
         $query->where(function ($q) use ($deviceFingerprint, $macAddress) {
@@ -989,9 +1107,9 @@ class CaptivePortalController extends Controller
     }
 
     /**
-     * Check if phone number has already been used for free package
+     * Check if phone number has already been used for this specific free package
      */
-    protected function hasPhoneUsedFreePackage(string $phone): bool
+    protected function hasPhoneUsedFreePackage(string $phone, int $packageId): bool
     {
         $normalizedPhone = $this->smsService->normalizePhoneNumber($phone);
         
@@ -999,36 +1117,33 @@ class CaptivePortalController extends Controller
             return false;
         }
 
-        // Check if user exists with this phone
+        // An account already exists for this phone; signup (account creation)
+        // must not proceed regardless of which package is being requested.
         if (User::where('phone', $normalizedPhone)->exists()) {
             return true;
         }
 
-        // Check if any session was created with this phone as username
+        // Check if any session was created with this phone as username for this package
         return HotspotSession::where('username', $normalizedPhone)
-                           ->whereHas('package', function ($q) {
-                               $q->where('price', 0);
-                           })
+                           ->where('package_id', $packageId)
                            ->exists();
     }
 
     /**
-     * Check for recent free package usage from same IP/subnet
+     * Check for recent usage of this specific free package from same IP/subnet
      */
-    protected function hasRecentFreeUsageFromIP(string $ip): bool
+    protected function hasRecentFreeUsageFromIP(string $ip, int $packageId): bool
     {
         // Get subnet (first 3 octets)
         $subnet = substr($ip, 0, strrpos($ip, '.'));
         
-        // Check for recent free package usage from this subnet
+        // Check for recent usage of this free package from this subnet
         $recentUsage = HotspotSession::where('ip_address', 'LIKE', $subnet . '%')
-                                   ->whereHas('package', function ($q) {
-                                       $q->where('price', 0);
-                                   })
+                                   ->where('package_id', $packageId)
                                    ->where('created_at', '>', now()->subDays(7))
                                    ->count();
 
-        // Allow max 2 free packages per subnet per week
+        // Allow max 2 uses of this free package per subnet per week
         return $recentUsage >= 2;
     }
 

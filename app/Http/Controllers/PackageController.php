@@ -6,8 +6,6 @@ use App\Models\Package;
 use App\Models\Router;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use RouterOS\Query;
-use RouterOS\Client;
 
 class PackageController extends Controller
 {
@@ -70,61 +68,9 @@ class PackageController extends Controller
 
         $router = Router::where("id", $request->router_id)->firstOrFail();
 
-        try {
-            $client = new Client([
-                "host" => $router->ip,
-                "user" => $router->username,
-                "pass" => $router->password,
-            ]);
-
-            // Create hotspot user profile
-            $query = new Query("/ip/hotspot/user/profile/add");
-            $query->equal("name", $request->name);
-            
-            // Set rate limit based on bandwidth settings
-            if ($request->bandwidth_upload && $request->bandwidth_download) {
-                $rateLimit = ($request->bandwidth_upload * 1000000) . "/" . ($request->bandwidth_download * 1000000);
-                $query->equal("rate-limit", $rateLimit);
-            } elseif ($request->rate_limit) {
-                $query->equal("rate-limit", $request->rate_limit);
-            }
-            
-            // Set session timeout (convert hours to seconds)
-            if ($request->session_timeout) {
-                $query->equal("session-timeout", $request->session_timeout * 3600);
-            }
-            
-            // Set idle timeout (convert minutes to seconds)
-            if ($request->idle_timeout) {
-                $query->equal("idle-timeout", $request->idle_timeout * 60);
-            }
-            
-            // Set shared users
-            if ($request->shared_users) {
-                $query->equal("shared-users", $request->shared_users);
-            }
-            
-            $client->query($query)->read();
-            
-        } catch (\Exception $e) {
-            return back()->with("error", __("Mikrotik connection failed: ") . $e->getMessage());
-        }
-        
         $package = new Package();
         $package->fill($validated);
         $package->save();
-
-        // Sync package to router
-        try {
-            $mikrotikService = new \App\Services\MikroTikService();
-            $mikrotikService->syncPackageToRouter($package, $router);
-        } catch (\Exception $e) {
-            \Log::warning('Failed to sync new package to router', [
-                'package_id' => $package->id,
-                'router_id' => $router->id,
-                'error' => $e->getMessage()
-            ]);
-        }
 
         return redirect('packages')->with('success', __('Hotspot package successfully created'));
     }
@@ -165,61 +111,6 @@ class PackageController extends Controller
         $package->fill($validated);
         $package->save();
 
-        // Sync package changes to router
-        try {
-            $mikrotikService = new \App\Services\MikroTikService();
-            $mikrotikService->syncPackageToRouter($package, $package->router);
-        } catch (\Exception $e) {
-            \Log::warning('Failed to sync package update to router', [
-                'package_id' => $package->id,
-                'router_id' => $package->router_id,
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        // Update the hotspot profile on the router
-        try {
-            $router = $package->router;
-            $client = new Client([
-                "host" => $router->ip,
-                "user" => $router->username,
-                "pass" => $router->password,
-            ]);
-
-            // Update hotspot user profile
-            $query = new Query("/ip/hotspot/user/profile/set");
-            $query->equal("name", $package->name);
-            
-            // Set rate limit based on bandwidth settings
-            if ($request->bandwidth_upload && $request->bandwidth_download) {
-                $rateLimit = ($request->bandwidth_upload * 1000000) . "/" . ($request->bandwidth_download * 1000000);
-                $query->equal("rate-limit", $rateLimit);
-            } elseif ($request->rate_limit) {
-                $query->equal("rate-limit", $request->rate_limit);
-            }
-            
-            // Set session timeout (convert hours to seconds)
-            if ($request->session_timeout) {
-                $query->equal("session-timeout", $request->session_timeout * 3600);
-            }
-            
-            // Set idle timeout (convert minutes to seconds)
-            if ($request->idle_timeout) {
-                $query->equal("idle-timeout", $request->idle_timeout * 60);
-            }
-            
-            // Set shared users
-            if ($request->shared_users) {
-                $query->equal("shared-users", $request->shared_users);
-            }
-            
-            $client->query($query)->read();
-            
-        } catch (\Exception $e) {
-            // Log the error but don't fail the update
-            \Log::warning("Failed to update hotspot profile on router: " . $e->getMessage());
-        }
-
         return redirect('packages')->with('success', __('Hotspot package successfully updated'));
     }
 
@@ -232,45 +123,7 @@ class PackageController extends Controller
             return redirect('/');
         }
 
-        // Try to remove corresponding MikroTik profile on the router
-        try {
-            $router = $package->router;
-            if ($router) {
-                $client = new Client([
-                    'host' => $router->ip,
-                    'user' => $router->username,
-                    'pass' => $router->password,
-                ]);
-
-                // Find profile by name
-                $printQuery = (new Query('/ip/hotspot/user/profile/print'))
-                    ->where('name', $package->name);
-                $profiles = $client->query($printQuery)->read();
-
-                if (!empty($profiles) && isset($profiles[0]['.id'])) {
-                    $removeQuery = (new Query('/ip/hotspot/user/profile/remove'))
-                        ->equal('.id', $profiles[0]['.id']);
-                    $client->query($removeQuery)->read();
-                }
-            }
-        } catch (\Exception $e) {
-            \Log::warning('Failed to remove MikroTik profile when deleting package: ' . $e->getMessage());
-        }
-
         // Delete package (hotspot_sessions have FK with cascade delete)
-        
-        // Remove from router first
-        try {
-            $mikrotikService = new \App\Services\MikroTikService();
-            $mikrotikService->removePackageFromRouter($package, $package->router);
-        } catch (\Exception $e) {
-            \Log::warning('Failed to remove package from router during deletion', [
-                'package_id' => $package->id,
-                'router_id' => $package->router_id,
-                'error' => $e->getMessage()
-            ]);
-        }
-        
         $package->delete();
 
         return redirect()->route('packages.index')->with('success', __('Package deleted successfully'));
@@ -367,18 +220,6 @@ class PackageController extends Controller
         foreach ($destRouters as $destRouter) {
             $created = 0; $updated = 0; $skipped = 0; $errors = [];
 
-            // Prepare MikroTik client for destination router
-            $client = null;
-            try {
-                $client = new Client([
-                    'host' => $destRouter->ip,
-                    'user' => $destRouter->username,
-                    'pass' => $destRouter->password,
-                ]);
-            } catch (\Exception $e) {
-                $errors[] = __('Mikrotik connection failed: ') . $e->getMessage();
-            }
-
             foreach ($sourcePackages as $pkg) {
                 // Upsert DB package on destination
                 $existing = Package::where('router_id', $destRouter->id)->where('name', $pkg->name)->first();
@@ -413,49 +254,6 @@ class PackageController extends Controller
                         'validity_minutes' => $pkg->validity_minutes,
                     ]);
                     $created++;
-                }
-
-                // Create or update MikroTik user profile on destination router
-                if ($client) {
-                    try {
-                        // Determine rate-limit
-                        $rateLimit = null;
-                        if ($pkg->bandwidth_upload && $pkg->bandwidth_download) {
-                            $rateLimit = ($pkg->bandwidth_upload * 1000000) . "/" . ($pkg->bandwidth_download * 1000000);
-                        } elseif ($pkg->rate_limit) {
-                            $rateLimit = $pkg->rate_limit;
-                        }
-
-                        // Check if profile exists
-                        $printQuery = (new Query('/ip/hotspot/user/profile/print'))
-                            ->where('name', $pkg->name);
-                        $profiles = $client->query($printQuery)->read();
-
-                        if (!empty($profiles)) {
-                            // Update existing profile
-                            $profileId = $profiles[0]['.id'] ?? null;
-                            if ($profileId) {
-                                $setQuery = new Query('/ip/hotspot/user/profile/set');
-                                $setQuery->equal('.id', $profileId);
-                                if ($rateLimit) { $setQuery->equal('rate-limit', $rateLimit); }
-                                if ($pkg->session_timeout) { $setQuery->equal('session-timeout', $pkg->session_timeout * 3600); }
-                                if ($pkg->idle_timeout) { $setQuery->equal('idle-timeout', $pkg->idle_timeout * 60); }
-                                if ($pkg->shared_users) { $setQuery->equal('shared-users', $pkg->shared_users); }
-                                $client->query($setQuery)->read();
-                            }
-                        } else {
-                            // Create new profile
-                            $addQuery = new Query('/ip/hotspot/user/profile/add');
-                            $addQuery->equal('name', $pkg->name);
-                            if ($rateLimit) { $addQuery->equal('rate-limit', $rateLimit); }
-                            if ($pkg->session_timeout) { $addQuery->equal('session-timeout', $pkg->session_timeout * 3600); }
-                            if ($pkg->idle_timeout) { $addQuery->equal('idle-timeout', $pkg->idle_timeout * 60); }
-                            if ($pkg->shared_users) { $addQuery->equal('shared-users', $pkg->shared_users); }
-                            $client->query($addQuery)->read();
-                        }
-                    } catch (\Exception $e) {
-                        $errors[] = __('Failed to sync MikroTik profile for package ":pkg" on router ":rtr": ', ['pkg' => $pkg->name, 'rtr' => $destRouter->name]) . $e->getMessage();
-                    }
                 }
             }
 

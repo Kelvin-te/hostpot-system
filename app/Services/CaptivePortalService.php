@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CaptivePortalSession;
 use App\Models\Router;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CaptivePortalService
@@ -12,6 +13,13 @@ class CaptivePortalService
     public function __construct(
         private RouterIdentificationService $routerIdentificationService
     ) {}
+
+    /**
+     * Laravel session key used to carry an opaque captive portal session
+     * token across the landing -> package-selection -> purchase requests.
+     * This does NOT contain MAC/IP/credentials, only the random session_token.
+     */
+    private const SESSION_TOKEN_KEY = 'captive_portal_session_token';
 
     /**
      * Create or update a captive portal session from MikroTik parameters
@@ -25,16 +33,44 @@ class CaptivePortalService
         $clientMac = $request->input('mac');
         $clientIp = $request->input('ip') ?? $request->ip();
 
-        $session = $this->findExistingSession($router, $clientMac, $clientIp);
+        $session = $this->resolveExistingSession($request, $router, $clientMac, $clientIp);
 
-        $data = [
+        $incomingLinkLogin = $request->input('link-login');
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'CaptivePortalService::createSession:entry',
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'laravel_session_id_hash' => $this->sessionIdHash(),
             'router_id' => $router?->id,
             'client_mac' => $clientMac,
             'client_ip' => $clientIp,
-            'link_login' => $request->input('link-login'),
-            'link_orig' => $request->input('link-orig'),
-            'chap_id' => $request->input('chap-id'),
-            'chap_challenge' => $request->input('chap-challenge'),
+            'query_params' => $request->query(),
+            'existing_captive_portal_session_id' => $session?->id,
+            'existing_has_link_login' => (bool) $session?->link_login,
+            'existing_has_chap_id' => (bool) $session?->chap_id,
+            'existing_has_chap_challenge' => (bool) $session?->chap_challenge,
+            'incoming_has_link_login' => (bool) $incomingLinkLogin,
+            'incoming_has_link_orig' => (bool) $request->input('link-orig'),
+            'incoming_has_chap_id' => (bool) $request->input('chap-id'),
+            'incoming_has_chap_challenge' => (bool) $request->input('chap-challenge'),
+        ]);
+
+        $data = [
+            'router_id' => $router?->id,
+            // Preserve previously-captured device identity/MikroTik parameters
+            // when this request doesn't carry them (e.g. a package-selection
+            // click that doesn't forward mac/ip/link-login/chap-id/
+            // chap-challenge - or forwards a different apparent IP due to
+            // CGNAT/mobile network changes). Overwriting them with null/stale
+            // values here would break the MikroTik handoff even though the
+            // original values were captured correctly on landing.
+            'client_mac' => $clientMac ?: $session?->client_mac,
+            'client_ip' => $clientIp ?: $session?->client_ip,
+            'link_login' => $incomingLinkLogin ?: $session?->link_login,
+            'link_orig' => $request->input('link-orig') ?: $session?->link_orig,
+            'chap_id' => $request->input('chap-id') ?: $session?->chap_id,
+            'chap_challenge' => $request->input('chap-challenge') ?: $session?->chap_challenge,
             'status' => 'pending',
             'expires_at' => now()->addMinutes(30),
             'metadata' => array_merge($session?->metadata ?? [], [
@@ -45,12 +81,93 @@ class CaptivePortalService
 
         if ($session) {
             $session->update($data);
+
+            session([self::SESSION_TOKEN_KEY => $session->session_token]);
+
+            Log::info('CAPTIVE_FLOW_TRACE', [
+                'stage' => 'CaptivePortalService::createSession:updated_existing',
+                'laravel_session_id_hash' => $this->sessionIdHash(),
+                'captive_portal_session_id' => $session->id,
+                'has_link_login' => (bool) $session->link_login,
+                'has_link_orig' => (bool) $session->link_orig,
+                'has_chap_id' => (bool) $session->chap_id,
+                'has_chap_challenge' => (bool) $session->chap_challenge,
+            ]);
+
             return $session;
         }
 
-        return CaptivePortalSession::create(array_merge($data, [
+        $created = CaptivePortalSession::create(array_merge($data, [
             'session_token' => $this->generateSessionToken(),
         ]));
+
+        session([self::SESSION_TOKEN_KEY => $created->session_token]);
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'CaptivePortalService::createSession:created_new',
+            'laravel_session_id_hash' => $this->sessionIdHash(),
+            'captive_portal_session_id' => $created->id,
+            'has_link_login' => (bool) $created->link_login,
+            'has_link_orig' => (bool) $created->link_orig,
+            'has_chap_id' => (bool) $created->chap_id,
+            'has_chap_challenge' => (bool) $created->chap_challenge,
+        ]);
+
+        return $created;
+    }
+
+    /**
+     * Resolve the CaptivePortalSession that should be reused for this
+     * request. Prefers the opaque session_token carried in the Laravel
+     * session (survives across requests even when MAC/IP change, e.g. due to
+     * CGNAT or a package-selection request that drops MikroTik's params).
+     * Falls back to MAC/IP matching only when no valid token is present.
+     */
+    private function resolveExistingSession(Request $request, ?Router $router, ?string $clientMac, ?string $clientIp): ?CaptivePortalSession
+    {
+        $token = session(self::SESSION_TOKEN_KEY);
+
+        if ($token) {
+            $session = $this->getSessionByToken($token);
+
+            Log::info('CAPTIVE_FLOW_TRACE', [
+                'stage' => $session
+                    ? 'CaptivePortalService::resolveExistingSession:matched_via_laravel_session'
+                    : 'CaptivePortalService::resolveExistingSession:stale_token_not_found',
+                'path' => $request->path(),
+                'laravel_session_id_hash' => $this->sessionIdHash(),
+                'captive_portal_session_id' => $session?->id,
+            ]);
+
+            if ($session) {
+                return $session;
+            }
+        }
+
+        $session = $this->findExistingSession($router, $clientMac, $clientIp);
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'CaptivePortalService::resolveExistingSession:fallback_device_match',
+            'path' => $request->path(),
+            'laravel_session_id_hash' => $this->sessionIdHash(),
+            'matched' => (bool) $session,
+            'captive_portal_session_id' => $session?->id,
+        ]);
+
+        return $session;
+    }
+
+    /**
+     * Short, non-reversible hash of the Laravel session ID for log
+     * correlation. Never logs the actual session cookie/ID.
+     */
+    private function sessionIdHash(): ?string
+    {
+        try {
+            return substr(hash('sha256', session()->getId()), 0, 12);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     private function findExistingSession(?Router $router, ?string $clientMac, ?string $clientIp): ?CaptivePortalSession

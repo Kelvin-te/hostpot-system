@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\HotspotAuthorization;
 use App\Models\Package;
+use App\Models\RadiusNas;
 use App\Models\Router;
 use App\Models\User;
 use Illuminate\Http\Client\Response;
@@ -30,18 +31,34 @@ class WinguFiCoreService
         return $this->enabled;
     }
 
-    public function syncRouter(Router $router): array
+    public function syncRouter(Router $router, ?RadiusNas $nas = null): array
     {
         $externalId = 'router-' . $router->identifier;
 
-        return $this->post('/routers', [
+        $payload = [
             'external_id' => $externalId,
             'name' => $router->name,
             'identifier' => $router->identifier,
             'nasname' => $router->ip ?? $router->ip_address,
             'type' => 'mikrotik',
             'status' => $router->is_active ? 'active' : 'inactive',
+        ];
+
+        if ($nas) {
+            $payload['radius_secret'] = $nas->nas_secret;
+            $payload['auth_port'] = $nas->nas_port ?? config('services.radius.auth_port', 1812);
+            $payload['acct_port'] = config('services.radius.acct_port', 1813);
+        }
+
+        $result = $this->post('/routers', $payload);
+
+        Log::info('WinguFi Core router synchronized', [
+            'router_id' => $router->id,
+            'external_id' => $externalId,
+            'wingufi_response' => $this->redactSensitive($result),
         ]);
+
+        return $result;
     }
 
     public function syncClient(?User $user, string $clientIdentifier, ?string $password = null): array
@@ -184,8 +201,10 @@ class WinguFiCoreService
         $message = $body['message'] ?? 'Unknown WinguFi Core API error';
 
         $safeBody = $body;
-        if (isset($safeBody['password'])) {
-            $safeBody['password'] = '***';
+        foreach (['password', 'radius_secret'] as $sensitiveKey) {
+            if (isset($safeBody[$sensitiveKey])) {
+                $safeBody[$sensitiveKey] = '***';
+            }
         }
 
         Log::error('WinguFi Core API request failed', [
@@ -201,7 +220,7 @@ class WinguFiCoreService
     {
         $redacted = $payload;
 
-        foreach (['password', 'radius_password', 'token', 'access_token'] as $key) {
+        foreach (['password', 'radius_password', 'radius_secret', 'token', 'access_token'] as $key) {
             if (isset($redacted[$key])) {
                 $redacted[$key] = '***';
             }

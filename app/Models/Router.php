@@ -35,6 +35,11 @@ class Router extends Model
         return $this->hasMany(Package::class);
     }
 
+    public function radiusNas()
+    {
+        return $this->hasOne(RadiusNas::class);
+    }
+
     /**
      * Check if router is currently online using MikroTikService testConnection
      */

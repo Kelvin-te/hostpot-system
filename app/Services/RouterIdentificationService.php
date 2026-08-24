@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Router;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RouterIdentificationService
 {
@@ -13,18 +14,31 @@ class RouterIdentificationService
     public function resolveRouter(Request $request): ?Router
     {
         $identifier = $request->query('router') ?? $request->input('router');
+        $source = $identifier ? 'request' : null;
 
         if (!$identifier) {
             $identifier = session('captive_portal_router_identifier');
+            $source = $identifier ? 'session' : null;
         }
 
         if (!$identifier) {
+            Log::info('CAPTIVE_FLOW_TRACE', [
+                'stage' => 'RouterIdentificationService::resolveRouter:no_identifier',
+                'path' => $request->path(),
+            ]);
+
             return null;
         }
 
         $router = Router::where('identifier', $identifier)->first();
 
         if (!$router) {
+            Log::info('CAPTIVE_FLOW_TRACE', [
+                'stage' => 'RouterIdentificationService::resolveRouter:identifier_not_found',
+                'path' => $request->path(),
+                'identifier_source' => $source,
+            ]);
+
             return null;
         }
 
@@ -33,6 +47,13 @@ class RouterIdentificationService
         }
 
         session(['captive_portal_router_identifier' => $identifier]);
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'RouterIdentificationService::resolveRouter:resolved',
+            'path' => $request->path(),
+            'router_id' => $router->id,
+            'identifier_source' => $source,
+        ]);
 
         return $router;
     }

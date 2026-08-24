@@ -130,27 +130,6 @@
                             </div>
                         </div>
 
-                        <!-- Hotspot Identifier Card -->
-                        <div class="bg-amber-50 rounded-lg p-4 border border-amber-200 shadow-sm">
-                            <div class="flex items-center mb-3">
-                                <div class="pe-2 text-amber-600 rounded">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="text-sm font-semibold text-gray-800 ml-2">Hotspot Login Identifier</h3>
-                            </div>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600">Identifier:</span>
-                                    <span class="text-gray-900 font-mono bg-white border border-amber-300 px-2 py-0.5 rounded text-xs">{{ $router->identifier }}</span>
-                                </div>
-                                <p class="text-xs text-amber-800">
-                                    {{ __('This value must be copied into this router\'s MikroTik login.html file, in the hidden "router" field, so the hotspot login page correctly identifies this router when redirecting to the packages page.') }}
-                                </p>
-                            </div>
-                        </div>
-
                         <!-- Connection Status Card -->
                         <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                             <div class="flex items-center mb-3">
@@ -442,10 +421,16 @@
                                         <span class="text-gray-900 font-medium" id="hotspot-server-ip">-</span>
                                     </div>
                                 </div>
+                                <button id="sync-hotspot-info-btn" class="w-full mt-3 bg-cyan-700 hover:bg-cyan-800 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
+                                    Sync HotSpot Gateway IP
+                                </button>
+                                <a href="{{ route('router.hotspot-files', $router->id) }}" class="block text-center w-full mt-2 bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
+                                    Download Hotspot Files
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Package Sync Card -->
+                        <!-- RADIUS Client Card -->
                         <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
                             <div class="px-4 py-3 border-b border-gray-200">
                                 <div class="flex items-center justify-between">
@@ -455,29 +440,24 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                             </svg>
                                         </div>
-                                        <h3 class="text-sm font-semibold text-gray-800 ml-2">Package Sync</h3>
+                                        <h3 class="text-sm font-semibold text-gray-800 ml-2">RADIUS Client</h3>
                                     </div>
                                 </div>
                             </div>
                             <div class="p-4">
-                                <div class="space-y-2 text-sm" id="package-sync">
+                                <div class="space-y-2 text-sm" id="radius-client">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Synced:</span>
-                                        <span class="text-gray-900 font-medium" id="synced-count">{{ $router->packages_sync_count ?? 0 }}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Unsynced:</span>
-                                        <span class="text-gray-900 font-medium" id="unsynced-count">{{ $router->packages_unsync_count ?? 0 }}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Last Synced:</span>
-                                        <span class="text-gray-900 font-medium" id="last-synced">
-                                            {{ $router->last_synced_at ? (is_string($router->last_synced_at) ? \Carbon\Carbon::parse($router->last_synced_at)->format('M d, Y H:i') : $router->last_synced_at->format('M d, Y H:i')) : 'Never' }}
+                                        <span class="text-gray-600">NAS Status:</span>
+                                        <span class="text-gray-900 font-medium" id="radius-status">
+                                            {{ $router->radiusNas && $router->radiusNas->is_active ? 'Provisioned' : 'Not Provisioned' }}
                                         </span>
                                     </div>
                                 </div>
-                                <button id="sync-packages-btn" class="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
-                                    Sync Packages
+                                <button id="provision-radius-btn" class="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
+                                    Provision RADIUS
+                                </button>
+                                <button id="configure-portal-btn" class="w-full mt-2 bg-teal-700 hover:bg-teal-800 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
+                                    Configure External Portal
                                 </button>
                             </div>
                         </div>
@@ -686,17 +666,17 @@
                 });
             });
             
-            // Sync Packages Button
-            document.getElementById('sync-packages-btn').addEventListener('click', function() {
+            // Provision RADIUS Button
+            document.getElementById('provision-radius-btn').addEventListener('click', function() {
                 const btn = this;
                 const originalText = btn.textContent;
                 
                 btn.disabled = true;
-                btn.textContent = 'Syncing...';
+                btn.textContent = 'Provisioning...';
                 btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
                 btn.classList.add('bg-gray-400');
                 
-                fetch(`{{ url('/') }}/router/${routerId}/sync-packages`, {
+                fetch(`{{ url('/') }}/router/${routerId}/provision-radius`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -706,23 +686,96 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        document.getElementById('synced-count').textContent = data.synced;
-                        document.getElementById('unsynced-count').textContent = data.failed;
-                        document.getElementById('last-synced').textContent = new Date().toLocaleString();
+                        document.getElementById('radius-status').textContent = 'Provisioned';
                         showNotification(data.message, 'success');
                     } else {
-                        showNotification(data.message || 'Sync failed', 'error');
+                        showNotification(data.message || 'RADIUS provisioning failed', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showNotification('Sync failed: ' + error.message, 'error');
+                    showNotification('RADIUS provisioning failed: ' + error.message, 'error');
                 })
                 .finally(() => {
                     btn.disabled = false;
                     btn.textContent = originalText;
                     btn.classList.remove('bg-gray-400');
                     btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                });
+            });
+
+            // Configure External Portal Button
+            document.getElementById('configure-portal-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+                
+                btn.disabled = true;
+                btn.textContent = 'Configuring...';
+                btn.classList.remove('bg-teal-700', 'hover:bg-teal-800');
+                btn.classList.add('bg-gray-400');
+                
+                fetch(`{{ url('/') }}/router/${routerId}/configure-portal`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                    } else {
+                        showNotification(data.message || 'Portal configuration failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Portal configuration failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-gray-400');
+                    btn.classList.add('bg-teal-700', 'hover:bg-teal-800');
+                });
+            });
+
+            // Sync HotSpot Gateway IP Button
+            document.getElementById('sync-hotspot-info-btn').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.textContent;
+
+                btn.disabled = true;
+                btn.textContent = 'Syncing...';
+                btn.classList.remove('bg-cyan-700', 'hover:bg-cyan-800');
+                btn.classList.add('bg-gray-400');
+
+                fetch(`{{ url('/') }}/router/${routerId}/sync-hotspot-info`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('hotspot-server-ip').textContent = data.hotspot_server_ip || 'Not detected';
+                        showNotification(data.message, 'success');
+                    } else {
+                        showNotification(data.message || 'HotSpot info sync failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('HotSpot info sync failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-gray-400');
+                    btn.classList.add('bg-cyan-700', 'hover:bg-cyan-800');
                 });
             });
             
@@ -879,88 +932,6 @@
                     btn.textContent = originalText;
                     btn.classList.remove('text-gray-400');
                     btn.classList.add('text-blue-600');
-                });
-            });
-            
-            // Sync Packages Button
-            document.getElementById('sync-packages-btn').addEventListener('click', function() {
-                const btn = this;
-                const originalText = btn.textContent;
-                
-                btn.disabled = true;
-                btn.textContent = 'Syncing...';
-                btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
-                btn.classList.add('bg-gray-400');
-                
-                fetch(`{{ url('/') }}/router/${routerId}/sync-packages`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Packages synced successfully', 'success');
-                        // Update sync counts
-                        document.getElementById('synced-count').textContent = data.synced_count || 0;
-                        document.getElementById('unsynced-count').textContent = data.unsynced_count || 0;
-                        document.getElementById('last-synced').textContent = data.last_synced_at || 'Just now';
-                    } else {
-                        showNotification(data.message || 'Sync failed', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('Sync failed: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                    btn.classList.remove('bg-gray-400');
-                    btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
-                });
-            });
-            
-            // Apply Walled Garden Button
-            document.getElementById('apply-walled-garden-btn').addEventListener('click', function() {
-                const btn = this;
-                const originalText = btn.textContent;
-                
-                btn.disabled = true;
-                btn.textContent = 'Applying...';
-                btn.classList.remove('bg-pink-600', 'hover:bg-pink-700');
-                btn.classList.add('bg-gray-400');
-                
-                fetch(`{{ url('/') }}/router/${routerId}/apply-walled-garden`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Walled garden applied successfully', 'success');
-                        // Update walled garden status
-                        document.getElementById('walled-garden-status').textContent = 'Configured';
-                        document.getElementById('walled-garden-domains').textContent = data.domains_count || 0;
-                        document.getElementById('walled-garden-ips').textContent = data.ips_count || 0;
-                    } else {
-                        showNotification(data.message || 'Apply failed', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('Apply failed: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                    btn.classList.remove('bg-gray-400');
-                    btn.classList.add('bg-pink-600', 'hover:bg-pink-700');
                 });
             });
             

@@ -61,7 +61,10 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     Route::get('/router/{router}/system-info', [RouterController::class, 'getSystemInfo'])->name('router.system-info')->where('router', '[0-9]+');
     Route::get('/router/{router}/interfaces', [RouterController::class, 'getInterfaces'])->name('router.interfaces')->where('router', '[0-9]+');
     Route::get('/router/status/all', [RouterController::class, 'getAllStatuses'])->name('router.status.all');
-    Route::post('/router/{router}/sync-packages', [RouterController::class, 'syncPackages'])->name('router.sync-packages')->where('router', '[0-9]+');
+    Route::post('/router/{router}/provision-radius', [RouterController::class, 'provisionRadius'])->name('router.provision-radius')->where('router', '[0-9]+');
+    Route::post('/router/{router}/configure-portal', [RouterController::class, 'configurePortal'])->name('router.configure-portal')->where('router', '[0-9]+');
+    Route::post('/router/{router}/sync-hotspot-info', [RouterController::class, 'syncHotspotInfo'])->name('router.sync-hotspot-info')->where('router', '[0-9]+');
+    Route::get('/router/{router}/hotspot-files', [RouterController::class, 'downloadHotspotFiles'])->name('router.hotspot-files')->where('router', '[0-9]+');
     Route::post('/router/{router}/apply-walled-garden', [RouterController::class, 'applyWalledGarden'])->name('router.apply-walled-garden')->where('router', '[0-9]+');
     Route::post('/router/{router}/reboot', [RouterController::class, 'reboot'])->name('router.reboot')->where('router', '[0-9]+');
     Route::post('/router/{router}/backup', [RouterController::class, 'backup'])->name('router.backup')->where('router', '[0-9]+');
@@ -158,7 +161,7 @@ Route::post('/staff/reset-password', [\App\Http\Controllers\Staff\ResetPasswordC
     ->middleware('guest:staff')
     ->name('staff.password.update');
 
-Route::middleware('auth:staff')->prefix('staff')->name('staff.')->group(function () {
+Route::middleware(['auth:staff', 'set-staff-guard'])->prefix('staff')->name('staff.')->group(function () {
     Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
     Route::get('/', [StaffController::class, 'index'])->name('index');
     Route::get('/create', [StaffController::class, 'create'])->name('create');

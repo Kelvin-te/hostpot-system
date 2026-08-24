@@ -118,7 +118,8 @@ class CaptivePortalAuthorizationFlowTest extends TestCase
         ]));
 
         $response->assertStatus(200);
-        $response->assertSee('Available Packages');
+        $response->assertSee('Router Not Identified');
+        $response->assertSee('No packages available');
     }
 
     public function test_free_package_purchase_creates_and_syncs_authorization(): void

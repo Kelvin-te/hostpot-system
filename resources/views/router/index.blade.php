@@ -14,6 +14,12 @@
                             {{ session('error') }}
                         </div>
                     @endif
+
+                    @if(session('warning'))
+                        <div class="alert text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+                            {{ session('warning') }}
+                        </div>
+                    @endif
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
                         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                             {{ __('Mikrotik Routers') }}

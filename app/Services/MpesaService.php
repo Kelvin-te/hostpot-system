@@ -45,11 +45,15 @@ class MpesaService
                 'status' => $response->status()
             ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $accessToken = $data['access_token'];
-                return $accessToken;
+            if ($response->successful() && isset($response->json()['access_token'])) {
+                return $response->json()['access_token'];
             }
+
+            Log::error('M-Pesa access token request failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'url' => $url,
+            ]);
 
             return null;
 

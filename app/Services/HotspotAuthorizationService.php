@@ -26,6 +26,19 @@ class HotspotAuthorizationService
         ?string $clientMac = null,
         ?int $paymentTransactionId = null
     ): HotspotAuthorization {
+        // Free-package idempotency: reuse an existing active authorization for
+        // this device+package instead of creating a duplicate. Expired
+        // authorizations (time-based) and revoked ones (status-based) are
+        // excluded by scopeActive(), so they naturally fall through to create
+        // a new authorization below rather than being silently reused.
+        if (!$paymentTransactionId && $clientIdentifier) {
+            $existing = $this->getActiveAuthorization($clientIdentifier, $package->id);
+
+            if ($existing) {
+                return $this->ensureSynced($existing);
+            }
+        }
+
         $radiusCredentials = $this->generateRadiusCredentials($clientIdentifier);
 
         $attributes = [
@@ -157,13 +170,18 @@ class HotspotAuthorizationService
     }
 
     /**
-     * Get active authorization for client
+     * Get active authorization for client, optionally scoped to a package.
      */
-    public function getActiveAuthorization(string $clientIdentifier): ?HotspotAuthorization
+    public function getActiveAuthorization(string $clientIdentifier, ?int $packageId = null): ?HotspotAuthorization
     {
-        return HotspotAuthorization::active()
-            ->where('client_identifier', $clientIdentifier)
-            ->first();
+        $query = HotspotAuthorization::active()
+            ->where('client_identifier', $clientIdentifier);
+
+        if ($packageId !== null) {
+            $query->where('package_id', $packageId);
+        }
+
+        return $query->first();
     }
 
     /**

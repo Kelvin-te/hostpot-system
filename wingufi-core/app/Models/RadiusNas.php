@@ -22,12 +22,23 @@ class RadiusNas extends Model
         'description',
         'status',
         'radius_secret_encrypted',
+        'radius_secret_plain',
         'auth_port',
         'acct_port',
         'coa_port',
         'management_ip',
         'external_id',
         'source_system',
+    ];
+
+    /**
+     * radius_secret_plain exists only for FreeRADIUS's own least-privilege SQL
+     * user (see FREERADIUS_SQL_CLIENTS.md) and must never be serialized or
+     * returned by the application itself.
+     */
+    protected $hidden = [
+        'radius_secret_encrypted',
+        'radius_secret_plain',
     ];
 
     protected $casts = [

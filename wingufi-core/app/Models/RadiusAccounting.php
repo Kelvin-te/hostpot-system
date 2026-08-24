@@ -11,6 +11,8 @@ class RadiusAccounting extends Model
 
     protected $connection = 'wingufi_core';
 
+    protected $table = 'radius_accounting';
+
     protected $fillable = [
         'tenant_id',
         'nas_id',

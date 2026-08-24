@@ -59,6 +59,7 @@ class ApiAuthenticationTest extends TestCase
             'nasname' => '203.0.113.10',
             'type' => 'mikrotik',
             'status' => 'active',
+            'radius_secret' => 'test-radius-secret',
         ])->assertOk();
     }
 
@@ -193,6 +194,7 @@ class ApiAuthenticationTest extends TestCase
             'nasname' => '203.0.113.10',
             'type' => 'mikrotik',
             'status' => 'active',
+            'radius_secret' => 'test-radius-secret',
         ];
 
         $this->withToken($this->plainTextToken)->postJson('/api/v1/routers', $payload)->assertOk();

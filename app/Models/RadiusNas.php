@@ -20,6 +20,10 @@ class RadiusNas extends Model
         'is_active',
     ];
 
+    protected $hidden = [
+        'nas_secret',
+    ];
+
     protected $casts = [
         'is_active' => 'boolean',
     ];

@@ -55,4 +55,10 @@ return [
         'enabled' => env('WINGUFI_CORE_ENABLED', true),
     ],
 
+    'radius' => [
+        'server_host' => env('RADIUS_SERVER_HOST'),
+        'auth_port' => env('RADIUS_SERVER_AUTH_PORT', 1812),
+        'acct_port' => env('RADIUS_SERVER_ACCT_PORT', 1813),
+    ],
+
 ];

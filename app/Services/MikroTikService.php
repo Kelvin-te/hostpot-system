@@ -693,6 +693,8 @@ class MikroTikService
             $createdCount = 0;
             $expiredCount = 0;
 
+            $missingCount = 0;
+
             foreach ($dbSessions as $session) {
                 $username = $session->mikrotik_username ?: $session->username ?: $session->session_id;
                 $mac = strtolower($session->mac_address ?: '');
@@ -705,21 +707,14 @@ class MikroTikService
                 $userExistsOnRouter = isset($routerUserMap[$username]);
                 
                 if (!$userExistsOnRouter) {
-                    // User doesn't exist on router at all, create it
-                    try {
-                        $this->createHotspotSession($session);
-                        $createdCount++;
-                        
-                        Log::info('Session created on router during sync', [
-                            'session_id' => $session->session_id,
-                            'username' => $username,
-                        ]);
-                    } catch (Exception $e) {
-                        Log::error('Failed to create session on router during sync', [
-                            'session_id' => $session->session_id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
+                    // Authentication is handled via RADIUS (WinguFi Core), so we do NOT
+                    // create local MikroTik hotspot users here. Just report the gap.
+                    $missingCount++;
+
+                    Log::info('Session not found on router (RADIUS-managed, no local user created)', [
+                        'session_id' => $session->session_id,
+                        'username' => $username,
+                    ]);
                 } elseif ($existsOnRouter) {
                     // Session is active on router
                     $syncedCount++;
@@ -732,9 +727,10 @@ class MikroTikService
 
             return [
                 'success' => true,
-                'message' => "Synced $syncedCount sessions, created $createdCount missing sessions on router",
+                'message' => "Synced $syncedCount sessions, $missingCount missing on router (RADIUS-managed, not created locally)",
                 'synced' => $syncedCount,
                 'created' => $createdCount,
+                'missing' => $missingCount,
                 'expired' => $expiredCount,
             ];
             
@@ -752,6 +748,34 @@ class MikroTikService
                 'expired' => 0,
             ];
         }
+    }
+
+    /**
+     * Resolve the HotSpot gateway/server IP from already-fetched RouterOS
+     * entries. This is the address MikroTik uses to build the `link-login`
+     * URL when the HotSpot profile's dns-name is empty - it is intentionally
+     * distinct from the router's management/API/WireGuard IP.
+     *
+     * Preference order:
+     * 1. The HotSpot profile's `hotspot-address` property (explicit override).
+     * 2. The IP address bound to the HotSpot's own interface.
+     *
+     * @param array|null $profileEntry Row from /ip/hotspot/profile/print for the hotspot's profile.
+     * @param array|null $interfaceAddressEntry Row from /ip/address/print for the hotspot's interface.
+     */
+    public function resolveHotspotServerIp(?array $profileEntry, ?array $interfaceAddressEntry): ?string
+    {
+        $hotspotAddress = $profileEntry['hotspot-address'] ?? null;
+        if (!empty($hotspotAddress)) {
+            return explode('/', $hotspotAddress)[0];
+        }
+
+        $interfaceAddress = $interfaceAddressEntry['address'] ?? null;
+        if (!empty($interfaceAddress)) {
+            return explode('/', $interfaceAddress)[0];
+        }
+
+        return null;
     }
 
     /**
@@ -787,13 +811,26 @@ class MikroTikService
             }
 
             $hotspot = $hotspotInfo[0];
-            
-            // Get hotspot server info
-            $serverQuery = new Query('/ip/hotspot/aaa/print');
-            $aaaInfo = $client->query($serverQuery)->read();
-            
             $interface = $hotspot['interface'] ?? null;
-            $serverIp = !empty($aaaInfo) ? ($aaaInfo[0]['use-radius'] ?? null) : null;
+            $profileName = $hotspot['profile'] ?? null;
+
+            $profileEntry = null;
+            if ($profileName) {
+                $profileQuery = (new Query('/ip/hotspot/profile/print'))
+                    ->where('name', $profileName);
+                $profiles = $client->query($profileQuery)->read();
+                $profileEntry = $profiles[0] ?? null;
+            }
+
+            $interfaceAddressEntry = null;
+            if ($interface) {
+                $addressQuery = (new Query('/ip/address/print'))
+                    ->where('interface', $interface);
+                $addresses = $client->query($addressQuery)->read();
+                $interfaceAddressEntry = $addresses[0] ?? null;
+            }
+
+            $serverIp = $this->resolveHotspotServerIp($profileEntry, $interfaceAddressEntry ?: null);
 
             return [
                 'success' => true,
@@ -878,131 +915,131 @@ class MikroTikService
     }
 
     /**
-     * Sync a single package to router
+     * Provision this router as a RADIUS client (NAS) pointing at our FreeRADIUS server,
+     * and enable RADIUS authentication on its hotspot server profile(s).
      */
-    public function syncPackageToRouter(\App\Models\Package $package, Router $router): bool
+    public function provisionRadiusClient(Router $router, string $secret): array
     {
         try {
             $client = $this->connectToRouter($router);
-            
+
             if (!$client) {
-                return false;
+                return ['success' => false, 'message' => 'Cannot connect to router'];
             }
 
-            // Check if profile exists
-            $query = new Query('/ip/hotspot/user/profile/print');
-            $query->where('name', $package->name);
-            $profiles = $client->query($query)->read();
-            
-            // Calculate rate limit
-            $rateLimit = null;
-            if ($package->bandwidth_upload && $package->bandwidth_download) {
-                $rateLimit = ($package->bandwidth_upload * 1000000) . "/" . ($package->bandwidth_download * 1000000);
-            } elseif ($package->rate_limit) {
-                $rateLimit = $package->rate_limit;
+            $radiusHost = config('services.radius.server_host');
+            if (!$radiusHost) {
+                return ['success' => false, 'message' => 'RADIUS server host is not configured (RADIUS_SERVER_HOST)'];
             }
 
-            if (!empty($profiles)) {
-                // Update existing profile
-                $profileId = $profiles[0]['.id'] ?? null;
-                if ($profileId) {
-                    $setQuery = new Query('/ip/hotspot/user/profile/set');
-                    $setQuery->equal('.id', $profileId);
-                    if ($rateLimit) { $setQuery->equal('rate-limit', $rateLimit); }
-                    if ($package->session_timeout) { $setQuery->equal('session-timeout', $package->session_timeout * 3600); }
-                    if ($package->idle_timeout) { $setQuery->equal('idle-timeout', $package->idle_timeout * 60); }
-                    if ($package->shared_users) { $setQuery->equal('shared-users', $package->shared_users); }
+            // Remove any existing hotspot RADIUS entries pointing at our server to avoid duplicates
+            $query = new Query('/radius/print');
+            $query->where('service', 'hotspot');
+            $existing = $client->query($query)->read();
+
+            foreach ($existing as $entry) {
+                if (isset($entry['.id']) && ($entry['address'] ?? null) === $radiusHost) {
+                    $removeQuery = new Query('/radius/remove');
+                    $removeQuery->equal('.id', $entry['.id']);
+                    $client->query($removeQuery)->read();
+                }
+            }
+
+            $addQuery = new Query('/radius/add');
+            $addQuery->equal('service', 'hotspot');
+            $addQuery->equal('address', $radiusHost);
+            $addQuery->equal('secret', $secret);
+            $addQuery->equal('authentication-port', (string) config('services.radius.auth_port', 1812));
+            $addQuery->equal('accounting-port', (string) config('services.radius.acct_port', 1813));
+            $client->query($addQuery)->read();
+
+            // Enable RADIUS on all hotspot server profiles
+            $profileQuery = new Query('/ip/hotspot/profile/print');
+            $profiles = $client->query($profileQuery)->read();
+
+            foreach ($profiles as $profile) {
+                if (isset($profile['.id'])) {
+                    $setQuery = new Query('/ip/hotspot/profile/set');
+                    $setQuery->equal('.id', $profile['.id']);
+                    $setQuery->equal('use-radius', 'yes');
                     $client->query($setQuery)->read();
                 }
-            } else {
-                // Create new profile
-                $addQuery = new Query('/ip/hotspot/user/profile/add');
-                $addQuery->equal('name', $package->name);
-                if ($rateLimit) { $addQuery->equal('rate-limit', $rateLimit); }
-                if ($package->session_timeout) { $addQuery->equal('session-timeout', $package->session_timeout * 3600); }
-                if ($package->idle_timeout) { $addQuery->equal('idle-timeout', $package->idle_timeout * 60); }
-                if ($package->shared_users) { $addQuery->equal('shared-users', $package->shared_users); }
-                $client->query($addQuery)->read();
             }
-            
-            Log::info('Package synced to router', [
-                'package_id' => $package->id,
+
+            Log::info('RADIUS client provisioned on router', [
                 'router_id' => $router->id,
-                'package_name' => $package->name,
+                'radius_host' => $radiusHost,
             ]);
-            
-            return true;
-            
+
+            return ['success' => true, 'message' => 'RADIUS client provisioned successfully'];
+
         } catch (Exception $e) {
-            Log::error('Failed to sync package to router', [
-                'package_id' => $package->id,
+            Log::error('Failed to provision RADIUS client', [
                 'router_id' => $router->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
-            return false;
+
+            return ['success' => false, 'message' => 'RADIUS provisioning failed: ' . $e->getMessage()];
         }
     }
 
     /**
-     * Remove package from router
+     * Configure the router's hotspot server profile to redirect unauthenticated
+     * clients to our external captive portal instead of the router's local login page.
      */
-    public function removePackageFromRouter(\App\Models\Package $package, Router $router): bool
+    public function configureExternalPortal(Router $router, string $portalUrl): array
     {
         try {
             $client = $this->connectToRouter($router);
-            
+
             if (!$client) {
-                return false;
+                return ['success' => false, 'message' => 'Cannot connect to router'];
             }
 
-            // Check for active users using this profile
-            $query = new Query('/ip/hotspot/active/print');
-            $activeUsers = $client->query($query)->read();
-            
-            $activeCount = 0;
-            foreach ($activeUsers as $user) {
-                if (($user['profile'] ?? '') === $package->name) {
-                    $activeCount++;
+            $profileQuery = new Query('/ip/hotspot/profile/print');
+            $profiles = $client->query($profileQuery)->read();
+
+            foreach ($profiles as $profile) {
+                if (isset($profile['.id'])) {
+                    $setQuery = new Query('/ip/hotspot/profile/set');
+                    $setQuery->equal('.id', $profile['.id']);
+                    // The captive-portal handoff posts a plaintext password (PAP-style), so
+                    // http-pap must remain enabled; http-chap is kept for compatibility with
+                    // any client that submits a CHAP-hashed response.
+                    $setQuery->equal('login-by', 'http-pap,http-chap,mac-cookie');
+                    $setQuery->equal('http-cookie-lifetime', '1d');
+                    $client->query($setQuery)->read();
                 }
             }
 
-            if ($activeCount > 0) {
-                Log::warning('Cannot remove profile - active users exist', [
-                    'package_id' => $package->id,
-                    'router_id' => $router->id,
-                    'active_users' => $activeCount,
-                ]);
-                return false;
+            $portalHost = parse_url($portalUrl, PHP_URL_HOST);
+            if ($portalHost) {
+                $existingQuery = new Query('/ip/hotspot/walled-garden/print');
+                $existingQuery->where('dst-host', $portalHost);
+                $existingEntries = $client->query($existingQuery)->read();
+
+                if (empty($existingEntries)) {
+                    $addGardenQuery = new Query('/ip/hotspot/walled-garden/add');
+                    $addGardenQuery->equal('dst-host', $portalHost);
+                    $addGardenQuery->equal('action', 'accept');
+                    $client->query($addGardenQuery)->read();
+                }
             }
 
-            // Find and remove profile
-            $query = new Query('/ip/hotspot/user/profile/print');
-            $query->where('name', $package->name);
-            $profiles = $client->query($query)->read();
-            
-            if (!empty($profiles) && isset($profiles[0]['.id'])) {
-                $removeQuery = new Query('/ip/hotspot/user/profile/remove');
-                $removeQuery->equal('.id', $profiles[0]['.id']);
-                $client->query($removeQuery)->read();
-            }
-            
-            Log::info('Package removed from router', [
-                'package_id' => $package->id,
+            Log::info('External portal configured on router', [
                 'router_id' => $router->id,
-                'package_name' => $package->name,
+                'portal_url' => $portalUrl,
             ]);
-            
-            return true;
-            
+
+            return ['success' => true, 'message' => 'Router configured to use the external captive portal'];
+
         } catch (Exception $e) {
-            Log::error('Failed to remove package from router', [
-                'package_id' => $package->id,
+            Log::error('Failed to configure external portal', [
                 'router_id' => $router->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
-            return false;
+
+            return ['success' => false, 'message' => 'Portal configuration failed: ' . $e->getMessage()];
         }
     }
 

@@ -56,6 +56,9 @@
 
         <form action="{{ route('portal.process-payment', $package->id) }}" method="POST">
             @csrf
+            @if(isset($router) && $router)
+                <input type="hidden" name="router" value="{{ $router->identifier }}">
+            @endif
             <div class="form-group">
                 <x-input-label for="mode" :value="__('How would you like to receive access?')" />
                 <div style="display:flex; gap:15px; align-items:center; margin-top:16px;">

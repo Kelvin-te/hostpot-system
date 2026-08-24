@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRouterRequest;
 use App\Http\Requests\UpdateRouterRequest;
 use Illuminate\Http\Request;
+use App\Models\RadiusNas;
 use App\Models\Router;
+use App\Services\HotspotFileGeneratorService;
 use App\Services\MikroTikService;
 use App\Services\RouterIdentificationService;
+use App\Services\WinguFiCoreService;
+use Illuminate\Support\Str;
 
 class RouterController extends Controller
 {
@@ -62,7 +66,7 @@ class RouterController extends Controller
         $router->save();
 
         // Update router with hotspot status
-        $mikrotikService = new MikroTikService();
+        $mikrotikService = app(MikroTikService::class);
         $hotspotResult = $mikrotikService->testHotspotService($router);
         if ($hotspotResult['success']) {
             $router->hotspot_enabled = $hotspotResult['enabled'];
@@ -71,7 +75,100 @@ class RouterController extends Controller
             $router->save();
         }
 
+        $provisionResult = $this->provisionRouterRadiusAndCore($router);
+
+        if (!$provisionResult['success']) {
+            return redirect('router')->with(
+                'warning',
+                __('Router was created, but automatic RADIUS/WinguFi Core provisioning failed: ') . $provisionResult['message']
+                . __('. You can retry provisioning from the router page.')
+            );
+        }
+
         return redirect('router')->with('success', __('Router successfully added'));
+    }
+
+    /**
+     * Provision the local RADIUS NAS record + MikroTik RADIUS client for a router.
+     * Reused by both automatic provisioning on router creation and the manual
+     * "Provision RADIUS" action on the router detail page.
+     */
+    protected function provisionRadiusForRouter(Router $router): array
+    {
+        try {
+            $nas = RadiusNas::firstOrNew(['router_id' => $router->id]);
+
+            if (!$nas->exists) {
+                $nas->nas_identifier = $router->identifier;
+                $nas->nas_type = 'mikrotik';
+                $nas->nas_secret = Str::random(32);
+            }
+
+            $nas->nas_ip_address = $router->ip_address ?? $router->ip;
+            $nas->nas_port = $nas->nas_port ?: config('services.radius.auth_port', 1812);
+
+            $mikrotikService = app(MikroTikService::class);
+            $result = $mikrotikService->provisionRadiusClient($router, $nas->nas_secret);
+
+            if (!$result['success']) {
+                return ['success' => false, 'message' => $result['message'], 'nas' => null];
+            }
+
+            $nas->is_active = true;
+            $nas->save();
+
+            return ['success' => true, 'message' => $result['message'], 'nas' => $nas];
+        } catch (\Exception $e) {
+            \Log::error('RADIUS provisioning failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'message' => 'RADIUS provisioning failed: ' . $e->getMessage(),
+                'nas' => null,
+            ];
+        }
+    }
+
+    /**
+     * Provision the router as a local RADIUS NAS/MikroTik client, then synchronize
+     * the resulting NAS record with WinguFi Core. Both steps must succeed for this
+     * to report overall success; failures are surfaced, never swallowed.
+     */
+    protected function provisionRouterRadiusAndCore(Router $router): array
+    {
+        $localResult = $this->provisionRadiusForRouter($router);
+
+        if (!$localResult['success']) {
+            return $localResult + ['core_synced' => false];
+        }
+
+        $winguFiCore = app(WinguFiCoreService::class);
+
+        if (!$winguFiCore->isEnabled()) {
+            // WinguFi Core sync is intentionally disabled via config; local RADIUS
+            // provisioning already succeeded, so this is not treated as a failure.
+            return $localResult + ['core_synced' => false, 'core_skipped' => true];
+        }
+
+        try {
+            $winguFiCore->syncRouter($router, $localResult['nas']);
+
+            return $localResult + ['core_synced' => true];
+        } catch (\Exception $e) {
+            \Log::error('WinguFi Core router sync failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'RADIUS provisioned locally, but WinguFi Core sync failed: ' . $e->getMessage(),
+                'nas' => $localResult['nas'],
+                'core_synced' => false,
+            ];
+        }
     }
 
     /**
@@ -80,7 +177,7 @@ class RouterController extends Controller
     private function validateRouterConnection(Request $request): array
     {
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             
             // Create temporary router object for testing
             $tempRouter = new Router();
@@ -135,7 +232,7 @@ class RouterController extends Controller
         $interfaces = null;
         
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             
             // Test connection and get status
             $connectionResult = $mikrotikService->testConnection($router);
@@ -195,6 +292,8 @@ class RouterController extends Controller
             'api_port'=> 'nullable|integer|min:1|max:65535',
         ]);
 
+        $ipChanged = $validated['ip'] !== $router->ip;
+
         $router->location = $validated['location'] ? $request->location : $router->location;
         $router->ip = $validated['ip'] ? $request->ip : $router->ip;
         $router->username = $validated['username'] ? $request->username : $router->username;
@@ -202,7 +301,24 @@ class RouterController extends Controller
         $router->api_port = $validated['api_port'] ?? $router->api_port;
         $router->save();
 
-        return redirect('router')->with('success', __('Router updated successfully'));
+        if (!$ipChanged) {
+            return redirect('router')->with('success', __('Router updated successfully'));
+        }
+
+        // The router's management/RADIUS-NAS IP (e.g. its WireGuard address) changed,
+        // so the local RADIUS NAS record and WinguFi Core's radius_nas entry must be
+        // re-provisioned to reflect the new address.
+        $provisionResult = $this->provisionRouterRadiusAndCore($router);
+
+        if (!$provisionResult['success']) {
+            return redirect('router')->with(
+                'warning',
+                __('Router was updated, but automatic RADIUS/WinguFi Core re-provisioning failed: ') . $provisionResult['message']
+                . __('. You can retry provisioning from the router page.')
+            );
+        }
+
+        return redirect('router')->with('success', __('Router updated successfully, and RADIUS/WinguFi Core re-provisioned with the new IP address.'));
     }
 
     /**
@@ -228,7 +344,7 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             $result = $mikrotikService->testConnection($router);
             
             return response()->json($result);
@@ -250,7 +366,7 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             $result = $mikrotikService->getSystemInfo($router);
             
             return response()->json($result);
@@ -272,7 +388,7 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             $result = $mikrotikService->getInterfaces($router);
             
             return response()->json($result);
@@ -294,7 +410,7 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             $result = $mikrotikService->rebootRouter($router);
             
             if ($result['success']) {
@@ -321,7 +437,7 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             $result = $mikrotikService->backupRouter($router);
             
             if ($result['success']) {
@@ -348,7 +464,7 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             $result = $mikrotikService->getRouterConfig($router);
             
             if ($result['success']) {
@@ -375,7 +491,7 @@ class RouterController extends Controller
         }
 
         $routers = Router::all();
-        $mikrotikService = new MikroTikService();
+        $mikrotikService = app(MikroTikService::class);
         $statuses = [];
 
         foreach ($routers as $router) {
@@ -433,47 +549,111 @@ class RouterController extends Controller
     }
 
     /**
-     * Sync all packages to router
+     * Provision this router as a RADIUS client (NAS) against our FreeRADIUS server
      */
-    public function syncPackages(Router $router)
+    public function provisionRadius(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $result = $this->provisionRouterRadiusAndCore($router);
+
+        if (!$result['success']) {
+            return response()->json($result);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result['message'],
+            'nas_identifier' => $result['nas']->nas_identifier,
+            'core_synced' => $result['core_synced'] ?? false,
+        ]);
+    }
+
+    /**
+     * Configure the router's hotspot profile to redirect to our external captive portal
+     */
+    public function configurePortal(Router $router)
     {
         if (!auth()->user()->isAdmin()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
         try {
-            $mikrotikService = new MikroTikService();
-            $packages = \App\Models\Package::where('router_id', $router->id)->get();
-            
-            $synced = 0;
-            $failed = 0;
-            
-            foreach ($packages as $package) {
-                if ($mikrotikService->syncPackageToRouter($package, $router)) {
-                    $synced++;
-                } else {
-                    $failed++;
-                }
-            }
-            
-            // Update router sync tracking
-            $router->last_synced_at = now();
-            $router->packages_sync_count = $synced;
-            $router->packages_unsync_count = $failed;
-            $router->save();
-            
-            return response()->json([
-                'success' => true,
-                'message' => "Synced $synced packages, $failed failed",
-                'synced' => $synced,
-                'failed' => $failed,
-            ]);
+            $mikrotikService = app(MikroTikService::class);
+            $portalUrl = route('portal.landing', ['router' => $router->identifier]);
+            $result = $mikrotikService->configureExternalPortal($router, $portalUrl);
+
+            return response()->json($result);
         } catch (\Exception $e) {
+            \Log::error('Portal configuration failed', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Sync failed: ' . $e->getMessage()
+                'message' => 'Portal configuration failed: ' . $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Re-detect the router's HotSpot gateway/server IP, interface, and
+     * enabled state directly from RouterOS (hotspot-address on the active
+     * hotspot profile, falling back to the hotspot interface's own IP).
+     * Does NOT touch the router's management IP (routers.ip/ip_address).
+     * Use this to backfill hotspot_server_ip for routers provisioned before
+     * this detection existed, or after re-configuring the hotspot profile.
+     */
+    public function syncHotspotInfo(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $mikrotikService = app(MikroTikService::class);
+        $hotspotResult = $mikrotikService->testHotspotService($router);
+
+        if (!$hotspotResult['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $hotspotResult['message'] ?? 'Failed to detect hotspot info',
+            ]);
+        }
+
+        $router->hotspot_enabled = $hotspotResult['enabled'];
+        $router->hotspot_interface = $hotspotResult['interface'];
+        $router->hotspot_server_ip = $hotspotResult['server_ip'];
+        $router->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hotspot info synced successfully',
+            'hotspot_enabled' => $router->hotspot_enabled,
+            'hotspot_interface' => $router->hotspot_interface,
+            'hotspot_server_ip' => $router->hotspot_server_ip,
+        ]);
+    }
+
+    /**
+     * Generate and download the customized MikroTik hotspot HTML file set
+     * (login/error/logout/status + css) for this router, with the router's
+     * identifier, portal URL, and company name pre-filled.
+     */
+    public function downloadHotspotFiles(Router $router)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return redirect('/');
+        }
+
+        $generator = new HotspotFileGeneratorService();
+        $zipPath = $generator->generateZip($router);
+
+        return response()->download(
+            $zipPath,
+            'hotspot-files-' . $router->identifier . '.zip'
+        )->deleteFileAfterSend(true);
     }
 
     /**
@@ -486,7 +666,7 @@ class RouterController extends Controller
         }
 
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             
             // Get walled garden settings from app settings
             $settings = \App\Models\Setting::first();
@@ -540,7 +720,7 @@ class RouterController extends Controller
     public function getDiagnostics(Router $router)
     {
         try {
-            $mikrotikService = new MikroTikService();
+            $mikrotikService = app(MikroTikService::class);
             $diagnostics = $mikrotikService->getRouterDiagnostics($router);
             
             return response()->json([

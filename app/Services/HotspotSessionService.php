@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ActiveSessionConflictException;
 use App\Models\HotspotSession;
 use App\Models\Package;
 use App\Models\User;
@@ -53,6 +54,10 @@ class HotspotSessionService
             if ($existing->package_id === $package->id) {
                 return $existing;
             }
+
+            // Device is active on a different package. Never silently create
+            // a second concurrent active session for the same device.
+            throw new ActiveSessionConflictException($existing);
         }
 
         // Create authorization first
@@ -80,7 +85,17 @@ class HotspotSessionService
         ];
 
         $session = HotspotSession::createSession($sessionData);
-        
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'HotspotSessionService::createSessionForPackage:session_created',
+            'authorization_id' => $authorization->id,
+            'client_identifier' => $username,
+            'username' => $authorization->radius_username,
+            'package_id' => $package->id,
+            'hotspot_session_id' => $session->session_id,
+            'mac_address' => $deviceInfo['mac_address'],
+        ]);
+
         // NOTE: Direct MikroTik API call removed - will be handled by WinguFi Core + FreeRADIUS in future
         
         return $session;

@@ -27,6 +27,24 @@ class DeviceIdentificationService
     }
 
     /**
+     * Generate a stable client identifier for a guest device.
+     *
+     * Prefers a hashed MAC address (stable across DHCP/NAT IP changes).
+     * Falls back to the device fingerprint (which includes IP) only when no
+     * MAC address is available. Never returns the raw MAC address.
+     */
+    public function getStableClientIdentifier(Request $request): string
+    {
+        $mac = $this->getMacAddress($request);
+
+        if ($mac) {
+            return 'device-' . hash('sha256', $mac);
+        }
+
+        return 'device-' . $this->generateDeviceFingerprint($request);
+    }
+
+    /**
      * Extract MAC address from request
      * Note: This depends on MikroTik configuration and how it passes MAC address
      */
