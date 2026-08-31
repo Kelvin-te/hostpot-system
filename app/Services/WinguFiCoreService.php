@@ -93,7 +93,7 @@ class WinguFiCoreService
             'download_speed' => $package->bandwidth_download ? (int) ($package->bandwidth_download * 1000000) : null,
             'upload_speed' => $package->bandwidth_upload ? (int) ($package->bandwidth_upload * 1000000) : null,
             'validity_seconds' => $this->packageValiditySeconds($package),
-            'session_timeout' => $package->session_timeout ? (int) ($package->session_timeout * 3600) : null,
+            'session_timeout' => $package->getSessionTimeoutSeconds(),
             'data_limit_bytes' => $this->dataLimitBytes($package),
             'status' => $package->is_active ? 'active' : 'inactive',
         ]);

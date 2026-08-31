@@ -42,24 +42,28 @@
             <span id="statusMessage">Waiting for payment confirmation...</span>
         </div>
 
+        <div id="statusError" style="display:none; background:#f8d7da; border:1px solid #f5c6cb; border-radius:5px; padding:12px; margin:15px 0; color:#721c24; font-size:.9em;"></div>
+
         <div id="countdown" class="countdown">Time remaining: <span id="timeRemaining">5:00</span></div>
 
         <div class="instructions">
-            <strong>📱 Complete Your Payment:</strong>
+            <strong>Complete Your Payment:</strong>
             1. Check your phone for the M-Pesa payment prompt<br>
             2. Enter your M-Pesa PIN to confirm payment<br>
             3. Wait for the confirmation message<br>
             4. Your internet will be activated automatically
         </div>
 
+        <div id="pendingHint" style="display:none; background:#fff3cd; border:1px solid #ffeaa7; border-radius:5px; padding:12px; margin:15px 0; color:#856404; font-size:.9em;"></div>
+
         <div id="actionButtons">
-            <button type="button" class="btn btn-orange" onclick="checkPaymentStatus()">🔄 Check Payment Status</button>
-            <a href="{{ route('portal.index') }}" class="btn btn-light">← Back to Packages</a>
+            <button type="button" class="btn btn-orange" onclick="checkPaymentStatus()">Check Payment Status</button>
+            <a href="{{ route('portal.index') }}" class="btn btn-light">Back to Packages</a>
         </div>
 
         <div id="successActions" style="display:none;">
-            <a href="#" id="continueHandoffBtn" class="btn btn-green">🌐 Continue to Internet</a>
-            <a href="{{ route('portal.index') }}" class="btn btn-light">← Back to Packages</a>
+            <a href="#" id="continueHandoffBtn" class="btn btn-green">Continue to Internet</a>
+            <a href="{{ route('portal.index') }}" class="btn btn-light">Back to Packages</a>
         </div>
     </div>
 @endsection
@@ -77,6 +81,8 @@ let checkoutRequestId = '{{ $checkoutRequestId }}';
 let statusCheckInterval, countdownInterval;
 let timeRemaining = 300; // 5 minutes
 let isPaymentCompleted = false;
+let isCheckingStatus = false;
+let elapsedSeconds = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     startStatusChecking();
@@ -92,7 +98,10 @@ function startCountdown() {
     updateCountdownDisplay();
     countdownInterval = setInterval(function() {
         timeRemaining--;
+        elapsedSeconds++;
         updateCountdownDisplay();
+        updatePendingHint(elapsedSeconds);
+
         if (timeRemaining <= 0) {
             clearInterval(countdownInterval);
             clearInterval(statusCheckInterval);
@@ -107,14 +116,35 @@ function updateCountdownDisplay() {
     document.getElementById('timeRemaining').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+function updatePendingHint(elapsed) {
+    const hint = document.getElementById('pendingHint');
+    if (!hint || isPaymentCompleted) return;
+
+    if (elapsed >= 60) {
+        hint.style.display = 'block';
+        hint.innerHTML = '<strong>Still waiting?</strong> Make sure you entered your M-Pesa PIN and have sufficient balance. If you did not receive the prompt, click <strong>Check Payment Status</strong> below.';
+    } else if (elapsed >= 30) {
+        hint.style.display = 'block';
+        hint.innerHTML = '<strong>Taking longer than usual.</strong> Please check your phone and enter your M-Pesa PIN if prompted.';
+    }
+}
+
 function checkPaymentStatus() {
-    if (isPaymentCompleted) return;
+    if (isPaymentCompleted || isCheckingStatus) return;
+    isCheckingStatus = true;
+    showCheckingState(true);
+
     fetch('{{ route('portal.check-payment-status') }}', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify({ checkout_request_id: checkoutRequestId })
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) throw new Error('Network response was not ok');
+        return r.json();
+    })
     .then(data => {
+        showCheckingState(false);
         if (data.success) {
             updateStatusDisplay(data.status, data.message);
             if (data.status === 'completed') {
@@ -125,10 +155,32 @@ function checkPaymentStatus() {
                 handleTimeout();
             }
         } else {
-            console.error('Status check failed:', data.message);
+            showError(data.message || 'Unable to check payment status. Please try again.');
         }
     })
-    .catch(err => console.error('Error checking payment status:', err));
+    .catch(err => {
+        showCheckingState(false);
+        showError('Connection problem while checking status. Retrying...');
+        console.error('Error checking payment status:', err);
+    })
+    .finally(() => {
+        isCheckingStatus = false;
+    });
+}
+
+function showCheckingState(show) {
+    const indicator = document.getElementById('statusIndicator');
+    if (!show || isPaymentCompleted) return;
+    indicator.className = 'status-indicator status-pending';
+    indicator.innerHTML = '<div class="spinner"></div><span>Checking payment status...</span>';
+}
+
+function showError(message) {
+    const errorBox = document.getElementById('statusError');
+    if (!errorBox) return;
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+    setTimeout(() => { errorBox.style.display = 'none'; }, 5000);
 }
 
 function updateStatusDisplay(status, message) {
@@ -137,15 +189,15 @@ function updateStatusDisplay(status, message) {
     switch(status) {
         case 'completed':
             indicator.classList.add('status-completed');
-            indicator.innerHTML = '<span style="margin-right:10px;">✅</span><span>' + message + '</span>';
+            indicator.innerHTML = '<span style="margin-right:10px;">&#10004;</span><span>' + message + '</span>';
             break;
         case 'failed':
             indicator.classList.add('status-failed');
-            indicator.innerHTML = '<span style="margin-right:10px;">❌</span><span>' + message + '</span>';
+            indicator.innerHTML = '<span style="margin-right:10px;">&#10008;</span><span>' + message + '</span>';
             break;
         case 'expired':
             indicator.classList.add('status-expired');
-            indicator.innerHTML = '<span style="margin-right:10px;">⏰</span><span>' + message + '</span>';
+            indicator.innerHTML = '<span style="margin-right:10px;">&#9202;</span><span>' + message + '</span>';
             break;
         default:
             indicator.classList.add('status-pending');
@@ -172,8 +224,8 @@ function handlePaymentFailure(data) {
     document.getElementById('countdown').style.display = 'none';
     const actionButtons = document.getElementById('actionButtons');
     actionButtons.innerHTML = `
-        <a href="{{ route('portal.purchase', $package) }}" class="btn btn-orange">🔄 Try Payment Again</a>
-        <a href="{{ route('portal.index') }}" class="btn btn-light">← Back to Packages</a>
+        <a href="{{ route('portal.purchase', $package) }}" class="btn btn-orange">Try Payment Again</a>
+        <a href="{{ route('portal.index') }}" class="btn btn-danger">Cancel</a>
     `;
 }
 
@@ -184,8 +236,8 @@ function handleTimeout() {
     document.getElementById('countdown').style.display = 'none';
     const actionButtons = document.getElementById('actionButtons');
     actionButtons.innerHTML = `
-        <a href="{{ route('portal.purchase', $package) }}" class="btn btn-orange">🔄 Try Payment Again</a>
-        <a href="{{ route('portal.index') }}" class="btn btn-light">← Back to Packages</a>
+        <a href="{{ route('portal.purchase', $package) }}" class="btn btn-orange">Try Payment Again</a>
+        <a href="{{ route('portal.index') }}" class="btn btn-danger">Cancel</a>
     `;
 }
 

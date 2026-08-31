@@ -562,14 +562,17 @@ class MikroTikService
      */
     protected function formatSessionTimeout($package): string
     {
-        $hours = $package->session_timeout ?? 24; // Default 24 hours
-        
-        // Convert hours to HH:MM:SS format
-        $totalMinutes = $hours * 60;
-        $hoursFormatted = str_pad(floor($totalMinutes / 60), 2, '0', STR_PAD_LEFT);
-        $minutesFormatted = str_pad($totalMinutes % 60, 2, '0', STR_PAD_LEFT);
-        
-        return $hoursFormatted . ':' . $minutesFormatted . ':00';
+        $seconds = $package->getSessionTimeoutSeconds();
+
+        if ($seconds === null) {
+            $seconds = 86400; // Default 24 hours
+        }
+
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $remainingSeconds = $seconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $remainingSeconds);
     }
 
     /**

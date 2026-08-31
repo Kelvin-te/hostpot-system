@@ -34,12 +34,6 @@
                     <td style="text-align: right; color: #444;">{{ intval($package->bandwidth_download) }}@if($package->bandwidth_upload) / {{ intval($package->bandwidth_upload) }}@endif Mbps</td>
                 </tr>
                 @endif
-                @if($package->session_timeout)
-                <tr>
-                    <td class="package-name">Session</td>
-                    <td style="text-align: right; color: #444;">{{ $package->session_timeout }} hours</td>
-                </tr>
-                @endif
                 @if($package->validity_days)
                 <tr>
                     <td class="package-name">Validity</td>

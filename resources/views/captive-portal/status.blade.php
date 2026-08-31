@@ -14,6 +14,7 @@
     .status-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 20px; font-size: .9em; font-weight: 500; margin-bottom: 20px; }
     .status-active { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .status-expired { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .status-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
     .refresh-timer { text-align: center; color: #6c757d; font-size: .8em; margin-top: 10px; }
     @media (max-width: 480px) { .form-widget { min-width: 350px; max-width: 400px; } }
 @endpush
@@ -29,6 +30,11 @@
                     🔴 Session Expired
                 @endif
             </div>
+            @if($sessionStatus['is_active'] && $activeSession->expires_at->diffInMinutes(now()) <= 5)
+                <div class="status-indicator status-warning">
+                    Expires {{ $activeSession->expires_at->diffForHumans() }}
+                </div>
+            @endif
         </div>
 
         <table class="status-table">
@@ -72,11 +78,14 @@
         @if($sessionStatus['is_active'])
              <form action="{{ route('portal.disconnect') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to disconnect?')">🚪 Disconnect</button>
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to disconnect?')">Disconnect</button>
             </form>
-            <button type="button" class="btn btn-green" onclick="window.open('https://google.com', '_blank')">🌐 Browse</button>
+            <div class="flex gap-2">
+                <button type="button" class="btn btn-green" onclick="window.open('https://google.com', '_blank')">Browse</button>
+                <a href="{{ route('portal.resume-paid-session') }}" class="btn bg-blue-600 text-white">Re-authenticate</a>
+            </div>
         @else
-            <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('portal.index') }}'">📦 Select New Package</button>
+            <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('portal.index') }}'">Select New Package</button>
         @endif
         </div>
 

@@ -53,6 +53,13 @@ class MpesaService
                 'status' => $response->status(),
                 'body' => $response->body(),
                 'url' => $url,
+                'env' => config('mpesa.env'),
+                'server_name' => $response->header('Server'),
+                'content_type' => $response->header('Content-Type'),
+                // An empty body + 400 usually means the request was rejected
+                // at Safaricom's edge/gateway (e.g. IP not whitelisted for
+                // the production app) rather than a real Daraja API error,
+                // which normally returns a JSON body even on failure.
             ]);
 
             return null;
@@ -257,12 +264,24 @@ class MpesaService
                 return false;
             }
 
-            // Find the transaction
+            // Find the transaction first; CheckoutRequestID is the unique key.
             $transaction = PaymentTransaction::where('checkout_request_id', $checkoutRequestId)->first();
 
             if (!$transaction) {
                 Log::error('Transaction not found for callback', [
                     'checkout_request_id' => $checkoutRequestId
+                ]);
+                return false;
+            }
+
+            // Only handle callbacks that belong to this WinguFi platform instance.
+            // The stored account_reference uses the HSP{tenant_id} prefix for all
+            // platform payments so upstream routers/aggregators can identify them.
+            $accountReference = $transaction->account_reference;
+            if (!$accountReference || !str_starts_with(strtoupper($accountReference), 'HSP')) {
+                Log::info('Ignoring non-WinguFi M-Pesa callback', [
+                    'checkout_request_id' => $checkoutRequestId,
+                    'account_reference' => $accountReference,
                 ]);
                 return false;
             }

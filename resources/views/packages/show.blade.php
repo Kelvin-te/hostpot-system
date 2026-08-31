@@ -86,10 +86,6 @@
                             </h4>
                             <div class="space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Session Timeout:</span>
-                                    <span class="font-semibold text-gray-900">{{ $package->session_timeout ?? 'N/A' }} hours</span>
-                                </div>
-                                <div class="flex justify-between">
                                     <span class="text-gray-600">Idle Timeout:</span>
                                     <span class="font-semibold text-gray-900">{{ $package->idle_timeout ?? 'N/A' }} minutes</span>
                                 </div>

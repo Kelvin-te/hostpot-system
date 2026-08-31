@@ -171,8 +171,9 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->prefix('staff')->name('sta
     Route::delete('/{staff}', [StaffController::class, 'destroy'])->name('destroy');
 });
 
-// M-Pesa Callback Route (Public - No Authentication Required)
-Route::post('/api/mpesa/callback', [CaptivePortalController::class, 'mpesaCallback'])->name('mpesa.callback');
+// Payment Gateway Callback (Public - No Authentication Required)
+// Deliberately opaque URL to avoid advertising the payment provider
+Route::post('/api/mobile/m/callback', [CaptivePortalController::class, 'mpesaCallback'])->name('mpesa.callback');
 
 // Include Captive Portal Routes (Public - No Authentication Required)
 require __DIR__.'/captive-portal.php';

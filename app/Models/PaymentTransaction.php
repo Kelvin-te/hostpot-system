@@ -28,7 +28,8 @@ class PaymentTransaction extends Model
         'callback_data',
         'package_id',
         'user_id',
-        'session_id'
+        'session_id',
+        'voucher_id'
     ];
 
     protected $casts = [

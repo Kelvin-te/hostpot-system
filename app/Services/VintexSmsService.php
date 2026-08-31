@@ -43,9 +43,10 @@ class VintexSmsService
                 throw new Exception('Invalid phone number format');
             }
 
-            $response = Http::asForm()->withHeaders([
+            $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->bearerToken,
-            ])->post($this->apiUrl . '?email=' . $this->email, [
+                'Content-Type' => 'application/json',
+            ])->post($this->apiUrl . '?email=' . urlencode($this->email), [
                 'recipients' => $normalizedPhone,
                 'senderID' => $this->senderId,
                 'message' => $message
@@ -189,10 +190,19 @@ class VintexSmsService
     public function getBalance(): array
     {
         try {
+            if (empty($this->email) || empty($this->bearerToken)) {
+                Log::error('Vintex SMS credentials are not configured');
+                return [
+                    'success' => false,
+                    'message' => 'SMS credentials not configured',
+                    'data' => null,
+                ];
+            }
+
             // use endpoint https://sms.vintextechnologies.com/api/getUnitBalance
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->bearerToken,
-            ])->get('https://sms.vintextechnologies.com/api/getUnitBalance');
+            ])->get('https://sms.vintextechnologies.com/api/getUnitBalance?email=' . urlencode($this->email));
             
             $result = $response->json();
             

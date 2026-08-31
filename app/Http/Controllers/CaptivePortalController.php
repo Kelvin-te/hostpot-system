@@ -333,9 +333,12 @@ class CaptivePortalController extends Controller
 
         try {
             // Initiate M-Pesa STK Push
-            // PayBill AccountReference must be <= 12 alphanumeric chars
-            $rawRef = 'HSP-' . $package->id;
-            $accountReference = substr(preg_replace('/[^A-Z0-9]/i', '', strtoupper($rawRef)), 0, 12);
+            // PayBill AccountReference must be <= 12 alphanumeric chars. We use a
+            // tenant-scoped HSP prefix so any upstream shared-paybill callback router
+            // can identify payments belonging to this WinguFi tenant.
+            // Format: HSP{tenant_id}
+            $tenantId = strtoupper(preg_replace('/[^A-Z0-9]/i', '', config('mpesa.tenant_id', 'default')));
+            $accountReference = substr('HSP' . $tenantId, 0, 12);
             $transactionDesc = $package->name . ' - Internet Package';
             
             $stkResult = $this->mpesaService->stkPush(
@@ -434,57 +437,113 @@ class CaptivePortalController extends Controller
             ]);
         }
 
-        // If transaction is still pending and not expired, query M-Pesa
-        if ($transaction->isPending() && !$transaction->isExpired()) {
+        // If a local callback record already exists we trust it and skip the
+        // Safaricom STK Query API call. The stkCallback is the authoritative
+        // source for STK Push results.
+        $callbackReceived = $transaction->callback_data !== null;
+        $statusResolved = !$transaction->isPending() || $callbackReceived;
+
+        if ($statusResolved) {
+            Log::info('Payment status resolved from local callback record; skipping STK Query', [
+                'checkout_request_id' => $checkoutRequestId,
+                'status' => $transaction->status,
+                'callback_received' => $callbackReceived,
+            ]);
+        }
+
+        // If transaction is still pending, not expired, and no callback has arrived,
+        // query Safaricom as a fallback.
+        if ($transaction->isPending() && !$transaction->isExpired() && !$callbackReceived) {
             $queryResult = $this->mpesaService->queryTransaction($checkoutRequestId);
-            
+
+            Log::info('Safaricom STK Query response', [
+                'checkout_request_id' => $checkoutRequestId,
+                'query_success' => $queryResult['success'] ?? null,
+                'query_message' => $queryResult['message'] ?? null,
+                'query_data' => $queryResult['data'] ?? null,
+            ]);
+
             if ($queryResult['success']) {
                 $responseData = $queryResult['data'];
                 $resultCode = $responseData['ResultCode'] ?? null;
-                
-                if ($resultCode == 0) {
-                    // Payment successful - update transaction
+                $resultDesc = $responseData['ResultDesc'] ?? ($responseData['ResponseDescription'] ?? null);
+
+                // Safaricom sometimes reports intermediate states where the transaction
+                // has not yet succeeded or failed. Keep polling; do not mark as failed.
+                $isProcessing = $resultDesc && (
+                    str_contains(strtolower($resultDesc), 'processing')
+                    || str_contains(strtolower($resultDesc), 'under process')
+                );
+                $knownPendingCodes = [4999]; // "The transaction is still under processing"
+
+                if ($isProcessing || in_array((int) $resultCode, $knownPendingCodes, true)) {
+                    if (!$transaction->isPending()) {
+                        $transaction->update([
+                            'status' => 'pending',
+                            'result_code' => $resultCode,
+                            'result_description' => $resultDesc,
+                        ]);
+                    }
+
+                    Log::info('STK Query reports transaction still processing; keeping pending', [
+                        'checkout_request_id' => $checkoutRequestId,
+                        'result_code' => $resultCode,
+                        'result_description' => $resultDesc,
+                    ]);
+                } elseif ($resultCode == 0) {
                     $transaction->markAsCompleted([
                         'result_code' => $resultCode,
-                        'result_description' => $responseData['ResultDesc'] ?? 'Payment successful'
+                        'result_description' => $resultDesc ?? 'Payment successful'
                     ]);
-                } elseif ($resultCode && $resultCode != 1032) { // 1032 = Request cancelled by user (still pending)
-                    // Payment failed
+                } elseif ($resultCode && $resultCode != 1032) { // 1032 = Request cancelled by user
                     $transaction->markAsFailed(
-                        $responseData['ResultDesc'] ?? 'Payment failed',
+                        $resultDesc ?? 'Payment failed',
                         $resultCode
                     );
                 }
             }
         }
 
-        // Check if payment is completed and create session or generate voucher
+        // Check if payment is completed and create session or generate voucher.
+        // Guard against duplicate activation using the stored session_id or voucher link.
         if ($transaction->isCompleted()) {
             try {
                 $mode = session('purchase_mode', 'activate');
+
                 if ($mode === 'voucher') {
-                    // Generate a voucher and send via SMS
-                    $expiresAt = now()->addDays(30);
-                    $pkg = $transaction->package; // lazy-load ok
-                    $created = Voucher::createBatch($pkg->id, 1, $expiresAt);
-                    $voucher = $created[0];
+                    // Idempotency: if a voucher was already generated for this transaction, reuse it.
+                    $voucher = null;
+                    if ($transaction->voucher_id) {
+                        $voucher = Voucher::find($transaction->voucher_id);
+                    }
 
-                    // Send voucher to customer's phone via SMS
-                    $phone = session('customer_phone');
-                    $this->smsService->sendVoucherSms(
-                        $phone,
-                        $voucher->code,
-                        $pkg->name,
-                        $voucher->expires_at?->format('j M Y')
-                    );
+                    if (!$voucher) {
+                        $expiresAt = now()->addDays(30);
+                        $pkg = $transaction->package;
+                        $created = Voucher::createBatch($pkg->id, 1, $expiresAt);
+                        $voucher = $created[0];
+                        $transaction->update(['voucher_id' => $voucher->id]);
 
-                    // Clear payment session data
+                        $phone = session('customer_phone');
+                        $this->smsService->sendVoucherSms(
+                            $phone,
+                            $voucher->code,
+                            $pkg->name,
+                            $voucher->expires_at?->format('j M Y')
+                        );
+
+                        Log::info('Voucher generated and sent via SMS after payment', [
+                            'voucher_code' => $voucher->code,
+                            'transaction_id' => $transaction->id,
+                        ]);
+                    } else {
+                        Log::info('Reusing already generated voucher for transaction', [
+                            'voucher_code' => $voucher->code,
+                            'transaction_id' => $transaction->id,
+                        ]);
+                    }
+
                     session()->forget(['payment_transaction_id', 'checkout_request_id', 'package_id', 'customer_phone', 'customer_name', 'purchase_mode']);
-
-                    Log::info('Voucher generated and sent via SMS after payment', [
-                        'voucher_code' => $voucher->code,
-                        'transaction_id' => $transaction->id,
-                    ]);
 
                     return response()->json([
                         'success' => true,
@@ -493,22 +552,40 @@ class CaptivePortalController extends Controller
                         'redirect_url' => route('portal.index')
                     ]);
                 } else {
-                    // NOTE: This now creates authorization first, then session
+                    // Idempotency: if a session was already created, reuse it.
+                    if ($transaction->session_id) {
+                        $existingSession = \App\Models\HotspotSession::where('session_id', $transaction->session_id)->first();
+
+                        if ($existingSession) {
+                            Log::info('Reusing existing hotspot session after successful payment', [
+                                'session_id' => $transaction->session_id,
+                                'transaction_id' => $transaction->id,
+                            ]);
+
+                            session()->forget(['payment_transaction_id', 'checkout_request_id', 'package_id', 'customer_phone', 'customer_name', 'purchase_mode']);
+
+                            return response()->json([
+                                'success' => true,
+                                'status' => 'completed',
+                                'message' => 'Payment successful! Please wait while we connect you.',
+                                'redirect_url' => URL::signedRoute('portal.handoff', ['session' => $transaction->session_id], now()->addMinutes(5))
+                            ]);
+                        }
+                    }
+
                     $session = $this->sessionService->createSessionForPackage(
                         $request,
                         $transaction->package,
-                        null, // user (for guest purchases)
-                        session('customer_phone'), // username/identifier
+                        null,
+                        session('customer_phone'),
                         $transaction->id
                     );
 
                     $portalSession = $this->portalService->createSession($request, $router);
                     $this->portalService->linkSession($portalSession, $session);
 
-                    // Update transaction with session ID
                     $transaction->update(['session_id' => $session->session_id]);
 
-                    // Clear payment session data
                     session()->forget(['payment_transaction_id', 'checkout_request_id', 'package_id', 'customer_phone', 'customer_name', 'purchase_mode']);
 
                     Log::info('Hotspot session created after successful payment', [
@@ -535,7 +612,16 @@ class CaptivePortalController extends Controller
             } catch (\Exception $e) {
                 Log::error('Failed to create session after payment', [
                     'error' => $e->getMessage(),
-                    'transaction_id' => $transaction->id
+                    'trace' => $e->getTraceAsString(),
+                    'transaction_id' => $transaction->id,
+                    'mpesa_receipt' => $transaction->mpesa_receipt_number,
+                    'package_id' => $transaction->package_id,
+                    'session_id' => $transaction->session_id,
+                    'voucher_id' => $transaction->voucher_id,
+                    'purchase_mode' => session('purchase_mode', 'activate'),
+                    'router' => $router?->id ?? null,
+                    'request_has_router_param' => $request->has('router'),
+                    'request_has_mac' => $request->has('mac'),
                 ]);
 
                 $message = app()->hasDebugModeEnabled()
@@ -802,6 +888,144 @@ class CaptivePortalController extends Controller
             'has_chap_id' => (bool) $portalSession->chap_id,
             'has_chap_challenge' => (bool) $portalSession->chap_challenge,
             'timestamp' => now()->toIso8601String(),
+        ]);
+
+        return view('captive-portal.handoff', [
+            'linkLogin' => $portalSession->link_login,
+            'linkOrig' => $portalSession->link_orig,
+            'chapId' => $portalSession->chap_id,
+            'chapChallenge' => $portalSession->chap_challenge,
+            'username' => $authorization->radius_username,
+            'password' => $password,
+        ]);
+    }
+
+    /**
+     * Re-authenticate a paid hotspot session.
+     *
+     * Use this when the initial handoff failed due to transient infrastructure
+     * issues (e.g. RADIUS/WireGuard down) but the payment/session is still valid.
+     * It looks up the latest completed transaction for the current device, reuses
+     * the existing hotspot session and authorization, and renders the MikroTik
+     * handoff form again.
+     */
+    public function resumePaidSession(Request $request)
+    {
+        $deviceInfo = $this->deviceService->getDeviceInfo($request);
+        $clientMac = $deviceInfo['mac_address'] ?? null;
+        $clientIp = $deviceInfo['ip_address'] ?? null;
+        $phone = session('customer_phone') ?? $request->input('phone');
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'resumePaidSession:entry',
+            'client_mac' => $clientMac,
+            'client_ip' => $clientIp,
+            'phone_in_session' => session('customer_phone'),
+            'phone_in_request' => $request->input('phone'),
+            'query_params' => $request->query(),
+        ]);
+
+        // Find a completed transaction that has a still-active hotspot session
+        // for the current device. Match by MAC/IP first, then by phone number.
+        $sessionIds = \App\Models\HotspotSession::active()
+            ->where(function ($q) use ($clientMac, $clientIp, $phone) {
+                if ($clientMac) {
+                    $q->orWhere('mac_address', $clientMac);
+                }
+                if ($clientIp) {
+                    $q->orWhere('ip_address', $clientIp);
+                }
+                if ($phone) {
+                    $q->orWhere('username', $phone);
+                }
+            })
+            ->pluck('session_id');
+
+        $transactionQuery = PaymentTransaction::where('status', 'completed')
+            ->whereNotNull('session_id')
+            ->where(function ($q) use ($sessionIds, $phone) {
+                $q->whereIn('session_id', $sessionIds);
+                if ($phone) {
+                    $q->orWhere('phone_number', $phone);
+                }
+            })
+            ->with('package.router')
+            ->latest();
+
+        $transaction = $transactionQuery->first();
+
+        if (!$transaction || !$transaction->session_id) {
+            Log::info('resumePaidSession: no completed transaction found', [
+                'client_mac' => $clientMac,
+                'client_ip' => $clientIp,
+                'phone' => $phone,
+            ]);
+
+            return redirect()->route('portal.index')->with('info', 'No paid session found for this device. Please select a package.');
+        }
+
+        $session = \App\Models\HotspotSession::with(['authorization', 'package.router'])
+            ->where('session_id', $transaction->session_id)
+            ->first();
+
+        if (!$session) {
+            return redirect()->route('portal.index')->with('error', 'Paid session not found. Please contact support.');
+        }
+
+        if (!$session->isActive()) {
+            return redirect()->route('portal.index')->with('info', 'Your paid session has expired. Please select a new package.');
+        }
+
+        $authorization = $session->authorization;
+        if (!$authorization || !$authorization->isActive()) {
+            return redirect()->route('portal.index')->with('error', 'Your authorization is no longer active.');
+        }
+
+        // If the device reconnected and got a different IP/MAC, update the
+        // stored session so the subsequent handoff succeeds.
+        if (($clientMac && $session->mac_address !== $clientMac) || ($clientIp && $session->ip_address !== $clientIp)) {
+            $session->update(array_filter([
+                'mac_address' => $clientMac ?: $session->mac_address,
+                'ip_address' => $clientIp ?: $session->ip_address,
+            ]));
+
+            Log::info('resumePaidSession: updated session device info', [
+                'session_id' => $session->session_id,
+                'mac' => $clientMac,
+                'ip' => $clientIp,
+            ]);
+        }
+
+        // Build a fresh captive-portal session from the current MikroTik
+        // redirect parameters and link it to the paid hotspot session.
+        $portalSession = $this->portalService->createSession($request, $session->package?->router);
+        $this->portalService->linkSession($portalSession, $session);
+
+        if (!$portalSession->link_login) {
+            Log::warning('resumePaidSession: missing link_login', [
+                'session_id' => $session->session_id,
+                'portal_session_id' => $portalSession->id,
+            ]);
+
+            return redirect()->route('portal.index')->with('error', 'Could not connect to the hotspot. Please reconnect to WiFi and try again.');
+        }
+
+        try {
+            $password = $authorization->radiusPassword();
+        } catch (\Exception $e) {
+            Log::error('resumePaidSession: failed to decrypt RADIUS password', [
+                'authorization_id' => $authorization->id,
+                'session_id' => $session->session_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('portal.index')->with('error', 'Unable to retrieve login credentials.');
+        }
+
+        Log::info('resumePaidSession: rendering handoff', [
+            'session_id' => $session->session_id,
+            'transaction_id' => $transaction->id,
+            'portal_session_id' => $portalSession->id,
         ]);
 
         return view('captive-portal.handoff', [
@@ -1225,35 +1449,59 @@ class CaptivePortalController extends Controller
      */
     public function mpesaCallback(Request $request)
     {
+        // Log as much as possible before any processing so we can diagnose
+        // delivery issues even if parsing or service logic fails.
+        Log::info('M-Pesa callback raw request received', [
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'headers' => $request->headers->all(),
+            'ip' => $request->ip(),
+            'content' => $request->getContent(),
+            'parsed' => $request->all(),
+        ]);
+
         try {
             $callbackData = $request->all();
-            
-            Log::info('M-Pesa callback received', $callbackData);
-            
+
             $success = $this->mpesaService->handleCallback($callbackData);
-            
+
             if ($success) {
                 return response()->json([
                     'ResultCode' => 0,
                     'ResultDesc' => 'Success'
                 ]);
             }
-            
+
             return response()->json([
                 'ResultCode' => 1,
                 'ResultDesc' => 'Failed to process callback'
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Exception handling M-Pesa callback', [
                 'error' => $e->getMessage(),
                 'request_data' => $request->all()
             ]);
-            
+
             return response()->json([
                 'ResultCode' => 1,
                 'ResultDesc' => 'Internal server error'
             ]);
         }
+    }
+
+    /**
+     * Public callback reachability test.
+     * Safaricom callbacks are POST, but this GET endpoint lets you confirm
+     * DNS, SSL, routing, and that the path is not blocked by middleware/CDN.
+     */
+    public function mpesaCallbackTest(Request $request)
+    {
+        return response()->json([
+            'status' => 'callback endpoint reachable',
+            'method' => $request->method(),
+            'time' => now()->toDateTimeString(),
+            'ip' => $request->ip(),
+        ]);
     }
 }

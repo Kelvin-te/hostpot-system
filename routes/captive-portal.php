@@ -46,6 +46,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
     
     // MikroTik handoff
     Route::get('/handoff/{session}', [CaptivePortalController::class, 'handoff'])->name('handoff');
+    Route::get('/resume-paid-session', [CaptivePortalController::class, 'resumePaidSession'])->name('resume-paid-session');
 
     // Session status and management
     Route::get('/status', [CaptivePortalController::class, 'showStatus'])->name('status');

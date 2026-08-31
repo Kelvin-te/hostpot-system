@@ -97,18 +97,13 @@
                         <!-- Time Limits -->
                         <div class="bg-blue-50 p-4 rounded-lg">
                             <h3 class="text-md font-semibold text-gray-900 mb-3">⏰ Time Limits</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div>
-                                    <x-input-label for="session_timeout" :value="__('Session Timeout (hours)')" class="mt-2"></x-input-label>
-                                    <x-text-input id="session_timeout" name="session_timeout" type="number" class="mt-1 block w-full" :value="old('session_timeout')" placeholder="e.g., 24"></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('session_timeout')"></x-input-error>
-                                </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <x-input-label for="idle_timeout" :value="__('Idle Timeout (minutes)')" class="mt-2"></x-input-label>
                                     <x-text-input id="idle_timeout" name="idle_timeout" type="number" class="mt-1 block w-full" :value="old('idle_timeout')" placeholder="e.g., 30"></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('idle_timeout')"></x-input-error>
                                 </div>
-                                <div class="sm:col-span-1 grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <x-input-label for="duration_value" :value="__('Package Duration')" class="mt-2"></x-input-label>
                                         <x-text-input id="duration_value" name="duration_value" type="number" min="1" class="mt-1 block w-full" :value="old('duration_value')" placeholder="e.g., 1, 30, 90"></x-text-input>

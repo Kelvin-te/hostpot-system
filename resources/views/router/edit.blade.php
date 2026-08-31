@@ -15,7 +15,7 @@
 
                     <form method="post" action="{{ route('router.update', $router->id) }}" class="mt-6 space-y-6">
                         @csrf
-                        @method('patch')
+                        @method('put')
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>

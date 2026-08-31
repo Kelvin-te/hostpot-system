@@ -15,11 +15,13 @@ class HotspotSessionService
 {
     protected DeviceIdentificationService $deviceService;
     protected HotspotAuthorizationService $authorizationService;
+    protected MikroTikService $mikroTikService;
 
-    public function __construct(DeviceIdentificationService $deviceService, HotspotAuthorizationService $authorizationService)
+    public function __construct(DeviceIdentificationService $deviceService, HotspotAuthorizationService $authorizationService, MikroTikService $mikroTikService)
     {
         $this->deviceService = $deviceService;
         $this->authorizationService = $authorizationService;
+        $this->mikroTikService = $mikroTikService;
     }
 
     /**
@@ -232,7 +234,10 @@ class HotspotSessionService
 
     /**
      * Terminate a session
-     * NOTE: Direct MikroTik disconnect removed - will be handled by WinguFi Core + FreeRADIUS in future
+     *
+     * Marks the session expired locally and removes the active session from
+     * the MikroTik router. The direct router call is a pragmatic stopgap until
+     * WinguFi Core/FreeRADIUS CoA disconnect is fully in place.
      */
     public function terminateSession(HotspotSession $session): bool
     {
@@ -242,8 +247,21 @@ class HotspotSessionService
             'expires_at' => now(),
         ]);
 
-        // NOTE: MikroTik disconnection removed - will be handled by WinguFi Core + FreeRADIUS in future
-        // Future: Send revocation signal to WinguFi Core which will notify FreeRADIUS
+        // Remove the active session from the router immediately so the user
+        // loses internet access instead of continuing to browse on a expired
+        // session.
+        try {
+            $this->mikroTikService->disconnectUser($session);
+
+            $data = $session->mikrotik_data ?? [];
+            $data['disconnected_at'] = now()->toIso8601String();
+            $session->update(['mikrotik_data' => $data]);
+        } catch (\Exception $e) {
+            Log::error('Failed to disconnect session from MikroTik during terminateSession', [
+                'session_id' => $session->session_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return true;
     }

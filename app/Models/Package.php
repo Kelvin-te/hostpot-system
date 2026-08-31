@@ -80,4 +80,28 @@ class Package extends Model
         $days = $minutes / 1440;
         return $days . ' day' . ($days > 1 ? 's' : '');
     }
+
+    /**
+     * Get the effective RADIUS session timeout in seconds.
+     *
+     * Mirrors the package validity priority used by WinguFi Core so the
+     * session timeout always matches the package duration. The legacy
+     * session_timeout field is only used as a fallback.
+     */
+    public function getSessionTimeoutSeconds(): ?int
+    {
+        if ($this->validity_minutes) {
+            return (int) ($this->validity_minutes * 60);
+        }
+
+        if ($this->session_timeout) {
+            return (int) ($this->session_timeout * 3600);
+        }
+
+        if ($this->validity_days) {
+            return (int) ($this->validity_days * 86400);
+        }
+
+        return null;
+    }
 }

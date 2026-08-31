@@ -481,7 +481,7 @@ Assign:
 using:
 
 ```routeros
-/ip address add address=10.50.0.2/24 interface=wg-wingufi
+/ip address add address=10.50.0.3/24 interface=wg-wingufi
 ```
 
 Verify:
@@ -503,13 +503,8 @@ V5HxNG5fNl4A3XmeU2ODW/AN5+M2QmvGA1dbgwDPnng=
 Add the peer:
 
 ```routeros
-/interface wireguard peers add \
-    interface=wg-wingufi \
-    public-key="V5HxNG5fNl4A3XmeU2ODW/AN5+M2QmvGA1dbgwDPnng=" \
-    endpoint-address=102.0.33.236 \
-    endpoint-port=51820 \
-    allowed-address=10.50.0.1/32 \
-    persistent-keepalive=25s
+/interface wireguard peers add interface=wg-wingufi public-key="V5HxNG5fNl4A3XmeU2ODW/AN5+M2QmvGA1dbgwDPnng=" endpoint-address=102.0.33.236 endpoint-port=51820 allowed-address=10.50.0.1/32 persistent-keepalive=25s
+
 ```
 
 Verify:
@@ -1070,3 +1065,19 @@ The resulting architecture allows:
 The MikroTik can therefore be managed by WinguFi without requiring a public IP on the MikroTik.
 
 The next implementation stage is to secure and expose only the required RouterOS API/RADIUS services over the WireGuard interface and integrate the VPN address into WinguFi Core's router-management configuration.
+
+Configuration Checklist
+
+[ ] Mikrotic Firmware    7.21.
+
+[ ] Internet Settings
+[ ] Wireguard Profile - Add the peer to server and router
+[ ] Open Firewall !LAN Block
+[ ] Add Wireguard client to Radius/wireguard Server
+[ ] Add Router in WinguFi App (syncs with Core)
+[ ] Enable Hotspot in Router
+[ ] Run provisioning in the app
+[ ] Generate hotspot files in app and upload in the router
+[ ] Add captive page to walled garden
+[ ] Test Purchases from Router
+[ ] Test Radius Authentication

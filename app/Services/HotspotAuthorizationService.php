@@ -54,7 +54,7 @@ class HotspotAuthorizationService
             'authorized_at' => now(),
             'starts_at' => now(),
             'expires_at' => $this->calculateExpiry($package),
-            'session_timeout' => $package->session_timeout ? $package->session_timeout * 3600 : null,
+            'session_timeout' => $package->getSessionTimeoutSeconds(),
             'idle_timeout' => $package->idle_timeout ? $package->idle_timeout * 60 : null,
             'rate_limit' => $package->rate_limit,
             'simultaneous_sessions' => $package->shared_users ?? 1,
@@ -238,8 +238,9 @@ class HotspotAuthorizationService
             $attributes['WISPr-Bandwidth-Max-Down'] = $package->bandwidth_download * 1024 * 1024;
         }
 
-        if ($package->session_timeout) {
-            $attributes['Session-Timeout'] = $package->session_timeout * 3600;
+        $sessionTimeout = $package->getSessionTimeoutSeconds();
+        if ($sessionTimeout) {
+            $attributes['Session-Timeout'] = $sessionTimeout;
         }
 
         if ($package->idle_timeout) {
