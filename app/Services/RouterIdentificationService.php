@@ -25,6 +25,7 @@ class RouterIdentificationService
             Log::info('CAPTIVE_FLOW_TRACE', [
                 'stage' => 'RouterIdentificationService::resolveRouter:no_identifier',
                 'path' => $request->path(),
+                'query_params' => $request->query(),
             ]);
 
             return null;
@@ -46,6 +47,22 @@ class RouterIdentificationService
             return null;
         }
 
+        // If the fresh query-param identifier differs from the session-stored
+        // one, the device has reconnected through a different router (or
+        // reconnected after disconnect). Discard the old captive portal
+        // session token so a stale session is never reused.
+        $sessionIdentifier = session('captive_portal_router_identifier');
+        if ($sessionIdentifier && $sessionIdentifier !== $identifier) {
+            Log::info('CAPTIVE_FLOW_TRACE', [
+                'stage' => 'RouterIdentificationService::resolveRouter:identifier_changed_clearing_stale_session',
+                'path' => $request->path(),
+                'old_identifier' => $sessionIdentifier,
+                'new_identifier' => $identifier,
+            ]);
+
+            session()->forget('captive_portal_session_token');
+        }
+
         session(['captive_portal_router_identifier' => $identifier]);
 
         Log::info('CAPTIVE_FLOW_TRACE', [
@@ -56,6 +73,22 @@ class RouterIdentificationService
         ]);
 
         return $router;
+    }
+
+    /**
+     * Clear all router identification and captive portal session state.
+     * Called on disconnect so the next connection starts fresh.
+     */
+    public function clearSessionState(): void
+    {
+        session()->forget([
+            'captive_portal_router_identifier',
+            'captive_portal_session_token',
+        ]);
+
+        Log::info('CAPTIVE_FLOW_TRACE', [
+            'stage' => 'RouterIdentificationService::clearSessionState',
+        ]);
     }
 
     /**

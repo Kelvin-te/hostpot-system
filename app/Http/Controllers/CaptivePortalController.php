@@ -151,6 +151,22 @@ class CaptivePortalController extends Controller
      */
     public function index(Request $request)
     {
+        // If fresh MikroTik params arrive (link-login, chap-id, link-orig),
+        // the device came through login.html — clear any stale session state
+        // so we start fresh and don't reuse an old captive portal session.
+        if ($request->input('link-login') || $request->input('chap-id') || $request->input('link-orig')) {
+            session()->forget('captive_portal_session_token');
+            session()->forget('captive_portal_router_identifier');
+
+            Log::info('CAPTIVE_FLOW_TRACE', [
+                'stage' => 'CaptivePortalController::index:fresh_mikrotik_params_cleared_stale_session',
+                'path' => $request->path(),
+                'has_link_login' => (bool) $request->input('link-login'),
+                'has_chap_id' => (bool) $request->input('chap-id'),
+                'has_link_orig' => (bool) $request->input('link-orig'),
+            ]);
+        }
+
         // Check if device already has an active session
         $activeSession = $this->sessionService->getActiveSession($request);
         
@@ -1044,15 +1060,19 @@ class CaptivePortalController extends Controller
     public function disconnect(Request $request)
     {
         $activeSession = $this->sessionService->getActiveSession($request);
-        
+
         if ($activeSession) {
             $this->sessionService->terminateSession($activeSession);
-            
+
             Log::info('User disconnected', [
                 'session_id' => $activeSession->session_id,
                 'device_info' => $this->deviceService->getDeviceInfo($request)
             ]);
         }
+
+        // Clear all captive portal session state so the next connection
+        // starts fresh — no stale router identifier or portal session token.
+        $this->routerIdentificationService->clearSessionState();
 
         return redirect()->route('portal.index', $request->query())->with('success', 'You have been disconnected successfully.');
     }

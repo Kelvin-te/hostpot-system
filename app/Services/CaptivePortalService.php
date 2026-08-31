@@ -33,9 +33,38 @@ class CaptivePortalService
         $clientMac = $request->input('mac');
         $clientIp = $request->input('ip') ?? $request->ip();
 
+        $incomingLinkLogin = $request->input('link-login');
+        $incomingHasFreshMikrotikParams = $incomingLinkLogin
+            || $request->input('chap-id')
+            || $request->input('link-orig');
+
         $session = $this->resolveExistingSession($request, $router, $clientMac, $clientIp);
 
-        $incomingLinkLogin = $request->input('link-login');
+        // Discard the old session when:
+        // 1. Fresh MikroTik params arrive (device reconnected through login.html)
+        // 2. The existing session has incomplete data (no link_login AND no chap_id)
+        // In both cases, create a brand-new session with the fresh data.
+        if ($session) {
+            $sessionIsIncomplete = !$session->link_login && !$session->chap_id;
+
+            if ($incomingHasFreshMikrotikParams || $sessionIsIncomplete) {
+                Log::info('CAPTIVE_FLOW_TRACE', [
+                    'stage' => 'CaptivePortalService::createSession:discarding_stale_session',
+                    'reason' => $incomingHasFreshMikrotikParams
+                        ? 'fresh_mikrotik_params_arrived'
+                        : 'existing_session_incomplete',
+                    'laravel_session_id_hash' => $this->sessionIdHash(),
+                    'discarded_session_id' => $session->id,
+                    'discarded_has_link_login' => (bool) $session->link_login,
+                    'discarded_has_chap_id' => (bool) $session->chap_id,
+                ]);
+
+                // Mark the old session as expired so it won't be matched again
+                $session->update(['status' => 'expired', 'expires_at' => now()]);
+                session()->forget(self::SESSION_TOKEN_KEY);
+                $session = null;
+            }
+        }
 
         Log::info('CAPTIVE_FLOW_TRACE', [
             'stage' => 'CaptivePortalService::createSession:entry',
