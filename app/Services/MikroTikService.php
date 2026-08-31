@@ -835,12 +835,26 @@ class MikroTikService
 
             $serverIp = $this->resolveHotspotServerIp($profileEntry, $interfaceAddressEntry ?: null);
 
+            // RouterOS reports `hotspot-address=0.0.0.0` when the profile has no
+            // explicit address configured. 0.0.0.0 can never be used to build
+            // captive-portal handoff (link-login) URLs, so treat it as "not
+            // detected" and warn the admin to configure the hotspot profile
+            // with the router's LAN gateway IP.
+            $serverIpWarning = null;
+            if ($serverIp === null || $serverIp === '0.0.0.0') {
+                $serverIp = null;
+                $serverIpWarning = 'The hotspot profile has no valid hotspot-address configured. '
+                    . 'Set it to the router\'s LAN gateway IP (the address clients reach the hotspot on), '
+                    . 'as it is used to build captive-portal handoff links.';
+            }
+
             return [
                 'success' => true,
                 'enabled' => true,
                 'message' => 'Hotspot service is enabled',
                 'interface' => $interface,
                 'server_ip' => $serverIp,
+                'server_ip_warning' => $serverIpWarning,
             ];
             
         } catch (Exception $e) {

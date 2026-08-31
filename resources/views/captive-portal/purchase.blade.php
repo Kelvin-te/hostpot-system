@@ -19,7 +19,7 @@
 
 @section('content')
     <div class="form-widget">
-        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}'">← Back to Packages</button>
+        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}' + (window.location.search || '')">← Back to Packages</button>
         <div style="margin-bottom: 20px;">
             <div class="text-lg font-medium text-gray-900 mb-0">Complete Your Purchase</div>
             <div class="text-green-800 font-bold text-lg">{{ $package->name }} - <span style="font-size: .8em;">KES</span> {{ number_format($package->price, 0) }}</div>
@@ -54,10 +54,15 @@
             </div>
         @endif
 
-        <form action="{{ route('portal.process-payment', $package->id) }}" method="POST">
+        @php
+            $purchaseQueryParams = request()->query();
+        @endphp
+        <form action="{{ route('portal.process-payment', array_merge(['package' => $package->id], $purchaseQueryParams)) }}" method="POST">
             @csrf
             @if(isset($router) && $router)
                 <input type="hidden" name="router" value="{{ $router->identifier }}">
+            @elseif(request()->has('router'))
+                <input type="hidden" name="router" value="{{ request()->query('router') }}">
             @endif
             <div class="form-group">
                 <x-input-label for="mode" :value="__('How would you like to receive access?')" />

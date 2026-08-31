@@ -1054,7 +1054,7 @@ class CaptivePortalController extends Controller
             ]);
         }
 
-        return redirect()->route('portal.index')->with('success', 'You have been disconnected successfully.');
+        return redirect()->route('portal.index', $request->query())->with('success', 'You have been disconnected successfully.');
     }
 
     /**
@@ -1080,8 +1080,10 @@ class CaptivePortalController extends Controller
                 return back()->with('error', 'Invalid phone number format.')->withInput();
             }
 
+            $router = $this->routerIdentificationService->resolveRouter($request);
+
             // Check if phone has already been used for the signup free package
-            $freePackageForCheck = $this->getOrCreateFreePackage();
+            $freePackageForCheck = $this->getOrCreateFreePackage($router);
             if ($this->hasPhoneUsedFreePackage($normalizedPhone, $freePackageForCheck->id)) {
                 return back()->with('error', 'This phone number has already been used for a free package.')->withInput();
             }
@@ -1111,7 +1113,7 @@ class CaptivePortalController extends Controller
             ]);
 
             // Find or create free 500MB package
-            $freePackage = $this->getOrCreateFreePackage();
+            $freePackage = $this->getOrCreateFreePackage($router);
 
             // Create session for the free package
             $session = $this->sessionService->createSessionForPackage(
@@ -1223,23 +1225,29 @@ class CaptivePortalController extends Controller
     /**
      * Get or create the free 500MB package
      */
-    protected function getOrCreateFreePackage(): Package
+    protected function getOrCreateFreePackage(?Router $router = null): Package
     {
-        // Try to find existing free package
+        $router = $router ?? Router::first();
+
+        if (!$router) {
+            Log::warning('No routers found when creating free package');
+            throw new \Exception('No routers available. Please create a router first.');
+        }
+
+        // Try to find existing free package for this specific router first
         $freePackage = Package::where('name', 'Free 500MB')
                              ->where('price', 0)
+                             ->where('router_id', $router->id)
                              ->first();
 
         if (!$freePackage) {
-            // Get the first available router, or create without router_id if none exists
-            $firstRouter = Router::first();
-            
-            if (!$firstRouter) {
-                // If no routers exist, we need to handle this case
-                Log::warning('No routers found when creating free package');
-                throw new \Exception('No routers available. Please create a router first.');
-            }
-            
+            // Check if there is any free 500MB package without router or fallback
+            $freePackage = Package::where('name', 'Free 500MB')
+                                 ->where('price', 0)
+                                 ->first();
+        }
+
+        if (!$freePackage) {
             // Create free package if it doesn't exist
             $freePackage = Package::create([
                 'name' => 'Free 500MB',
@@ -1252,7 +1260,7 @@ class CaptivePortalController extends Controller
                 'shared_users' => 1,        // Single device
                 'is_active' => true,
                 'description' => 'Free starter package for new users',
-                'router_id' => $firstRouter->id, // Assign to first router
+                'router_id' => $router->id, // Assign to current router
             ]);
         }
 

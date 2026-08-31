@@ -13,7 +13,7 @@
 
 @section('content')
     <div class="form-widget">
-        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}'">← Back to Packages</button>
+        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}' + (window.location.search || '')">← Back to Packages</button>
         <div style="margin-bottom: 20px;">
             <div class="text-lg font-bold text-green-900" style="margin-bottom: 8px;">Login to the Internet</div>
             <div class="text-sm text-gray-600">Use your voucher code or registered phone number</div>
@@ -48,8 +48,16 @@
             </div>
         @endif
 
-        <form action="{{ route('portal.authenticate') }}" method="POST" id="loginForm">
+        @php
+            $loginQueryParams = request()->query();
+        @endphp
+        <form action="{{ route('portal.authenticate', $loginQueryParams) }}" method="POST" id="loginForm">
             @csrf
+            @if(isset($router) && $router)
+                <input type="hidden" name="router" value="{{ $router->identifier }}">
+            @elseif(request()->has('router'))
+                <input type="hidden" name="router" value="{{ request()->query('router') }}">
+            @endif
             <div class="form-group">
                 <x-input-label for="username" :value="__('Voucher / Phone Number')" />
                 <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" required placeholder="Enter voucher or phone number" />

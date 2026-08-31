@@ -3,24 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotspot Status</title>
+    <title>Hotspot Status - {Company}</title>
     <link rel="stylesheet" href="css/hotspot.css">
 </head>
 <body>
 
 <div class="card">
     <div class="brand"></div>
-    <h2>Your Status</h2>
+    <div class="success-box">
+        <h2>Connection Active</h2>
+        <p>You are logged in to the network.</p>
+    </div>
 
     <ul class="status-list">
+        <li><span class="label">Username</span><span class="value">$(username)</span></li>
         <li><span class="label">IP address</span><span class="value">$(ip)</span></li>
         <li><span class="label">MAC address</span><span class="value">$(mac)</span></li>
         <li><span class="label">Connected</span><span class="value">$(uptime)</span></li>
-        <li><span class="label">Download</span><span class="value">$(bytes-out-nice)</span></li>
-        <li><span class="label">Upload</span><span class="value">$(bytes-in-nice)</span></li>
+        <li><span class="label">Downloaded</span><span class="value">$(bytes-out-nice)</span></li>
+        <li><span class="label">Uploaded</span><span class="value">$(bytes-in-nice)</span></li>
     </ul>
 
-    <a href="$(link-logout)">Logout</a>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+        <a href="{PortalUrl}/portal/status" style="background: #0e770e; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 1rem; display: block;">
+            Manage Package & Account →
+        </a>
+        <a href="$(link-logout)" style="font-size: 0.9rem; color: #dc2626; text-decoration: none; padding: 6px;">
+            Disconnect Session
+        </a>
+    </div>
 </div>
 
 </body>

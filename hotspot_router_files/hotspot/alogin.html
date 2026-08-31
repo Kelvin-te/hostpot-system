@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connected - {Company}</title>
+    <link rel="stylesheet" href="css/hotspot.css">
+    <script>
+        // Redirect to original destination or captive portal status page
+        var dst = "$(link-orig)";
+        var statusUrl = "{PortalUrl}/portal/status";
+
+        function proceed() {
+            if (dst && dst.indexOf("http") === 0 && dst.indexOf("generate_204") === -1 && dst.indexOf("connectivitycheck") === -1) {
+                window.location.href = dst;
+            } else {
+                window.location.href = statusUrl;
+            }
+        }
+
+        // Auto-redirect after 2.5 seconds
+        setTimeout(proceed, 2500);
+    </script>
+</head>
+<body>
+
+<div class="card">
+    <div class="brand"></div>
+    <div class="success-box">
+        <svg style="width: 56px; height: 56px; margin: 0 auto 12px; display: block; color: var(--success, #16a34a);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <h2>You are Connected!</h2>
+        <p>Your device is now authenticated and connected to the internet.</p>
+    </div>
+
+    <ul class="status-list">
+        <li><span class="label">Username</span><span class="value">$(username)</span></li>
+        <li><span class="label">IP address</span><span class="value">$(ip)</span></li>
+        <li><span class="label">MAC address</span><span class="value">$(mac)</span></li>
+    </ul>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+        <button onclick="proceed()" style="background: #0e770e; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%;">
+            Continue to Internet →
+        </button>
+        <a href="{PortalUrl}/portal/status" style="font-size: 0.9rem; color: #4b5563; text-decoration: underline;">
+            View Account & Session Status
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

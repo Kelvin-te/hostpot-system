@@ -22,6 +22,7 @@
 
 @section('content')
     <div class="form-widget">
+        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}' + (window.location.search || '')">← Back to Packages</button>
         <div class="text-center mt-6">
             <div class="signup-promo">
                 <div class="promo-badge promo-badge-top">SIGN UP & ENJOY</div>
@@ -59,8 +60,16 @@
             </div>
         @endif
 
-        <form action="{{ route('portal.process-signup') }}" method="POST" id="signupForm">
+        @php
+            $signupQueryParams = request()->query();
+        @endphp
+        <form action="{{ route('portal.process-signup', $signupQueryParams) }}" method="POST" id="signupForm">
             @csrf
+            @if(isset($router) && $router)
+                <input type="hidden" name="router" value="{{ $router->identifier }}">
+            @elseif(request()->has('router'))
+                <input type="hidden" name="router" value="{{ request()->query('router') }}">
+            @endif
             <div class="mt-3">
                 <x-input-label for="signupPhone" :value="__('Phone Number')" />
                 <div class="flex gap-2">

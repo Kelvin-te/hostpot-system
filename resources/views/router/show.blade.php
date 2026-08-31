@@ -762,7 +762,11 @@
                 .then(data => {
                     if (data.success) {
                         document.getElementById('hotspot-server-ip').textContent = data.hotspot_server_ip || 'Not detected';
-                        showNotification(data.message, 'success');
+                        if (data.warning) {
+                            showNotification(data.warning, 'error');
+                        } else {
+                            showNotification(data.message, 'success');
+                        }
                     } else {
                         showNotification(data.message || 'HotSpot info sync failed', 'error');
                     }

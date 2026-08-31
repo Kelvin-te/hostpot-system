@@ -1066,18 +1066,32 @@ The MikroTik can therefore be managed by WinguFi without requiring a public IP o
 
 The next implementation stage is to secure and expose only the required RouterOS API/RADIUS services over the WireGuard interface and integrate the VPN address into WinguFi Core's router-management configuration.
 
-Configuration Checklist
+# Mikrotik Configuration Procedure
 
 [ ] Mikrotic Firmware    7.21.
 
 [ ] Internet Settings
 [ ] Wireguard Profile - Add the peer to server and router
 [ ] Open Firewall !LAN Block
-[ ] Add Wireguard client to Radius/wireguard Server
+[ ] Add Wireguard client to wireguard Server
+     
+     Create wireguard profile in router
+     Add Wireguard server as peer
+     On server , add router as peer
+     Restart Wireguard on server
+     
 [ ] Add Router in WinguFi App (syncs with Core)
-[ ] Enable Hotspot in Router
-[ ] Run provisioning in the app
+[ ] Enable Hotspot in Router, add IP and DNS  in Hotspot profile
+[ ] Run radoius provisioning in the app
+
+     Summary: Provision RADIUS wires the MikroTik to FreeRADIUS (local NAS record + /radius entry + use-radius=yes + Core sync); Configure External Portal sets the hotspot login methods (PAP/CHAP/mac-cookie) and whitelists the portal domain in the walled garden — the redirect itself lives in the uploaded hotspot files.
+### Make sure to add source address in the radius settings
+
 [ ] Generate hotspot files in app and upload in the router
 [ ] Add captive page to walled garden
 [ ] Test Purchases from Router
 [ ] Test Radius Authentication
+
+### IMPORTANT FINDINGS
+31/8/2026 spent full day trying to deploy hotspot on mikrotik. Shit didnt work, reason?
+          THE CAPTIVE PORTAL PAGE DIDN'T save link login and other session params while opening the remote captive portal page.

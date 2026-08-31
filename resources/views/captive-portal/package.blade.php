@@ -18,7 +18,7 @@
 
 @section('content')
     <div class="form-widget">
-        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}'">← Back to Packages</button>
+        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}' + (window.location.search || '')">← Back to Packages</button>
         <table class="package-table">
             <thead>
                 <tr><th colspan="2">{{ $package->name }}</th></tr>
@@ -55,10 +55,13 @@
             </tbody>
         </table>
         <div class="flex">
+            @php
+                $queryParams = request()->query();
+            @endphp
             @if($package->price == 0)
-                <a href="{{ route('portal.purchase', $package) }}" class="btn bg-green-800 text-white text-center">🆓 Activate Free</a>
+                <a href="{{ route('portal.purchase', array_merge(['package' => $package->id], $queryParams)) }}" class="btn bg-green-800 text-white text-center">🆓 Activate Free</a>
             @else
-                <a href="{{ route('portal.purchase', $package) }}" class="btn bg-green-800 text-white text-center">💳 Subscribe</a>
+                <a href="{{ route('portal.purchase', array_merge(['package' => $package->id], $queryParams)) }}" class="btn bg-green-800 text-white text-center">💳 Subscribe</a>
             @endif
         </div>
     </div>

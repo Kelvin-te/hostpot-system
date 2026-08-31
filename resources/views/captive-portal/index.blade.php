@@ -86,10 +86,10 @@
             <div class="signup-promo">
                 <div class="promo-badge promo-badge-top">SIGN UP & ENJOY</div>
                 <div class="promo-badge promo-badge-bottom">500 MB <span style="color:#ffd82a;">FREE</span></div>
-                <button type="button" class="btn btn-light border mr-1" onclick="window.location.href='{{ route('portal.signup') }}'"> Sign Up</button>
+                <button type="button" class="btn btn-light border mr-1" onclick="window.location.href='{{ route('portal.signup') }}' + window.location.search"> Sign Up</button>
             </div>
         @endif
-        <button type="button" class="btn bg-orange-600 text-white" onclick="window.location.href='{{ route('portal.login') }}'"> Log In</button>
+        <button type="button" class="btn bg-orange-600 text-white" onclick="window.location.href='{{ route('portal.login') }}' + window.location.search"> Log In</button>
         
         @auth
                 <a href="{{ route('user.dashboard') }}" class="btn bg-indigo-600 text-white">
@@ -116,13 +116,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const packageId = this.dataset.package;
             const packagePrice = parseFloat(this.dataset.price);
             
+            const currentQuery = window.location.search || '';
+            
             // If package is free, activate directly without going to purchase page
             if (packagePrice === 0) {
                 // Call the purchase endpoint which will handle free packages
-                window.location.href = `{{ url('/') }}/portal/package/${packageId}/purchase`;
+                window.location.href = `{{ url('/') }}/portal/package/${packageId}/purchase` + currentQuery;
             } else {
                 // Go to package details page for paid packages
-                window.location.href = `{{ url('/') }}/portal/package/${packageId}`;
+                window.location.href = `{{ url('/') }}/portal/package/${packageId}` + currentQuery;
             }
         });
     });

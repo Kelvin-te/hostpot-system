@@ -75,17 +75,20 @@
             </tbody>
         </table>
         <div class="flex justify-between">
+        @php
+            $statusQueryParams = request()->query();
+        @endphp
         @if($sessionStatus['is_active'])
-             <form action="{{ route('portal.disconnect') }}" method="POST">
+             <form action="{{ route('portal.disconnect', $statusQueryParams) }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to disconnect?')">Disconnect</button>
             </form>
             <div class="flex gap-2">
                 <button type="button" class="btn btn-green" onclick="window.open('https://google.com', '_blank')">Browse</button>
-                <a href="{{ route('portal.resume-paid-session') }}" class="btn bg-blue-600 text-white">Re-authenticate</a>
+                <a href="{{ route('portal.resume-paid-session', $statusQueryParams) }}" class="btn bg-blue-600 text-white">Re-authenticate</a>
             </div>
         @else
-            <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('portal.index') }}'">Select New Package</button>
+            <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('portal.index') }}' + (window.location.search || '')">Select New Package</button>
         @endif
         </div>
 

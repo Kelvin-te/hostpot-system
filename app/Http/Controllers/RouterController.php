@@ -74,6 +74,7 @@ class RouterController extends Controller
             $router->hotspot_server_ip = $hotspotResult['server_ip'];
             $router->save();
         }
+        $hotspotWarning = $hotspotResult['server_ip_warning'] ?? null;
 
         $provisionResult = $this->provisionRouterRadiusAndCore($router);
 
@@ -82,7 +83,12 @@ class RouterController extends Controller
                 'warning',
                 __('Router was created, but automatic RADIUS/WinguFi Core provisioning failed: ') . $provisionResult['message']
                 . __('. You can retry provisioning from the router page.')
+                . ($hotspotWarning ? ' ' . __($hotspotWarning) : '')
             );
+        }
+
+        if ($hotspotWarning) {
+            return redirect('router')->with('warning', __('Router successfully added, but: ') . __($hotspotWarning));
         }
 
         return redirect('router')->with('success', __('Router successfully added'));
@@ -630,6 +636,7 @@ class RouterController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Hotspot info synced successfully',
+            'warning' => $hotspotResult['server_ip_warning'] ?? null,
             'hotspot_enabled' => $router->hotspot_enabled,
             'hotspot_interface' => $router->hotspot_interface,
             'hotspot_server_ip' => $router->hotspot_server_ip,
