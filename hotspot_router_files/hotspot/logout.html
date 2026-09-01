@@ -17,5 +17,14 @@
     <a href="$(link-login)">Connect again</a>
 </div>
 
+<script>
+(function() {
+    try {
+        var url = "{PortalUrl}/portal/mikrotik-logout?mac=$(mac)&ip=$(ip)&router={RouterIdentifier}";
+        fetch(url, { method: 'POST', mode: 'no-cors' }).catch(function(){});
+    } catch(e) {}
+})();
+</script>
+
 </body>
 </html>

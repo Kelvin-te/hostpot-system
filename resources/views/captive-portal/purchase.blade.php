@@ -22,7 +22,7 @@
         <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.index') }}' + (window.location.search || '')">← Back to Packages</button>
         <div style="margin-bottom: 20px;">
             <div class="text-lg font-medium text-gray-900 mb-0">Complete Your Purchase</div>
-            <div class="text-green-800 font-bold text-lg">{{ $package->name }} - <span style="font-size: .8em;">KES</span> {{ number_format($package->price, 0) }}</div>
+            <div class="text-green-800 font-bold text-lg">{{ $package->name }} - @if($package->price == 0)FREE@else<span style="font-size: .8em;">KES</span> {{ number_format($package->price, 0) }}@endif</div>
         </div>
 
         @if ($errors->any())

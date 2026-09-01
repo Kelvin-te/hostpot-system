@@ -40,11 +40,85 @@ class HotspotSessionService
             $session = HotspotSession::findActiveByMac($macAddress);
         }
 
+        if (!$session) {
+            return null;
+        }
+
+        // On-demand verification: check if the session is still active on the
+        // MikroTik router. If MikroTik disconnected the user (timeout, data
+        // limit, logout, admin kick) without notifying us, our DB still shows
+        // status='active'. This prevents a stale session from trapping the user
+        // in a redirect loop to the status page.
+        if (!$this->mikroTikService->isSessionActiveOnRouter($session)) {
+            Log::info('getActiveSession: session no longer active on router, marking disconnected', [
+                'session_id' => $session->session_id,
+                'device_fingerprint' => $deviceFingerprint,
+                'mac_address' => $macAddress,
+            ]);
+
+            $stillValid = $session->expires_at && $session->expires_at > now();
+
+            $session->update([
+                'status' => $stillValid ? 'disconnected' : 'expired',
+                'expires_at' => $stillValid ? $session->expires_at : now(),
+            ]);
+
+            if ($session->captivePortalSession) {
+                $session->captivePortalSession->update([
+                    'status' => 'expired',
+                    'expires_at' => now(),
+                ]);
+            }
+
+            return null;
+        }
+
         return $session;
     }
 
     /**
-     * Create a new session for a package purchase
+     * Find a disconnected session that still has valid time remaining
+     * for the current device. This allows users to reconnect and continue
+     * using their remaining time/data after a disconnect.
+     */
+    public function getReconnectableSession(Request $request): ?HotspotSession
+    {
+        $deviceFingerprint = $this->deviceService->generateDeviceFingerprint($request);
+        $macAddress = $this->deviceService->getMacAddress($request);
+
+        $session = HotspotSession::findReconnectableByDevice($deviceFingerprint);
+
+        if (!$session && $macAddress) {
+            $session = HotspotSession::findReconnectableByMac($macAddress);
+        }
+
+        return $session;
+    }
+
+    /**
+     * Reactivate a previously disconnected session — update device info
+     * (MAC/IP may have changed on reconnect) and set status back to active.
+     */
+    public function reactivateSession(Request $request, HotspotSession $session): HotspotSession
+    {
+        $deviceInfo = $this->deviceService->getDeviceInfo($request);
+
+        $session->update([
+            'status' => 'active',
+            'mac_address' => $deviceInfo['mac_address'] ?? $session->mac_address,
+            'ip_address' => $deviceInfo['ip_address'] ?? $session->ip_address,
+            'device_fingerprint' => $deviceInfo['device_fingerprint'] ?? $session->device_fingerprint,
+        ]);
+
+        Log::info('Session reactivated', [
+            'session_id' => $session->session_id,
+            'remaining_time' => $session->expires_at?->diffForHumans(),
+        ]);
+
+        return $session;
+    }
+
+    /**
      * NOTE: This now creates authorization first, then session from authorization
      */
     public function createSessionForPackage(Request $request, Package $package, ?User $user = null, ?string $username = null, ?int $paymentTransactionId = null): HotspotSession
@@ -137,9 +211,22 @@ class HotspotSessionService
             $existingSession = $voucher->session;
             
             if ($existingSession && $existingSession->device_fingerprint === $deviceFingerprint) {
-                return $existingSession; // Same device, return existing session
+                // Same device — return the session if it's still active
+                if ($existingSession->isActive()) {
+                    return $existingSession;
+                }
+                
+                // If the session was disconnected but still has valid time,
+                // reactivate it so the user can continue using remaining time.
+                if ($existingSession->isReconnectable()) {
+                    return $this->reactivateSession($request, $existingSession);
+                }
+                
+                // Session is truly expired (time ran out) — fall through to
+                // create a new session if the voucher is still valid.
+            } else {
+                return null; // Different device, voucher already used
             }
-            return null; // Different device, voucher already used
         }
 
         // Get device info
@@ -206,7 +293,17 @@ class HotspotSessionService
             return $activeSession;
         }
 
-        // User exists but no active session - they need to purchase a package
+        // Check if user has a disconnected session that still has valid time
+        $reconnectable = HotspotSession::where('user_id', $user->id)
+                                     ->reconnectable()
+                                     ->latest()
+                                     ->first();
+
+        if ($reconnectable) {
+            return $this->reactivateSession($request, $reconnectable);
+        }
+
+        // User exists but no active or reconnectable session - they need to purchase a package
         return null;
     }
 
@@ -241,10 +338,11 @@ class HotspotSessionService
      */
     public function terminateSession(HotspotSession $session): bool
     {
-        // Update session status in database
+        // Mark as disconnected (not expired) so the user can reconnect
+        // and continue using their remaining time/data. The expires_at
+        // is preserved — only the status changes.
         $session->update([
-            'status' => 'expired',
-            'expires_at' => now(),
+            'status' => 'disconnected',
         ]);
 
         // Remove the active session from the router immediately so the user

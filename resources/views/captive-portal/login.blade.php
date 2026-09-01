@@ -74,8 +74,8 @@
         </form>
 
         <div class="login-options mt-3 text-left">
-            <p class="text-gray-600">No voucher? <a href="{{ route('portal.index') }}" class="text-green-700">Purchase Package</a></p>
-            <p class="text-red-600 mt-1"><a href="{{ route('portal.forgot-password') }}">Forgot password?</a></p>
+            <p class="text-gray-600">No voucher? <a href="{{ route('portal.index', request()->query()) }}" class="text-green-700">Purchase Package</a></p>
+            <p class="text-red-600 mt-1"><a href="{{ route('portal.forgot-password', request()->query()) }}">Forgot password?</a></p>
         </div>
     </div>
 @endsection

@@ -37,6 +37,7 @@ class DisconnectExpiredHotspotSessions extends Command
     {
         $sessions = HotspotSession::query()
             ->where('expires_at', '<', now())
+            ->whereIn('status', ['active', 'disconnected'])
             ->where(function ($query) {
                 $query->whereNull('mikrotik_data->disconnected_at')
                     ->where(function ($subQuery) {

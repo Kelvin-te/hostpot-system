@@ -121,6 +121,10 @@ class WinguFiCoreService
             'status' => $authorization->status === 'revoked' ? 'revoked' : 'active',
             'starts_at' => $authorization->starts_at?->toIso8601String(),
             'expires_at' => $authorization->expires_at?->toIso8601String(),
+            'session_timeout' => $authorization->session_timeout,
+            'download_speed' => $package->bandwidth_download ? (int) ($package->bandwidth_download * 1000000) : null,
+            'upload_speed' => $package->bandwidth_upload ? (int) ($package->bandwidth_upload * 1000000) : null,
+            'data_limit_bytes' => $this->dataLimitBytes($package),
         ];
 
         $result = $this->post('/authorizations', $payload);

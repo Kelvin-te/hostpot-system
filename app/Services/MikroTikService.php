@@ -380,11 +380,6 @@ class MikroTikService
             'status-autorefresh' => '00:01:00',
         ];
 
-        // Add data limits if specified
-        if ($package->data_limit) {
-            $profileData['shared-users'] = (string)($package->shared_users ?? 1);
-        }
-
         $query = new Query('/ip/hotspot/user/profile/add');
         foreach ($profileData as $key => $value) {
             $query->equal($key, $value);
@@ -722,9 +717,33 @@ class MikroTikService
                     // Session is active on router
                     $syncedCount++;
                 } else {
-                    // User exists but not active - this could be normal (user not logged in yet)
-                    // Don't expire, just count as synced
-                    $syncedCount++;
+                    // Session is NOT active on router — the user was
+                    // disconnected by MikroTik (timeout, data limit, logout,
+                    // admin kick, etc.) but our DB still shows it as active.
+                    // Mark as 'disconnected' if time remains (user can
+                    // reconnect), or 'expired' if time has run out.
+                    $stillValid = $session->expires_at && $session->expires_at > now();
+
+                    $session->update([
+                        'status' => $stillValid ? 'disconnected' : 'expired',
+                        'expires_at' => $stillValid ? $session->expires_at : now(),
+                    ]);
+
+                    // Also expire the linked CaptivePortalSession
+                    if ($session->captivePortalSession) {
+                        $session->captivePortalSession->update([
+                            'status' => 'expired',
+                            'expires_at' => now(),
+                        ]);
+                    }
+
+                    $expiredCount++;
+
+                    Log::info('Sync: ' . ($stillValid ? 'disconnected' : 'expired') . ' stale session (not active on router)', [
+                        'session_id' => $session->session_id,
+                        'username' => $username,
+                        'router_id' => $router->id,
+                    ]);
                 }
             }
 
@@ -750,6 +769,61 @@ class MikroTikService
                 'created' => 0,
                 'expired' => 0,
             ];
+        }
+    }
+
+    /**
+     * Check whether a specific HotspotSession is still active on the router.
+     * Used by getActiveSession() for on-demand verification.
+     *
+     * Returns true if the session is found in /ip/hotspot/active/print
+     * (matched by username or MAC). Returns false if not found or on error.
+     */
+    public function isSessionActiveOnRouter(HotspotSession $session): bool
+    {
+        try {
+            $router = $session->package?->router;
+
+            if (!$router) {
+                return false;
+            }
+
+            $client = $this->connectToRouter($router);
+
+            if (!$client) {
+                // Can't reach router — assume session is still active to
+                // avoid falsely expiring sessions during network issues.
+                return true;
+            }
+
+            $query = new Query('/ip/hotspot/active/print');
+            $activeSessions = $client->query($query)->read();
+
+            $username = $session->mikrotik_username ?: $session->username ?: $session->session_id;
+            $mac = strtolower($session->mac_address ?: '');
+
+            foreach ($activeSessions as $active) {
+                $activeUser = $active['user'] ?? null;
+                $activeMac = strtolower($active['mac-address'] ?? '');
+
+                if ($activeUser && $activeUser === $username) {
+                    return true;
+                }
+                if ($mac && $activeMac === $mac) {
+                    return true;
+                }
+            }
+
+            return false;
+
+        } catch (Exception $e) {
+            Log::warning('isSessionActiveOnRouter: error, assuming active', [
+                'session_id' => $session->session_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            // On error, assume active to avoid false expiry
+            return true;
         }
     }
 

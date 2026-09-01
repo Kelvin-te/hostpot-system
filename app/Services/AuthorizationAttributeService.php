@@ -39,11 +39,6 @@ class AuthorizationAttributeService
             $attributes['WISPr-Bandwidth-Max-Down'] = $this->convertToBps($package->bandwidth_download);
         }
 
-        // Add rate limit if specified
-        if ($authorization->rate_limit) {
-            $attributes['Framed-Filter-Id'] = $authorization->rate_limit;
-        }
-
         // Add simultaneous sessions limit
         $attributes['Max-Multiple-Sessions'] = $authorization->simultaneous_sessions;
 
@@ -68,10 +63,6 @@ class AuthorizationAttributeService
 
         if ($authorization->idle_timeout) {
             $attributes['idle-timeout'] = $authorization->idle_timeout;
-        }
-
-        if ($package->rate_limit) {
-            $attributes['rate-limit'] = $package->rate_limit;
         }
 
         return $attributes;

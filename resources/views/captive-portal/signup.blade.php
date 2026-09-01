@@ -104,7 +104,7 @@
                 • Instant activation
             </div>
             <div class="flex gap-4 justify-between">
-                <button type="button" class="btn p-1 bg-red-500 text-white" onclick="window.location.href='{{ route('portal.index') }}'">← Back</button>
+                <button type="button" class="btn p-1 bg-red-500 text-white" onclick="window.location.href='{{ route('portal.index') }}' + (window.location.search || '')">← Back</button>
                 <button type="submit" class="btn bg-green-700 text-white">Sign Up</button>
             </div>
         </form>

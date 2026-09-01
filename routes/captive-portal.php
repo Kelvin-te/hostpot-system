@@ -51,6 +51,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
     // Session status and management
     Route::get('/status', [CaptivePortalController::class, 'showStatus'])->name('status');
     Route::post('/disconnect', [CaptivePortalController::class, 'disconnect'])->name('disconnect');
+    Route::post('/mikrotik-logout', [CaptivePortalController::class, 'mikrotikLogout'])->name('mikrotik-logout');
     
     // API endpoints for packages (for AJAX/mobile apps)
     Route::get('/api/packages/{router?}', [CaptivePortalController::class, 'apiPackages'])->name('api.packages');

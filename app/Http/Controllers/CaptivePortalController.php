@@ -138,7 +138,7 @@ class CaptivePortalController extends Controller
             // Notify user via SMS
             $this->smsService->sendSms($normalizedPhone, 'Your hotspot password has been reset successfully. If this was not you, contact support immediately.');
 
-            return redirect()->route('portal.login')->with('success', 'Password reset successful. Please log in.');
+            return redirect()->route('portal.login', $request->query())->with('success', 'Password reset successful. Please log in.');
         } catch (\Exception $e) {
             Log::error('Password reset failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Password reset failed. Please try again.');
@@ -172,7 +172,52 @@ class CaptivePortalController extends Controller
         
         if ($activeSession) {
             // Device already has active session, redirect to status page or allow internet
-            return $this->showSessionStatus($activeSession);
+            return $this->showSessionStatus($activeSession, $request);
+        }
+
+        // Check if device has a disconnected session that still has valid time.
+        // If so, reactivate it and redirect to handoff so the user can continue
+        // using their remaining time/data without purchasing again.
+        $reconnectableSession = $this->sessionService->getReconnectableSession($request);
+
+        if ($reconnectableSession) {
+            $authorization = $reconnectableSession->authorization;
+
+            if ($authorization && $authorization->isActive()) {
+                Log::info('Reconnectable session found, reactivating', [
+                    'session_id' => $reconnectableSession->session_id,
+                    'expires_at' => $reconnectableSession->expires_at,
+                    'package' => $reconnectableSession->package?->name,
+                ]);
+
+                $this->sessionService->reactivateSession($request, $reconnectableSession);
+
+                // Build a fresh captive portal session with current MikroTik params
+                $portalSession = $this->portalService->createSession($request, $reconnectableSession->package?->router);
+                $this->portalService->linkSession($portalSession, $reconnectableSession);
+
+                if ($portalSession->link_login) {
+                    try {
+                        $password = $authorization->radiusPassword();
+                    } catch (\Exception $e) {
+                        Log::error('Reconnect: failed to decrypt RADIUS password', [
+                            'authorization_id' => $authorization->id,
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        return redirect()->route('portal.index', $request->query())->with('error', 'Unable to retrieve login credentials. Please contact support.');
+                    }
+
+                    return view('captive-portal.handoff', [
+                        'linkLogin' => $portalSession->link_login,
+                        'linkOrig' => $portalSession->link_orig,
+                        'chapId' => $portalSession->chap_id,
+                        'chapChallenge' => $portalSession->chap_challenge,
+                        'username' => $authorization->radius_username,
+                        'password' => $password,
+                    ]);
+                }
+            }
         }
 
         // Resolve router using identifier from URL parameter
@@ -242,9 +287,9 @@ class CaptivePortalController extends Controller
 
         // Check if device already has an active session
         $activeSession = $this->sessionService->getActiveSession($request);
-        
+
         if ($activeSession) {
-            return $this->showSessionStatus($activeSession);
+            return $this->showSessionStatus($activeSession, $request);
         }
 
         $package = Package::with('router')->findOrFail($packageId);
@@ -257,7 +302,7 @@ class CaptivePortalController extends Controller
                 'resolved_router_id' => $router?->id,
             ]);
 
-            return redirect()->route('portal.index')->with('error', 'We could not verify your connection. Please reconnect via the WiFi hotspot and try again.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'We could not verify your connection. Please reconnect via the WiFi hotspot and try again.');
         }
 
         // Debug: Log package price
@@ -294,7 +339,7 @@ class CaptivePortalController extends Controller
                 );
 
             } catch (ActiveSessionConflictException $e) {
-                return $this->showSessionStatus($e->existingSession)
+                return $this->showSessionStatus($e->existingSession, $request)
                     ->with('info', 'You already have an active session on a different package.');
             } catch (\Exception $e) {
                 Log::error('Failed to activate free package', [
@@ -338,13 +383,13 @@ class CaptivePortalController extends Controller
                 'resolved_router_id' => $router?->id,
             ]);
 
-            return redirect()->route('portal.index')->with('error', 'We could not verify your connection. Please reconnect via the WiFi hotspot and try again.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'We could not verify your connection. Please reconnect via the WiFi hotspot and try again.');
         }
 
         // Check if device already has an active session
         $activeSession = $this->sessionService->getActiveSession($request);
         if ($activeSession) {
-            return redirect()->route('portal.status')->with('info', 'You already have an active session.');
+            return redirect()->route('portal.status', $request->query())->with('info', 'You already have an active session.');
         }
 
         try {
@@ -419,7 +464,7 @@ class CaptivePortalController extends Controller
         $packageId = session('package_id');
         
         if (!$checkoutRequestId || !$packageId) {
-            return redirect()->route('portal.index')->with('error', 'No payment session found.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'No payment session found.');
         }
 
         $package = Package::findOrFail($packageId);
@@ -565,7 +610,7 @@ class CaptivePortalController extends Controller
                         'success' => true,
                         'status' => 'completed',
                         'message' => 'Payment successful! Your voucher has been sent via SMS.',
-                        'redirect_url' => route('portal.index')
+                        'redirect_url' => route('portal.index', $request->query())
                     ]);
                 } else {
                     // Idempotency: if a session was already created, reuse it.
@@ -752,7 +797,7 @@ class CaptivePortalController extends Controller
         $activeSession = $this->sessionService->getActiveSession($request);
         
         if (!$activeSession) {
-            return redirect()->route('portal.index')->with('info', 'No active session found. Please select a package or login.');
+            return redirect()->route('portal.index', $request->query())->with('info', 'No active session found. Please select a package or login.');
         }
 
         $sessionStatus = $this->sessionService->getSessionStatus($activeSession);
@@ -764,15 +809,17 @@ class CaptivePortalController extends Controller
     /**
      * Show session status (internal method)
      */
-    protected function showSessionStatus(HotspotSession $session)
+    protected function showSessionStatus(HotspotSession $session, ?Request $request = null)
     {
+        $queryParams = $request?->query() ?? [];
+
         if ($session->isExpired()) {
             // Session expired, redirect to packages
-            return redirect()->route('portal.index')->with('info', 'Your session has expired. Please select a new package.');
+            return redirect()->route('portal.index', $queryParams)->with('info', 'Your session has expired. Please select a new package.');
         }
 
         // Redirect to status page
-        return redirect()->route('portal.status');
+        return redirect()->route('portal.status', $queryParams);
     }
 
     /**
@@ -792,12 +839,12 @@ class CaptivePortalController extends Controller
             ->firstOrFail();
 
         if (!$session->isActive()) {
-            return redirect()->route('portal.index')->with('error', 'Your session is no longer active.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'Your session is no longer active.');
         }
 
         $authorization = $session->authorization;
         if (!$authorization || !$authorization->isActive()) {
-            return redirect()->route('portal.index')->with('error', 'No active authorization found.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'No active authorization found.');
         }
 
         $deviceInfo = $this->deviceService->getDeviceInfo($request);
@@ -808,7 +855,7 @@ class CaptivePortalController extends Controller
                 'actual' => $deviceInfo['ip_address'],
             ]);
 
-            return redirect()->route('portal.index')->with('error', 'Device mismatch. Please start again.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'Device mismatch. Please start again.');
         }
 
         $portalSession = $session->captivePortalSession;
@@ -836,7 +883,7 @@ class CaptivePortalController extends Controller
                 'timestamp' => now()->toIso8601String(),
             ]);
 
-            return redirect()->route('portal.index')->with('error', 'MikroTik login link is missing.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'MikroTik login link is missing.');
         }
 
         $router = $session->package?->router;
@@ -873,7 +920,7 @@ class CaptivePortalController extends Controller
                     'expected_hosts' => $expectedHosts,
                 ]);
 
-                return redirect()->route('portal.index')->with('error', 'Invalid router configuration.');
+                return redirect()->route('portal.index', $request->query())->with('error', 'Invalid router configuration.');
             }
         }
 
@@ -886,7 +933,7 @@ class CaptivePortalController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()->route('portal.index')->with('error', 'Unable to retrieve login credentials.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'Unable to retrieve login credentials.');
         }
 
         // DIAGNOSTIC: confirms the handoff form was actually built and handed to
@@ -941,9 +988,12 @@ class CaptivePortalController extends Controller
             'query_params' => $request->query(),
         ]);
 
-        // Find a completed transaction that has a still-active hotspot session
-        // for the current device. Match by MAC/IP first, then by phone number.
-        $sessionIds = \App\Models\HotspotSession::active()
+        // Find a completed transaction that has a still-active or disconnected
+        // (but still valid) hotspot session for the current device. Match by
+        // MAC/IP first, then by phone number.
+        $sessionIds = \App\Models\HotspotSession::where(function ($q) {
+                $q->active()->orWhere(function ($sq) { $sq->reconnectable(); });
+            })
             ->where(function ($q) use ($clientMac, $clientIp, $phone) {
                 if ($clientMac) {
                     $q->orWhere('mac_address', $clientMac);
@@ -977,7 +1027,7 @@ class CaptivePortalController extends Controller
                 'phone' => $phone,
             ]);
 
-            return redirect()->route('portal.index')->with('info', 'No paid session found for this device. Please select a package.');
+            return redirect()->route('portal.index', $request->query())->with('info', 'No paid session found for this device. Please select a package.');
         }
 
         $session = \App\Models\HotspotSession::with(['authorization', 'package.router'])
@@ -985,16 +1035,21 @@ class CaptivePortalController extends Controller
             ->first();
 
         if (!$session) {
-            return redirect()->route('portal.index')->with('error', 'Paid session not found. Please contact support.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'Paid session not found. Please contact support.');
         }
 
-        if (!$session->isActive()) {
-            return redirect()->route('portal.index')->with('info', 'Your paid session has expired. Please select a new package.');
+        if (!$session->isActive() && !$session->isReconnectable()) {
+            return redirect()->route('portal.index', $request->query())->with('info', 'Your paid session has expired. Please select a new package.');
         }
 
         $authorization = $session->authorization;
         if (!$authorization || !$authorization->isActive()) {
-            return redirect()->route('portal.index')->with('error', 'Your authorization is no longer active.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'Your authorization is no longer active.');
+        }
+
+        // If the session was disconnected, reactivate it before handoff
+        if ($session->isReconnectable()) {
+            $this->sessionService->reactivateSession($request, $session);
         }
 
         // If the device reconnected and got a different IP/MAC, update the
@@ -1023,7 +1078,7 @@ class CaptivePortalController extends Controller
                 'portal_session_id' => $portalSession->id,
             ]);
 
-            return redirect()->route('portal.index')->with('error', 'Could not connect to the hotspot. Please reconnect to WiFi and try again.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'Could not connect to the hotspot. Please reconnect to WiFi and try again.');
         }
 
         try {
@@ -1035,7 +1090,7 @@ class CaptivePortalController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()->route('portal.index')->with('error', 'Unable to retrieve login credentials.');
+            return redirect()->route('portal.index', $request->query())->with('error', 'Unable to retrieve login credentials.');
         }
 
         Log::info('resumePaidSession: rendering handoff', [
@@ -1062,7 +1117,24 @@ class CaptivePortalController extends Controller
         $activeSession = $this->sessionService->getActiveSession($request);
 
         if ($activeSession) {
-            $this->sessionService->terminateSession($activeSession);
+            try {
+                $this->sessionService->terminateSession($activeSession);
+            } catch (\Exception $e) {
+                Log::error('Failed to terminate session during disconnect', [
+                    'session_id' => $activeSession->session_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // Expire the linked CaptivePortalSession so it won't be matched
+            // on reconnect (findExistingSession only looks for status='pending',
+            // but this is explicit cleanup to avoid any stale data).
+            if ($activeSession->captivePortalSession) {
+                $activeSession->captivePortalSession->update([
+                    'status' => 'expired',
+                    'expires_at' => now(),
+                ]);
+            }
 
             Log::info('User disconnected', [
                 'session_id' => $activeSession->session_id,
@@ -1075,6 +1147,74 @@ class CaptivePortalController extends Controller
         $this->routerIdentificationService->clearSessionState();
 
         return redirect()->route('portal.index', $request->query())->with('success', 'You have been disconnected successfully.');
+    }
+
+    /**
+     * Handle logout notification from MikroTik logout.html template.
+     *
+     * MikroTik's logout.html fires a fetch() to this endpoint with mac, ip,
+     * and router query params. We find the active session for that device and
+     * expire it so our DB stays in sync with MikroTik's session state.
+     *
+     * This is a fire-and-forget endpoint — MikroTik doesn't care about the
+     * response. It's excluded from CSRF (see VerifyCsrfToken middleware).
+     */
+    public function mikrotikLogout(Request $request)
+    {
+        $mac = $request->query('mac');
+        $ip = $request->query('ip');
+
+        Log::info('MikroTik logout notification received', [
+            'mac' => $mac,
+            'ip' => $ip,
+            'router' => $request->query('router'),
+        ]);
+
+        if (!$mac && !$ip) {
+            return response()->noContent();
+        }
+
+        // Find active session by MAC or IP
+        $query = \App\Models\HotspotSession::active();
+
+        if ($mac) {
+            $query->where('mac_address', $mac);
+        } elseif ($ip) {
+            $query->where('ip_address', $ip);
+        }
+
+        $session = $query->latest()->first();
+
+        if ($session) {
+            // Use 'disconnected' if time remains (user can reconnect),
+            // 'expired' if time has already run out.
+            $stillValid = $session->expires_at && $session->expires_at > now();
+
+            $session->update([
+                'status' => $stillValid ? 'disconnected' : 'expired',
+                'expires_at' => $stillValid ? $session->expires_at : now(),
+            ]);
+
+            if ($session->captivePortalSession) {
+                $session->captivePortalSession->update([
+                    'status' => 'expired',
+                    'expires_at' => now(),
+                ]);
+            }
+
+            Log::info('MikroTik logout: ' . ($stillValid ? 'disconnected' : 'expired') . ' session', [
+                'session_id' => $session->session_id,
+                'mac' => $mac,
+                'ip' => $ip,
+            ]);
+        } else {
+            Log::info('MikroTik logout: no active session found', [
+                'mac' => $mac,
+                'ip' => $ip,
+            ]);
+        }
+
+        return response()->noContent();
     }
 
     /**
@@ -1117,7 +1257,7 @@ class CaptivePortalController extends Controller
             // Check if device already has an active session
             $activeSession = $this->sessionService->getActiveSession($request);
             if ($activeSession) {
-                return redirect()->route('portal.status')->with('info', 'You already have an active session.');
+                return redirect()->route('portal.status', $request->query())->with('info', 'You already have an active session.');
             }
 
             // Mark OTP as verified
@@ -1161,7 +1301,7 @@ class CaptivePortalController extends Controller
             );
 
         } catch (ActiveSessionConflictException $e) {
-            return redirect()->route('portal.status')->with('info', 'You already have an active session on a different package.');
+            return redirect()->route('portal.status', $request->query())->with('info', 'You already have an active session on a different package.');
         } catch (\Exception $e) {
             Log::error('Signup failed', [
                 'error' => $e->getMessage(),
@@ -1198,8 +1338,11 @@ class CaptivePortalController extends Controller
                 ]);
             }
 
+            // Resolve router so the free-package check uses the correct router's package
+            $router = $this->routerIdentificationService->resolveRouter($request);
+
             // Check if phone has already been used for the signup free package
-            $freePackageForCheck = $this->getOrCreateFreePackage();
+            $freePackageForCheck = $this->getOrCreateFreePackage($router);
             if ($this->hasPhoneUsedFreePackage($normalizedPhone, $freePackageForCheck->id)) {
                 return response()->json([
                     'success' => false,
@@ -1254,18 +1397,11 @@ class CaptivePortalController extends Controller
             throw new \Exception('No routers available. Please create a router first.');
         }
 
-        // Try to find existing free package for this specific router first
+        // Find existing free package for this specific router only
         $freePackage = Package::where('name', 'Free 500MB')
                              ->where('price', 0)
                              ->where('router_id', $router->id)
                              ->first();
-
-        if (!$freePackage) {
-            // Check if there is any free 500MB package without router or fallback
-            $freePackage = Package::where('name', 'Free 500MB')
-                                 ->where('price', 0)
-                                 ->first();
-        }
 
         if (!$freePackage) {
             // Create free package if it doesn't exist

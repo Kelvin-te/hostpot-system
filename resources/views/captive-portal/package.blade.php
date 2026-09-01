@@ -26,7 +26,7 @@
             <tbody>
                 <tr>
                     <td class="package-name">Package Price</td>
-                    <td class="package-price"><span style="font-size: .8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}</td>
+                    <td class="package-price">@if($package->price == 0)<span style="color: #0e770e; font-weight: 700;">FREE</span>@else<span style="font-size: .8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}@endif</td>
                 </tr>
                 @if($package->bandwidth_download)
                 <tr>

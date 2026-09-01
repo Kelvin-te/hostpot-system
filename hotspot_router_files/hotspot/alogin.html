@@ -8,7 +8,7 @@
     <script>
         // Redirect to original destination or captive portal status page
         var dst = "$(link-orig)";
-        var statusUrl = "{PortalUrl}/portal/status";
+        var statusUrl = "{PortalUrl}/portal/status?router={RouterIdentifier}";
 
         function proceed() {
             if (dst && dst.indexOf("http") === 0 && dst.indexOf("generate_204") === -1 && dst.indexOf("connectivitycheck") === -1) {
@@ -45,7 +45,7 @@
         <button onclick="proceed()" style="background: #0e770e; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%;">
             Continue to Internet →
         </button>
-        <a href="{PortalUrl}/portal/status" style="font-size: 0.9rem; color: #4b5563; text-decoration: underline;">
+        <a href="{PortalUrl}/portal/status?router={RouterIdentifier}" style="font-size: 0.9rem; color: #4b5563; text-decoration: underline;">
             View Account & Session Status
         </a>
     </div>

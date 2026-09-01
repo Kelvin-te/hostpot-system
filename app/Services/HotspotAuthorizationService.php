@@ -247,10 +247,6 @@ class HotspotAuthorizationService
             $attributes['Idle-Timeout'] = $package->idle_timeout * 60;
         }
 
-        if ($package->rate_limit) {
-            $attributes['Framed-Filter-Id'] = $package->rate_limit;
-        }
-
         return $attributes;
     }
 

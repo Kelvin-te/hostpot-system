@@ -91,6 +91,15 @@ class HotspotSession extends Model
     }
 
     /**
+     * Check if session was disconnected by the user but still has
+     * valid time remaining — can be reactivated on reconnect.
+     */
+    public function isReconnectable(): bool
+    {
+        return $this->status === 'disconnected' && $this->expires_at > now();
+    }
+
+    /**
      * Get remaining time in session
      */
     public function getRemainingTime(): ?Carbon
@@ -171,6 +180,15 @@ class HotspotSession extends Model
     }
 
     /**
+     * Scope for disconnected sessions that still have valid time
+     */
+    public function scopeReconnectable($query)
+    {
+        return $query->where('status', 'disconnected')
+                    ->where('expires_at', '>', now());
+    }
+
+    /**
      * Scope for expired sessions
      */
     public function scopeExpired($query)
@@ -198,6 +216,28 @@ class HotspotSession extends Model
     {
         return static::active()
                     ->where('mac_address', $macAddress)
+                    ->first();
+    }
+
+    /**
+     * Find reconnectable (disconnected but still valid) session by device fingerprint
+     */
+    public static function findReconnectableByDevice(string $deviceFingerprint): ?self
+    {
+        return static::reconnectable()
+                    ->where('device_fingerprint', $deviceFingerprint)
+                    ->latest()
+                    ->first();
+    }
+
+    /**
+     * Find reconnectable (disconnected but still valid) session by MAC address
+     */
+    public static function findReconnectableByMac(string $macAddress): ?self
+    {
+        return static::reconnectable()
+                    ->where('mac_address', $macAddress)
+                    ->latest()
                     ->first();
     }
 

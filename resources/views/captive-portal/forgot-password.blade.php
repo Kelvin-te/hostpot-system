@@ -10,7 +10,7 @@
 
 @section('content')
     <div class="form-widget">
-        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.login') }}'">← Back to Login</button>
+        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.login', request()->query()) }}'">← Back to Login</button>
         <div style="text-align: center; margin: 10px 0 20px;">
             <div class="text-lg font-medium text-gray-900" style="margin-bottom: 8px;">Reset Your Password</div>
             <div class="text-sm text-gray-600">Enter your phone number to receive an OTP, then set a new password.</div>
@@ -33,7 +33,7 @@
             <div style="background:#d4edda;border:1px solid #c3e6cb;border-radius:5px;padding:12px;margin-bottom:16px;color:#155724;font-size:.9em;">{{ session('success') }}</div>
         @endif
 
-        <form action="{{ route('portal.forgot-password.reset') }}" method="POST" id="resetForm">
+        <form action="{{ route('portal.forgot-password.reset', request()->query()) }}" method="POST" id="resetForm">
             @csrf
             <div class="form-group">
                 <x-input-label for="resetPhone" :value="__('Phone Number')" />

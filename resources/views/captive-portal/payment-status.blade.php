@@ -24,10 +24,10 @@
 
 @section('content')
     <div class="form-widget">
-        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.purchase', $package) }}'">← Back to Payment</button>
+        <button type="button" class="btn btn-light back-btn" onclick="window.location.href='{{ route('portal.purchase', array_merge(['package' => $package->id], request()->query())) }}'">← Back to Payment</button>
         <div class="status-header">
             <div class="status-title">Payment Status</div>
-            <div class="package-info">{{ $package->name }} - <span style="font-size: .8em;">KES</span> {{ number_format($package->price, 0) }}</div>
+            <div class="package-info">{{ $package->name }} - @if($package->price == 0)FREE@else<span style="font-size: .8em;">KES</span> {{ number_format($package->price, 0) }}@endif</div>
         </div>
 
         @if (session('success'))
@@ -58,12 +58,12 @@
 
         <div id="actionButtons">
             <button type="button" class="btn btn-orange" onclick="checkPaymentStatus()">Check Payment Status</button>
-            <a href="{{ route('portal.index') }}" class="btn btn-light">Back to Packages</a>
+            <a href="{{ route('portal.index', request()->query()) }}" class="btn btn-light">Back to Packages</a>
         </div>
 
         <div id="successActions" style="display:none;">
             <a href="#" id="continueHandoffBtn" class="btn btn-green">Continue to Internet</a>
-            <a href="{{ route('portal.index') }}" class="btn btn-light">Back to Packages</a>
+            <a href="{{ route('portal.index', request()->query()) }}" class="btn btn-light">Back to Packages</a>
         </div>
     </div>
 @endsection
@@ -224,8 +224,8 @@ function handlePaymentFailure(data) {
     document.getElementById('countdown').style.display = 'none';
     const actionButtons = document.getElementById('actionButtons');
     actionButtons.innerHTML = `
-        <a href="{{ route('portal.purchase', $package) }}" class="btn btn-orange">Try Payment Again</a>
-        <a href="{{ route('portal.index') }}" class="btn btn-danger">Cancel</a>
+        <a href="{{ route('portal.purchase', array_merge(['package' => $package->id], request()->query())) }}" class="btn btn-orange">Try Payment Again</a>
+        <a href="{{ route('portal.index', request()->query()) }}" class="btn btn-danger">Cancel</a>
     `;
 }
 
@@ -236,8 +236,8 @@ function handleTimeout() {
     document.getElementById('countdown').style.display = 'none';
     const actionButtons = document.getElementById('actionButtons');
     actionButtons.innerHTML = `
-        <a href="{{ route('portal.purchase', $package) }}" class="btn btn-orange">Try Payment Again</a>
-        <a href="{{ route('portal.index') }}" class="btn btn-danger">Cancel</a>
+        <a href="{{ route('portal.purchase', array_merge(['package' => $package->id], request()->query())) }}" class="btn btn-orange">Try Payment Again</a>
+        <a href="{{ route('portal.index', request()->query()) }}" class="btn btn-danger">Cancel</a>
     `;
 }
 

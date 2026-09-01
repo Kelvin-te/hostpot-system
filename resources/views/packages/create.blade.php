@@ -85,8 +85,8 @@
                                             <x-input-error class="mt-2" :messages="$errors->get('shared_users')"></x-input-error>
                                         </div>
                                         <div>
-                                            <x-input-label for="rate_limit" :value="__('Rate Limit (optional)')" class="mt-2"></x-input-label>
-                                            <x-text-input id="rate_limit" name="rate_limit" type="text" class="mt-1 block w-full" :value="old('rate_limit')" placeholder="e.g., 10M/50M"></x-text-input>
+                                            <x-input-label for="rate_limit" :value="__('Data Cap (optional)')" class="mt-2"></x-input-label>
+                                            <x-text-input id="rate_limit" name="rate_limit" type="text" class="mt-1 block w-full" :value="old('rate_limit')" placeholder="e.g., 500MB or 2GB"></x-text-input>
                                             <x-input-error class="mt-2" :messages="$errors->get('rate_limit')"></x-input-error>
                                         </div>
                                     </div>

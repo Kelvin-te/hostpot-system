@@ -51,7 +51,7 @@
                                         @endif
                                     </span>
                                 </td>
-                                <td class="package-price"><span style="font-size: .8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}</td>
+                                <td class="package-price">@if($package->price == 0)<span style="color: #0e770e; font-weight: 700;">FREE</span>@else<span style="font-size: .8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}@endif</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -63,7 +63,7 @@
                         @foreach($regularPackages as $package)
                             <tr data-package="{{ $package->id }}" data-price="{{ $package->price }}" data-duration="{{ $package->validity_days ?? 1 }}" data-speed="{{ $package->bandwidth_download ?? 0 }}">
                                 <td class="package-name">{{ $package->name }}</td>
-                                <td class="package-price"><span style="font-size: .8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}</td>
+                                <td class="package-price">@if($package->price == 0)<span style="color: #0e770e; font-weight: 700;">FREE</span>@else<span style="font-size: .8em;">{{ config('app.currency') }}</span> {{ number_format($package->price, 0) }}@endif</td>
                             </tr>
                         @endforeach
                     </tbody>
