@@ -24,11 +24,26 @@ class UserPackageTable extends DataTableComponent
             Column::make("Package ID", "id")
                 ->sortable()
                 ->searchable(),
-                Column::make("Package name", "name")
+            Column::make("Package name", "name")
                 ->sortable()
                 ->searchable(),
             Column::make("Price" . __(' (') . config('app.currency') . __(')'), "price")
                 ->sortable(),
+            Column::make("Bandwidth", "bandwidth_download")
+                ->format(function ($value, $row) {
+                    if ($row->bandwidth_upload && $row->bandwidth_download) {
+                        return $row->bandwidth_upload . '/' . $row->bandwidth_download . ' Mbps';
+                    }
+                    return '-';
+                }),
+            Column::make("Data Cap", "rate_limit")
+                ->format(function ($value) {
+                    return $value ?: 'Unlimited';
+                }),
+            Column::make("Validity", "validity_minutes")
+                ->format(function ($value, $row) {
+                    return $row->getValidityDisplay() ?: '-';
+                }),
             Column::make("Created at", "created_at")
                 ->format(function ($value) {
                     return Carbon::parse($value)->format('Y-m-d');

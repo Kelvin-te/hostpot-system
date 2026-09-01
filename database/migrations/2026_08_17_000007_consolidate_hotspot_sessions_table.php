@@ -30,7 +30,7 @@ return new class extends Migration
             $table->bigInteger('bytes_uploaded')->default(0);
             $table->bigInteger('bytes_downloaded')->default(0);
             $table->bigInteger('bytes_total')->default(0);
-            $table->enum('status', ['active', 'expired', 'blocked', 'paused'])->default('active')->index();
+            $table->enum('status', ['active', 'disconnected', 'expired', 'blocked', 'paused'])->default('active')->index();
             $table->json('mikrotik_data')->nullable();
             $table->timestamps();
 

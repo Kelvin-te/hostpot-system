@@ -42,11 +42,11 @@ class PackageTable extends DataTableComponent
                     if ($row->bandwidth_upload && $row->bandwidth_download) {
                         return $row->bandwidth_upload . '/' . $row->bandwidth_download . ' Mbps';
                     }
-                    return $row->rate_limit ?: '-';
+                    return '-';
                 }),
-            Column::make("Session Time", "session_timeout")
+            Column::make("Data Cap", "rate_limit")
                 ->format(function ($value) {
-                    return $value ? $value . 'h' : '-';
+                    return $value ?: 'Unlimited';
                 }),
             Column::make("Validity", "validity_minutes")
                 ->format(function ($value, $row) {

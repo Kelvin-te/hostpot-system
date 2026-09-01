@@ -83,17 +83,27 @@ class SessionController extends Controller
         }
 
         $session = HotspotSession::with(['package.router', 'user'])->findOrFail($id);
-        
-        // Try to get live MikroTik data if session is active
+
+        // Try to get live RADIUS data from WinguFi Core if session is active
         $liveData = null;
         if ($session->isActive() && $session->package->router) {
             try {
-                $liveData = $this->mikrotikService->getActiveUserDetails(
-                    $session->package->router,
-                    $session->mikrotik_username ?? $session->username
-                );
+                $coreService = app(\App\Services\WinguFiCoreService::class);
+                $routerExternalId = 'router-' . $session->package->router->identifier;
+                $username = $session->mikrotik_username ?? $session->username;
+
+                $result = $coreService->fetchSessions($routerExternalId, 'active');
+
+                if ($result && isset($result['data']['sessions'])) {
+                    foreach ($result['data']['sessions'] as $radiusSession) {
+                        if (($radiusSession['username'] ?? null) === $username) {
+                            $liveData = $radiusSession;
+                            break;
+                        }
+                    }
+                }
             } catch (\Exception $e) {
-                Log::warning('Failed to fetch live MikroTik data', [
+                Log::warning('Failed to fetch live RADIUS data', [
                     'session_id' => $session->id,
                     'error' => $e->getMessage()
                 ]);
@@ -338,7 +348,7 @@ class SessionController extends Controller
     }
 
     /**
-     * Sync sessions with router
+     * Sync sessions with WinguFi Core RADIUS accounting
      */
     public function syncWithRouter(Request $request)
     {
@@ -350,54 +360,30 @@ class SessionController extends Controller
         }
 
         try {
-            $routerId = $request->input('router_id');
-            
-            if ($routerId) {
-                $router = Router::findOrFail($routerId);
-                $result = $this->mikrotikService->syncSessionsWithRouter($router);
-                
-                return response()->json($result);
-            } else {
-                // Sync all routers
-                $routers = Router::all();
-                $totalSynced = 0;
-                $totalCreated = 0;
-                $totalExpired = 0;
-                
-                foreach ($routers as $router) {
-                    $result = $this->mikrotikService->syncSessionsWithRouter($router);
-                    
-                    if ($result['success']) {
-                        $totalSynced += $result['synced'];
-                        $totalCreated += $result['created'] ?? 0;
-                        $totalExpired += $result['expired'] ?? 0;
-                    }
-                }
-                
-                $message = "Synced {$totalSynced} sessions";
-                if ($totalCreated > 0) {
-                    $message .= ", created {$totalCreated} missing sessions";
-                }
-                if ($totalExpired > 0) {
-                    $message .= ", expired {$totalExpired} stale sessions";
-                }
-                $message .= " across {$routers->count()} routers";
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => $message,
-                    'synced' => $totalSynced,
-                    'created' => $totalCreated,
-                    'expired' => $totalExpired,
-                    'routers' => $routers->count(),
-                ]);
+            $sessionService = app(\App\Services\HotspotSessionService::class);
+            $result = $sessionService->syncSessionsWithCore();
+
+            if (!$result['success']) {
+                return response()->json($result, 500);
             }
-            
+
+            $message = "Synced {$result['synced']} sessions";
+            if ($result['stopped'] > 0) {
+                $message .= ", marked {$result['stopped']} as disconnected";
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'synced' => $result['synced'],
+                'stopped' => $result['stopped'],
+                'not_found' => $result['not_found'],
+            ]);
         } catch (\Exception $e) {
             Log::error('Session sync failed', [
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Sync failed: ' . $e->getMessage()

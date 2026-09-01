@@ -157,6 +157,7 @@ class HotspotSessionService
             'authorization_id' => $authorization->id,
             'user_id' => $user?->id,
             'username' => $username,
+            'mikrotik_username' => $authorization->radius_username,
             'expires_at' => $expiresAt,
         ];
 
@@ -447,5 +448,135 @@ class HotspotSessionService
     public function getDeviceDebugInfo(Request $request): array
     {
         return $this->deviceService->getDeviceInfo($request);
+    }
+
+    /**
+     * Sync local hotspot sessions with RADIUS accounting data from WinguFi Core.
+     * Fetches active RADIUS sessions and updates bytes/time/status on matching
+     * local HotspotSession records (matched by mikrotik_username or username).
+     */
+    public function syncSessionsWithCore(): array
+    {
+        $coreService = app(WinguFiCoreService::class);
+
+        if (!$coreService->isEnabled()) {
+            return ['success' => false, 'message' => 'WinguFi Core is not enabled'];
+        }
+
+        $routers = \App\Models\Router::all();
+        $synced = 0;
+        $stopped = 0;
+        $notFound = 0;
+
+        foreach ($routers as $router) {
+            $routerExternalId = 'router-' . $router->identifier;
+
+            // Fetch active RADIUS sessions for this router
+            $result = $coreService->fetchSessions($routerExternalId, 'active');
+
+            Log::info('Session sync debug: Core API response', [
+                'router' => $router->name,
+                'router_external_id' => $routerExternalId,
+                'has_result' => $result !== null,
+                'has_sessions' => $result && isset($result['data']['sessions']),
+                'session_count' => $result['data']['sessions'] ?? 0,
+                'raw_keys' => $result ? array_keys($result) : [],
+            ]);
+
+            if (!$result || !isset($result['data']['sessions'])) {
+                continue;
+            }
+
+            $radiusSessions = $result['data']['sessions'];
+
+            Log::info('Session sync debug: RADIUS sessions', [
+                'router' => $router->name,
+                'count' => count($radiusSessions),
+                'usernames' => array_column($radiusSessions, 'username'),
+            ]);
+
+            // Index local active sessions by all possible usernames for this router
+            $localSessions = HotspotSession::active()
+                ->with('authorization')
+                ->whereHas('package', function ($q) use ($router) {
+                    $q->where('router_id', $router->id);
+                })
+                ->get();
+
+            // Build a lookup map: radius_username => session
+            $localByRadiusUsername = [];
+            foreach ($localSessions as $session) {
+                $radiusUsername = $session->mikrotik_username
+                    ?? $session->authorization?->radius_username
+                    ?? $session->username;
+                $localByRadiusUsername[$radiusUsername] = $session;
+            }
+
+            Log::info('Session sync debug: Local sessions', [
+                'router' => $router->name,
+                'local_count' => $localSessions->count(),
+                'local_usernames' => array_keys($localByRadiusUsername),
+            ]);
+
+            $matchedUsernames = [];
+
+            foreach ($radiusSessions as $radiusSession) {
+                $username = $radiusSession['username'] ?? null;
+                if (!$username) {
+                    continue;
+                }
+
+                $matchedUsernames[] = $username;
+                $localSession = $localByRadiusUsername[$username] ?? null;
+
+                if (!$localSession) {
+                    $notFound++;
+                    continue;
+                }
+
+                $inputOctets = (int) ($radiusSession['input_octets'] ?? 0);
+                $outputOctets = (int) ($radiusSession['output_octets'] ?? 0);
+                $sessionTime = (int) ($radiusSession['session_time'] ?? 0);
+
+                $updateData = [
+                    'bytes_downloaded' => $inputOctets,
+                    'bytes_uploaded' => $outputOctets,
+                    'bytes_total' => $inputOctets + $outputOctets,
+                ];
+
+                // Backfill mikrotik_username if it was missing
+                if (!$localSession->mikrotik_username && $username) {
+                    $updateData['mikrotik_username'] = $username;
+                }
+
+                $localSession->update($updateData);
+
+                $synced++;
+            }
+
+            // Mark local active sessions not seen in RADIUS as disconnected
+            foreach ($localSessions as $session) {
+                $radiusUsername = $session->mikrotik_username
+                    ?? $session->authorization?->radius_username
+                    ?? $session->username;
+                if (!in_array($radiusUsername, $matchedUsernames) && $session->isActive()) {
+                    $session->update(['status' => 'disconnected']);
+                    $stopped++;
+                }
+            }
+        }
+
+        Log::info('Session sync with WinguFi Core completed', [
+            'synced' => $synced,
+            'stopped' => $stopped,
+            'not_found' => $notFound,
+        ]);
+
+        return [
+            'success' => true,
+            'synced' => $synced,
+            'stopped' => $stopped,
+            'not_found' => $notFound,
+        ];
     }
 }

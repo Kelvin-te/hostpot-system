@@ -157,6 +157,37 @@ class WinguFiCoreService
         }
     }
 
+    public function fetchSessions(string $routerExternalId, string $status = 'active'): ?array
+    {
+        if (!$this->enabled || !$this->token) {
+            return null;
+        }
+
+        try {
+            $response = $this->client()->get('/sessions', [
+                'router_external_id' => $routerExternalId,
+                'status' => $status,
+                'per_page' => 100,
+            ]);
+
+            if (!$response->successful()) {
+                Log::warning('WinguFi Core fetch sessions failed', [
+                    'router_external_id' => $routerExternalId,
+                    'status' => $response->status(),
+                ]);
+                return null;
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::warning('Failed to fetch WinguFi Core sessions', [
+                'router_external_id' => $routerExternalId,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
     public function externalAuthorizationId(HotspotAuthorization $authorization): string
     {
         $paymentId = $authorization->payment_transaction_id ?? $authorization->id;
