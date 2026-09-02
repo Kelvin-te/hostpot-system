@@ -539,8 +539,8 @@ class HotspotSessionService
                 $sessionTime = (int) ($radiusSession['session_time'] ?? 0);
 
                 $updateData = [
-                    'bytes_downloaded' => $inputOctets,
-                    'bytes_uploaded' => $outputOctets,
+                    'bytes_uploaded' => $inputOctets,
+                    'bytes_downloaded' => $outputOctets,
                     'bytes_total' => $inputOctets + $outputOctets,
                 ];
 
