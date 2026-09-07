@@ -132,7 +132,7 @@
                             </div>
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">Data Limit</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $session->package->rate_limit }}</dd>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $session->package->data_cap }}</dd>
                             </div>
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">Bandwidth</dt>
@@ -196,7 +196,7 @@
                             $downloadedMB = $session->bytes_downloaded / (1024 * 1024);
                             $totalMB = $session->bytes_total / (1024 * 1024);
                             $limitMB = 0;
-                            if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->rate_limit, $matches)) {
+                            if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->data_cap, $matches)) {
                                 $limitMB = $matches[2] === 'GB' ? $matches[1] * 1024 : $matches[1];
                             }
                             $percentage = $limitMB > 0 ? min(100, ($totalMB / $limitMB) * 100) : 0;

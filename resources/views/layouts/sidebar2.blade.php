@@ -44,6 +44,10 @@
                     <x-slot name="icon">💳</x-slot>
                     {{ __('Buy Data') }}
                 </x-sidebar-item>
+                <x-sidebar-item :href="route('user.wallet')" :active="request()->routeIs('user.wallet')">
+                    <x-slot name="icon">👛</x-slot>
+                    {{ __('My Wallet') }}
+                </x-sidebar-item>
                 <x-sidebar-item :href="route('user.settings')" :active="request()->routeIs('user.settings')">
                     <x-slot name="icon">⚙️</x-slot>
                     {{ __('Account Settings') }}
@@ -55,9 +59,9 @@
                 <div class="px-4 py-2 mt-4">
                     <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</div>
                 </div>
-                <x-sidebar-item :href="route('users.index')" :active="request()->routeIs('users.index')">
+                <x-sidebar-item :href="route('customers.index')" :active="request()->routeIs('customers.*')">
                     <x-slot name="icon">👥</x-slot>
-                    {{ __('Users') }}
+                    {{ __('Customers') }}
                 </x-sidebar-item>
                 <x-sidebar-item :href="route('router.index')" :active="request()->routeIs('router.index')">
                     <x-slot name="icon">🖧</x-slot>

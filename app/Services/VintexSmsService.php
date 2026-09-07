@@ -12,13 +12,34 @@ class VintexSmsService
     protected ?string $email;
     protected ?string $bearerToken;
     protected string $senderId;
+    protected string $companyName;
+    protected string $companyPhone;
+    protected bool $hasCustomSenderName;
 
     public function __construct()
     {
         $this->apiUrl = config('services.vintex.api_url', 'https://sms.vintextechnologies.com/api/sendMessage');
         $this->email = config('services.vintex.email');
         $this->bearerToken = config('services.vintex.bearer_token');
-        $this->senderId = config('services.vintex.sender_id', 'STERKE');
+
+        // Load company details from Settings table (graceful fallback if table doesn't exist)
+        $settings = null;
+        try {
+            $settings = \App\Models\Setting::first();
+        } catch (Exception $e) {
+            // Settings table might not exist during migrations or tests
+        }
+
+        // Sender ID: check Setting.sms_sender_id first, fall back to config
+        $settingSenderId = $settings?->sms_sender_id;
+        $this->hasCustomSenderName = !empty($settingSenderId);
+        $this->senderId = $this->hasCustomSenderName
+            ? $settingSenderId
+            : config('services.vintex.sender_id', 'STERKE');
+
+        // Company details from Settings, with fallback to app name
+        $this->companyName = $settings?->company_name ?: config('app.name', 'MatuNet');
+        $this->companyPhone = $settings?->company_phone ?: '';
     }
 
     /**
@@ -42,6 +63,9 @@ class VintexSmsService
             if (!$normalizedPhone) {
                 throw new Exception('Invalid phone number format');
             }
+
+            // Append company signature when no custom sender name is configured
+            $message = $this->appendSignature($message);
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->bearerToken,
@@ -96,11 +120,31 @@ class VintexSmsService
     }
 
     /**
+     * Append company signature to SMS message when no custom sender name is configured.
+     * When a custom sender name exists, the senderID field conveys identity.
+     */
+    public function appendSignature(string $message): string
+    {
+        if ($this->hasCustomSenderName) {
+            return $message;
+        }
+
+        $companyName = $this->companyName ?: config('app.name', 'MatuNet');
+        $signature = "\n\nRegards, {$companyName}.";
+
+        if (!empty($this->companyPhone)) {
+            $signature .= "\nCall: {$this->companyPhone}";
+        }
+
+        return $message . $signature;
+    }
+
+    /**
      * Send OTP SMS
      */
     public function sendOtp(string $phone, string $otp): array
     {
-        $message = "Your verification code is: {$otp}. This code will expire in 10 minutes. Do not share this code with anyone.\n\nRegards, Sterke Digital.";
+        $message = "Your verification code is: {$otp}. This code will expire in 10 minutes. Do not share this code with anyone.";
         
         return $this->sendSms($phone, $message);
     }
@@ -110,7 +154,7 @@ class VintexSmsService
      */
     public function sendWelcomeSms(string $phone, string $name): array
     {
-        $message = "Hello {$name},\nWelcome to Sterke Digital! You now have 500MB of free internet access. Enjoy browsing!\n\nRegards, Sterke Digital.";
+        $message = "Hello {$name},\nWelcome to {$this->companyName}! You now have 500MB of free internet access. Enjoy browsing!";
         
         return $this->sendSms($phone, $message);
     }
@@ -120,7 +164,7 @@ class VintexSmsService
      */
     public function sendPackageActivationSms(string $phone, string $packageName, string $validity): array
     {
-        $message = "Your {$packageName} package has been activated successfully. Valid for {$validity}. Enjoy your internet access!\n\nRegards, Sterke Digital.";
+        $message = "Your {$packageName} package has been activated successfully. Valid for {$validity}. Enjoy your internet access!";
         
         return $this->sendSms($phone, $message);
     }
@@ -130,7 +174,7 @@ class VintexSmsService
      */
     public function sendPaymentConfirmationSms(string $phone, string $amount, string $packageName, string $mpesaCode): array
     {
-        $message = "Payment of KES {$amount} received for {$packageName}. M-Pesa Code: {$mpesaCode}. Your internet is now active!\n\nRegards, Sterke Digital.";
+        $message = "Payment of KES {$amount} received for {$packageName}. M-Pesa Code: {$mpesaCode}. Your internet is now active!";
         
         return $this->sendSms($phone, $message);
     }
@@ -141,7 +185,43 @@ class VintexSmsService
     public function sendVoucherSms(string $phone, string $voucherCode, string $packageName, ?string $expiresOn = null): array
     {
         $expiryText = $expiresOn ? " (expires {$expiresOn})" : '';
-        $message = "Your voucher for {$packageName}{$expiryText}:\n{$voucherCode}\n\nUse this code on the portal Login page under 'Voucher Code'. Do not share this code.\n\nRegards, Sterke Digital.";
+        $message = "Your voucher for {$packageName}{$expiryText}:\n{$voucherCode}\n\nUse this code on the portal Login page under 'Voucher Code'. Do not share this code.";
+        return $this->sendSms($phone, $message);
+    }
+
+    /**
+     * Send expiry alert SMS
+     */
+    public function sendExpiryAlertSms(string $phone, string $packageName, int $minutesLeft, string $portalUrl): array
+    {
+        $message = "Your {$packageName} expires in {$minutesLeft} minutes. Visit {$portalUrl} to purchase more data.";
+        return $this->sendSms($phone, $message);
+    }
+
+    /**
+     * Send auto-renewal confirmation SMS
+     */
+    public function sendAutoRenewalSms(string $phone, string $packageName, string $newExpiry): array
+    {
+        $message = "Your {$packageName} has been auto-renewed from your wallet balance. New expiry: {$newExpiry}.";
+        return $this->sendSms($phone, $message);
+    }
+
+    /**
+     * Send wallet low balance SMS
+     */
+    public function sendWalletLowBalanceSms(string $phone, string $balance, string $packageName): array
+    {
+        $message = "Your wallet balance is low (KES {$balance}). Top up to auto-renew your {$packageName} and stay connected.";
+        return $this->sendSms($phone, $message);
+    }
+
+    /**
+     * Send data limit alert SMS
+     */
+    public function sendDataLimitAlertSms(string $phone, string $dataUsed, string $dataLimit): array
+    {
+        $message = "You have used {$dataUsed} out of {$dataLimit}. Your data is running low. Top up to continue browsing.";
         return $this->sendSms($phone, $message);
     }
 

@@ -137,6 +137,11 @@ class DeviceIdentificationService
             }
         }
 
+        $portalIp = $request->input('ip');
+        if ($portalIp && filter_var($portalIp, FILTER_VALIDATE_IP)) {
+            return $portalIp;
+        }
+
         return $request->ip();
     }
 

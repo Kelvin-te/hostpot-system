@@ -57,21 +57,25 @@
 <table>
     <thead>
     <tr>
-        <th>{{ __('Invoice') }}</th>
-        <th>{{ __('User') }}</th>
+        <th>{{ __('Receipt') }}</th>
+        <th>{{ __('Customer') }}</th>
+        <th>{{ __('Phone') }}</th>
         <th>{{ __('Package') }}</th>
-        <th>{{ __('Price') }}</th>
-        <th>{{ __('Start') }}</th>
+        <th>{{ __('Amount') }}</th>
+        <th>{{ __('Gateway') }}</th>
+        <th>{{ __('Date') }}</th>
     </tr>
     </thead>
     <tbody>
     @foreach($bills as $bill)
         <tr>
-            <td>{{ $bill->invoice }}</td>
-            <td>{{ $bill->user->name }}</td>
-            <td>{{ $bill->package_name }}</td>
-            <td>{{ config('app.currency') . ' ' . $bill->package_price }}</td>
-            <td>{{ $bill->package_start }}</td>
+            <td>{{ $bill->mpesa_receipt_number ?: '—' }}</td>
+            <td>{{ $bill->user?->name ?: '—' }}</td>
+            <td>{{ $bill->phone_number }}</td>
+            <td>{{ $bill->package?->name ?: '—' }}</td>
+            <td>{{ config('app.currency', 'KSh') . ' ' . number_format((float) $bill->amount, 2) }}</td>
+            <td>{{ ucfirst($bill->gateway) }}</td>
+            <td>{{ $bill->created_at?->format('Y-m-d H:i') }}</td>
         </tr>
     @endforeach
     </tbody>

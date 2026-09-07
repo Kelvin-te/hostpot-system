@@ -8,15 +8,15 @@ use App\Services\HotspotSessionService;
 class SyncRouterSessions extends Command
 {
     protected $signature = 'sessions:sync';
-    protected $description = 'Sync local sessions with RADIUS accounting data from WinguFi Core';
+    protected $description = 'Sync local sessions with router data via MikroTik API';
 
     public function handle()
     {
         $service = app(HotspotSessionService::class);
 
-        $this->info('Syncing sessions with WinguFi Core...');
+        $this->info('Syncing sessions via MikroTik API...');
 
-        $result = $service->syncSessionsWithCore();
+        $result = $service->syncSessionsWithRouters();
 
         if (!$result['success']) {
             $this->error($result['message'] ?? 'Sync failed');
@@ -29,7 +29,7 @@ class SyncRouterSessions extends Command
             [
                 ['Sessions Updated', $result['synced'] ?? 0],
                 ['Sessions Disconnected', $result['stopped'] ?? 0],
-                ['RADIUS Sessions (no local match)', $result['not_found'] ?? 0],
+                ['Users Re-created', $result['recreated'] ?? 0],
             ]
         );
 

@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\AddComment;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BillingDownload;
-use App\Http\Controllers\CaptivePortalController;
 use App\Http\Controllers\ChangePackageController;
 use App\Http\Controllers\CloseTicket;
 use App\Http\Controllers\SettingsController;
@@ -31,20 +31,27 @@ use App\Http\Controllers\UserEnable;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
 
-// Public landing page -> Captive Portal
-Route::get('/', [CaptivePortalController::class, 'index'])->name('portal.landing');
-
 Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Admin Dashboard now at /dashboard (keeps name 'dashboard')
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/administration', function () {return view('administration');})->name('administration');
 
-    // Package cloning (must be before resource to avoid /packages/{package} capturing 'clone')
-    Route::get('/packages/clone', [PackageController::class, 'cloneForm'])->name('packages.clone.form');
-    Route::post('/packages/clone', [PackageController::class, 'clone'])->name('packages.clone');
+    // Package copy to router (must be before resource to avoid /packages/{package} capturing)
+    Route::get('/packages/copy-to-router', [PackageController::class, 'copyToRouterForm'])->name('packages.copy.form');
+    Route::post('/packages/copy-to-router', [PackageController::class, 'copyToRouter'])->name('packages.copy');
     Route::resource('/packages', PackageController::class);
     Route::resource('/users', UserController::class);
-    Route::resource('/billing', BillingController::class);
+
+    // Customer routes
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/phone/{phone}', [CustomerController::class, 'showByPhone'])->name('customers.phone');
+    Route::get('/customers/{customer}', [CustomerController::class, 'show'])->name('customers.show')->where('customer', '[0-9]+');
+    Route::patch('/customers/{customer}/suspend', [CustomerController::class, 'suspend'])->name('customers.suspend')->where('customer', '[0-9]+');
+    Route::patch('/customers/{customer}/activate', [CustomerController::class, 'activate'])->name('customers.activate')->where('customer', '[0-9]+');
+    Route::post('/customers/{customer}/sms', [CustomerController::class, 'sendSms'])->name('customers.sms')->where('customer', '[0-9]+');
+    Route::get('/billing/dashboard', [BillingController::class, 'dashboard'])->name('billing.dashboard');
+    Route::get('/billing/{transaction}/invoice', [BillingController::class, 'invoice'])->name('billing.invoice')->where('transaction', '[0-9]+');
+    Route::resource('/billing', BillingController::class)->except(['show']);
     Route::resource('/payment', PaymentController::class)->only(['index', 'store']);
     Route::resource('/ticket', TicketController::class);
     
@@ -57,19 +64,25 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     Route::delete('/router/{router}', [RouterController::class, 'destroy'])->name('router.destroy');
     
     // Custom router routes - use specific patterns before show route
-    Route::post('/router/test-connection', [RouterController::class, 'testConnection'])->name('router.test-connection');
+    Route::post('/router/{router}/test-connection', [RouterController::class, 'testConnection'])->name('router.test-connection')->where('router', '[0-9]+');
     Route::get('/router/{router}/system-info', [RouterController::class, 'getSystemInfo'])->name('router.system-info')->where('router', '[0-9]+');
     Route::get('/router/{router}/interfaces', [RouterController::class, 'getInterfaces'])->name('router.interfaces')->where('router', '[0-9]+');
     Route::get('/router/status/all', [RouterController::class, 'getAllStatuses'])->name('router.status.all');
-    Route::post('/router/{router}/provision-radius', [RouterController::class, 'provisionRadius'])->name('router.provision-radius')->where('router', '[0-9]+');
     Route::post('/router/{router}/configure-portal', [RouterController::class, 'configurePortal'])->name('router.configure-portal')->where('router', '[0-9]+');
+    Route::post('/router/{router}/setup-hotspot', [RouterController::class, 'setupHotspot'])->name('router.setup-hotspot')->where('router', '[0-9]+');
+    Route::post('/router/{router}/sync-package-profiles', [RouterController::class, 'syncPackageProfiles'])->name('router.sync-package-profiles')->where('router', '[0-9]+');
     Route::post('/router/{router}/sync-hotspot-info', [RouterController::class, 'syncHotspotInfo'])->name('router.sync-hotspot-info')->where('router', '[0-9]+');
     Route::get('/router/{router}/hotspot-files', [RouterController::class, 'downloadHotspotFiles'])->name('router.hotspot-files')->where('router', '[0-9]+');
+    Route::post('/router/{router}/upload-hotspot-files', [RouterController::class, 'uploadHotspotFiles'])->name('router.upload-hotspot-files')->where('router', '[0-9]+');
     Route::post('/router/{router}/apply-walled-garden', [RouterController::class, 'applyWalledGarden'])->name('router.apply-walled-garden')->where('router', '[0-9]+');
     Route::post('/router/{router}/reboot', [RouterController::class, 'reboot'])->name('router.reboot')->where('router', '[0-9]+');
     Route::post('/router/{router}/backup', [RouterController::class, 'backup'])->name('router.backup')->where('router', '[0-9]+');
     Route::get('/router/{router}/config', [RouterController::class, 'getConfig'])->name('router.config')->where('router', '[0-9]+');
     Route::get('/router/{router}/diagnostics', [RouterController::class, 'getDiagnostics'])->name('router.diagnostics')->where('router', '[0-9]+');
+    Route::get('/router/{router}/setup-checklist', [RouterController::class, 'getSetupChecklist'])->name('router.setup-checklist')->where('router', '[0-9]+');
+    Route::get('/router/{router}/traffic', [RouterController::class, 'getTrafficStats'])->name('router.traffic')->where('router', '[0-9]+');
+    Route::get('/router/{router}/health', [RouterController::class, 'getHealth'])->name('router.health')->where('router', '[0-9]+');
+    Route::get('/router/traffic/all', [RouterController::class, 'getAllTrafficStats'])->name('router.traffic.all');
     
     // Show route must be last to avoid conflicts with specific routes
     Route::get('/router/{router}', [RouterController::class, 'show'])->name('router.show')->where('router', '[0-9]+');
@@ -131,15 +144,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-recharge', [UserDashboardController::class, 'recharge'])->name('user.recharge');
     Route::get('/my-settings', [UserDashboardController::class, 'settings'])->name('user.settings');
     Route::post('/my-settings', [UserDashboardController::class, 'updateSettings'])->name('user.settings.update');
+    Route::get('/my-wallet', [UserDashboardController::class, 'walletTopup'])->name('user.wallet');
     Route::get('/my-sessions/live-data', [UserDashboardController::class, 'activeSessionData'])->name('user.sessions.live-data');
-
-    // Payment Routes for bKash
-    Route::get('/bkash/payment', [App\Http\Controllers\BkashTokenizePaymentController::class,'index']);
-    Route::get('/bkash/create-payment/{param}', [App\Http\Controllers\BkashTokenizePaymentController::class,'createPayment'])->name('bkash-create-payment');
-    Route::get('/bkash/callback', [App\Http\Controllers\BkashTokenizePaymentController::class,'callBack'])->name('bkash-callBack');
-    Route::get('/bkash/search/{trxID}', [App\Http\Controllers\BkashTokenizePaymentController::class,'searchTnx'])->name('bkash-serach');
-    Route::get('/bkash/refund', [App\Http\Controllers\BkashTokenizePaymentController::class,'refund'])->name('bkash-refund');
-    Route::get('/bkash/refund/status', [App\Http\Controllers\BkashTokenizePaymentController::class,'refundStatus'])->name('bkash-refund-status');
 });
 
 require __DIR__.'/auth.php';
@@ -170,10 +176,3 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->prefix('staff')->name('sta
     Route::put('/{staff}', [StaffController::class, 'update'])->name('update');
     Route::delete('/{staff}', [StaffController::class, 'destroy'])->name('destroy');
 });
-
-// Payment Gateway Callback (Public - No Authentication Required)
-// Deliberately opaque URL to avoid advertising the payment provider
-Route::post('/api/mobile/m/callback', [CaptivePortalController::class, 'mpesaCallback'])->name('mpesa.callback');
-
-// Include Captive Portal Routes (Public - No Authentication Required)
-require __DIR__.'/captive-portal.php';

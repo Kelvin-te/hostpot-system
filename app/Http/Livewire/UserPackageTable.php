@@ -36,7 +36,7 @@ class UserPackageTable extends DataTableComponent
                     }
                     return '-';
                 }),
-            Column::make("Data Cap", "rate_limit")
+            Column::make("Data Cap", "data_cap")
                 ->format(function ($value) {
                     return $value ?: 'Unlimited';
                 }),

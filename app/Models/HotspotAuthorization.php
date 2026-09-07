@@ -13,15 +13,14 @@ class HotspotAuthorization extends Model
 
     protected $fillable = [
         'authorization_key',
-        'wingufi_core_authorization_id',
         'router_id',
         'package_id',
         'user_id',
         'voucher_id',
         'payment_transaction_id',
         'client_identifier',
-        'radius_username',
-        'radius_password_encrypted',
+        'hotspot_username',
+        'hotspot_password_encrypted',
         'client_mac',
         'status',
         'authorized_at',
@@ -29,7 +28,7 @@ class HotspotAuthorization extends Model
         'expires_at',
         'session_timeout',
         'idle_timeout',
-        'rate_limit',
+        'data_cap',
         'simultaneous_sessions',
         'authorization_attributes',
         'revoke_reason',
@@ -79,15 +78,15 @@ class HotspotAuthorization extends Model
     }
 
     /**
-     * Decrypt the RADIUS password for the captive-portal handoff.
+     * Decrypt the hotspot password for the captive-portal handoff.
      */
-    public function radiusPassword(): ?string
+    public function hotspotPassword(): ?string
     {
-        if (!$this->radius_password_encrypted) {
+        if (!$this->hotspot_password_encrypted) {
             return null;
         }
 
-        return \Illuminate\Support\Facades\Crypt::decryptString($this->radius_password_encrypted);
+        return \Illuminate\Support\Facades\Crypt::decryptString($this->hotspot_password_encrypted);
     }
 
     public function scopeActive($query)

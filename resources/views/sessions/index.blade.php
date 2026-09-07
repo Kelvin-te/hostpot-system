@@ -129,7 +129,7 @@
                                                 @php
                                                     $totalMB = $session->bytes_total / (1024 * 1024);
                                                     $limitMB = 0;
-                                                    if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->rate_limit, $matches)) {
+                                                    if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->data_cap, $matches)) {
                                                         $limitMB = $matches[2] === 'GB' ? $matches[1] * 1024 : $matches[1];
                                                     }
                                                     $percentage = $limitMB > 0 ? min(100, ($totalMB / $limitMB) * 100) : 0;

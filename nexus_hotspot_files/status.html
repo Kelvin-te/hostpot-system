@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Connected</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4faf6;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #183021;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 10px 35px rgba(0, 80, 30, 0.10);
+        }
+
+        .icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #16a34a;
+            font-size: 36px;
+            line-height: 64px;
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 25px;
+            color: #12351f;
+        }
+
+        .message {
+            margin: 10px 0 25px;
+            color: #68756d;
+            font-size: 15px;
+        }
+
+        .connected {
+            background: #ecfdf3;
+            color: #15803d;
+            border-radius: 12px;
+            padding: 13px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .info {
+            border-top: 1px solid #eeeeee;
+            border-bottom: 1px solid #eeeeee;
+            padding: 8px 0;
+            text-align: left;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 13px;
+        }
+
+        .label {
+            color: #7b857e;
+        }
+
+        .value {
+            color: #26382c;
+            font-weight: bold;
+        }
+
+        .redirect {
+            margin-top: 22px;
+            color: #777777;
+            font-size: 13px;
+        }
+
+        #seconds {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .continue-button {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px 20px;
+            background: #16a34a;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+
+        .continue-button:hover {
+            background: #15803d;
+        }
+
+        .footer {
+            margin-top: 18px;
+            color: #a0aaa4;
+            font-size: 11px;
+        }
+
+        .logout {
+            margin-top: 16px;
+            display: inline-block;
+            color: #b0b8b3;
+            font-size: 11px;
+            text-decoration: none;
+        }
+
+        .logout:hover {
+            color: #777777;
+        }
+    </style>
+
+    <script>
+        var seconds = 10;
+
+        function countdown() {
+            var element = document.getElementById("seconds");
+
+            if (element) {
+                element.innerHTML = seconds;
+            }
+
+            if (seconds <= 0) {
+                window.location.href = "https://www.google.com/";
+                return;
+            }
+
+            seconds--;
+
+            setTimeout(countdown, 1000);
+        }
+
+        window.onload = countdown;
+    </script>
+</head>
+
+<body>
+
+    <div class="page">
+
+        <div class="card">
+
+            <div class="icon">✓</div>
+
+            <h1>You're Connected!</h1>
+
+            $(if login-by == 'trial')
+            <div class="message">
+                Your trial internet session is now active.
+            </div>
+            $(elif login-by != 'mac')
+            <div class="message">
+                Welcome, $(username)
+            </div>
+            $(else)
+            <div class="message">
+                Your internet connection is now active.
+            </div>
+            $(endif)
+
+            <div class="connected">
+                <span class="dot"></span>
+                Internet connection active
+            </div>
+
+            <div class="info">
+
+                <div class="row">
+                    <span class="label">Connected</span>
+                    <span class="value">$(uptime)</span>
+                </div>
+
+                $(if session-time-left)
+                <div class="row">
+                    <span class="label">Time remaining</span>
+                    <span class="value">$(session-time-left)</span>
+                </div>
+                $(endif)
+
+                <div class="row">
+                    <span class="label">Data used</span>
+                    <span class="value">$(bytes-in-nice) / $(bytes-out-nice)</span>
+                </div>
+
+            </div>
+
+            <div class="redirect">
+                Continue browsing in
+                <span id="seconds">10</span>
+                seconds...
+            </div>
+
+            <a class="continue-button" href="https://www.google.com/">
+                Continue browsing
+            </a>
+
+            $(if login-by-mac != 'yes')
+            <a class="logout" href="$(link-logout)" onclick="return confirm('Disconnect your internet connection?');">
+                Disconnect
+            </a>
+            $(endif)
+
+            <div class="footer">
+                Enjoy your internet connection
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

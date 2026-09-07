@@ -56,7 +56,7 @@
                                             <td class="px-6 py-4">
                                                 <div class="text-sm font-medium text-gray-900">{{ $transaction->package->name ?? 'Package' }}</div>
                                                 @if($transaction->package)
-                                                    <div class="text-xs text-gray-500">{{ $transaction->package->rate_limit }}</div>
+                                                    <div class="text-xs text-gray-500">{{ $transaction->package->data_cap }}</div>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">

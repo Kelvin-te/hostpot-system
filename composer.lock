@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "382091020330b9ff225bdfd3b33cf149",
+    "content-hash": "63c183a4ef1567c026a1e2bb636834ab",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -1517,65 +1517,6 @@
                 }
             ],
             "time": "2026-07-20T13:40:43+00:00"
-        },
-        {
-            "name": "karim007/laravel-bkash-tokenize",
-            "version": "v2.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/karim-007/laravel-bkash-tokenize.git",
-                "reference": "f3ff1eaa075697985da4137c6632967139476452"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/karim-007/laravel-bkash-tokenize/zipball/f3ff1eaa075697985da4137c6632967139476452",
-                "reference": "f3ff1eaa075697985da4137c6632967139476452",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "php": "^7.4|^8.0|^8.1|^8.2"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "LaravelBkashTokenize": "Karim007\\LaravelBkashTokenize\\LaravelBkashTokenize"
-                    },
-                    "providers": [
-                        "Karim007\\LaravelBkashTokenize\\BkashTokenizeServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Karim007\\LaravelBkashTokenize\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Md abdul karim",
-                    "email": "karim.cse007@gmail.com"
-                }
-            ],
-            "description": "This is bKash tokenize payment gateway for laravel",
-            "keywords": [
-                "bkash",
-                "bkash-payment",
-                "bkash-payment-gateway",
-                "laravel-bkash",
-                "laravel-bkash-payment",
-                "laravel-bkash-payment-tokenize"
-            ],
-            "support": {
-                "issues": "https://github.com/karim-007/laravel-bkash-tokenize/issues",
-                "source": "https://github.com/karim-007/laravel-bkash-tokenize/tree/v2.4"
-            },
-            "time": "2025-12-04T07:22:39+00:00"
         },
         {
             "name": "laravel/cashier",

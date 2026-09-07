@@ -17,7 +17,18 @@ class RouterFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake()->unique()->company() . ' Router',
+            'identifier' => fake()->unique()->uuid(),
+            'location' => fake()->city(),
+            'ip' => fake()->ipv4(),
+            'ip_address' => fake()->ipv4(),
+            'username' => 'admin',
+            'password' => 'password',
+            'api_port' => 8728,
+            'hotspot_enabled' => true,
+            'hotspot_interface' => 'wlan1',
+            'hotspot_server_ip' => fake()->ipv4(),
+            'is_active' => true,
         ];
     }
 }

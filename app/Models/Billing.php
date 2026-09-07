@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * Billing
  *
  * @mixin Eloquent
+ * @deprecated Use PaymentTransaction instead. This model is kept for backward compatibility only.
  */
 class Billing extends Model
 {

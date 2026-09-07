@@ -84,26 +84,14 @@ class SessionController extends Controller
 
         $session = HotspotSession::with(['package.router', 'user'])->findOrFail($id);
 
-        // Try to get live RADIUS data from WinguFi Core if session is active
+        // Try to get live usage data directly from MikroTik if session is active
         $liveData = null;
         if ($session->isActive() && $session->package->router) {
             try {
-                $coreService = app(\App\Services\WinguFiCoreService::class);
-                $routerExternalId = 'router-' . $session->package->router->identifier;
                 $username = $session->mikrotik_username ?? $session->username;
-
-                $result = $coreService->fetchSessions($routerExternalId, 'active');
-
-                if ($result && isset($result['data']['sessions'])) {
-                    foreach ($result['data']['sessions'] as $radiusSession) {
-                        if (($radiusSession['username'] ?? null) === $username) {
-                            $liveData = $radiusSession;
-                            break;
-                        }
-                    }
-                }
+                $liveData = $this->mikrotikService->getActiveUserDetails($session->package->router, $username);
             } catch (\Exception $e) {
-                Log::warning('Failed to fetch live RADIUS data', [
+                Log::warning('Failed to fetch live MikroTik usage data', [
                     'session_id' => $session->id,
                     'error' => $e->getMessage()
                 ]);
@@ -348,7 +336,7 @@ class SessionController extends Controller
     }
 
     /**
-     * Sync sessions with WinguFi Core RADIUS accounting
+     * Sync database sessions with live MikroTik hotspot active users.
      */
     public function syncWithRouter(Request $request)
     {
@@ -377,7 +365,7 @@ class SessionController extends Controller
                 'message' => $message,
                 'synced' => $result['synced'],
                 'stopped' => $result['stopped'],
-                'not_found' => $result['not_found'],
+                'recreated' => $result['recreated'],
             ]);
         } catch (\Exception $e) {
             Log::error('Session sync failed', [

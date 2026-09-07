@@ -67,14 +67,6 @@ class HotspotSession extends Model
     }
 
     /**
-     * Get the captive portal session that triggered this hotspot session.
-     */
-    public function captivePortalSession()
-    {
-        return $this->hasOne(CaptivePortalSession::class, 'hotspot_session_id');
-    }
-
-    /**
      * Check if session is currently active
      */
     public function isActive(): bool
@@ -116,12 +108,12 @@ class HotspotSession extends Model
      */
     public function getRemainingData(): ?int
     {
-        if (!$this->package->rate_limit) {
+        if (!$this->package->data_cap) {
             return null; // Unlimited package
         }
 
-        // Extract data limit from rate_limit (e.g., "1GB", "500MB")
-        $limit = $this->parseDataLimit($this->package->rate_limit);
+        // Extract data limit from data_cap (e.g., "1GB", "500MB")
+        $limit = $this->parseDataLimit($this->package->data_cap);
         if (!$limit) {
             return null;
         }
@@ -130,7 +122,7 @@ class HotspotSession extends Model
     }
 
     /**
-     * Parse data limit from rate_limit string
+     * Parse data limit from data_cap string
      */
     private function parseDataLimit(string $rateLimit): ?int
     {

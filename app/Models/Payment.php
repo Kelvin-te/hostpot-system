@@ -9,9 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * User
- *
  * @mixin Eloquent
+ * @deprecated Use PaymentTransaction instead. This model is kept for backward compatibility only.
  */
 class Payment extends Model
 {

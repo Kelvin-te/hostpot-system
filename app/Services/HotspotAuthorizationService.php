@@ -7,17 +7,14 @@ use App\Models\Package;
 use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class HotspotAuthorizationService
 {
-    public function __construct(
-        protected WinguFiCoreService $winguFiCore
-    ) {}
-
     /**
-     * Create or retrieve an existing authorization from package purchase and sync to WinguFi Core
+     * Create or retrieve an existing authorization from package purchase.
+     * No external core sync is performed; local MikroTik hotspot users are the
+     * source of truth for the API-only flow.
      */
     public function createFromPackage(
         Package $package,
@@ -35,19 +32,19 @@ class HotspotAuthorizationService
             $existing = $this->getActiveAuthorization($clientIdentifier, $package->id);
 
             if ($existing) {
-                return $this->ensureSynced($existing);
+                return $existing;
             }
         }
 
-        $radiusCredentials = $this->generateRadiusCredentials($clientIdentifier);
+        $hotspotCredentials = $this->generateHotspotCredentials($clientIdentifier);
 
         $attributes = [
             'router_id' => $package->router_id,
             'package_id' => $package->id,
             'user_id' => $user?->id,
             'client_identifier' => $clientIdentifier,
-            'radius_username' => $radiusCredentials['username'],
-            'radius_password_encrypted' => $radiusCredentials['password_encrypted'],
+            'hotspot_username' => $hotspotCredentials['username'],
+            'hotspot_password_encrypted' => $hotspotCredentials['password_encrypted'],
             'client_mac' => $clientMac,
             'payment_transaction_id' => $paymentTransactionId,
             'status' => 'authorized',
@@ -56,27 +53,25 @@ class HotspotAuthorizationService
             'expires_at' => $this->calculateExpiry($package),
             'session_timeout' => $package->getSessionTimeoutSeconds(),
             'idle_timeout' => $package->idle_timeout ? $package->idle_timeout * 60 : null,
-            'rate_limit' => $package->rate_limit,
+            'data_cap' => $package->data_cap,
             'simultaneous_sessions' => $package->shared_users ?? 1,
             'authorization_attributes' => $this->buildAuthorizationAttributes($package),
         ];
 
         if ($paymentTransactionId) {
-            $key = $this->winguFiCore->externalAuthorizationIdForPayment($paymentTransactionId);
-
             $authorization = HotspotAuthorization::firstOrCreate(
                 ['payment_transaction_id' => $paymentTransactionId, 'package_id' => $package->id],
-                array_merge($attributes, ['authorization_key' => $key])
+                array_merge($attributes, ['authorization_key' => $this->generateAuthorizationKey()])
             );
 
-            return $this->ensureSynced($authorization);
+            return $authorization;
         }
 
         $authorization = HotspotAuthorization::create(array_merge($attributes, [
             'authorization_key' => $this->generateAuthorizationKey(),
         ]));
 
-        return $this->ensureSynced($authorization);
+        return $authorization;
     }
 
     /**
@@ -84,56 +79,31 @@ class HotspotAuthorizationService
      */
     public function createFromVoucher(
         Voucher $voucher,
-        ?string $clientMac = null
+        ?string $clientMac = null,
+        ?Package $package = null
     ): HotspotAuthorization {
-        $radiusCredentials = $this->generateRadiusCredentials($voucher->code);
+        $targetPackage = $package ?? $voucher->package;
+        $password = Str::random(16);
 
         $authorization = HotspotAuthorization::create([
             'authorization_key' => $this->generateAuthorizationKey(),
-            'router_id' => $voucher->package->router_id,
-            'package_id' => $voucher->package_id,
+            'router_id' => $targetPackage->router_id,
+            'package_id' => $targetPackage->id,
             'voucher_id' => $voucher->id,
             'client_identifier' => $voucher->code,
-            'radius_username' => $radiusCredentials['username'],
-            'radius_password_encrypted' => $radiusCredentials['password_encrypted'],
+            'hotspot_username' => substr($voucher->code, 0, 60),
+            'hotspot_password_encrypted' => Crypt::encryptString($password),
             'client_mac' => $clientMac,
             'status' => 'authorized',
             'authorized_at' => now(),
             'starts_at' => now(),
-            'expires_at' => $this->calculateExpiry($voucher->package),
-            'session_timeout' => $voucher->package->session_timeout ? $voucher->package->session_timeout * 3600 : null,
-            'idle_timeout' => $voucher->package->idle_timeout ? $voucher->package->idle_timeout * 60 : null,
-            'rate_limit' => $voucher->package->rate_limit,
-            'simultaneous_sessions' => $voucher->package->shared_users ?? 1,
-            'authorization_attributes' => $this->buildAuthorizationAttributes($voucher->package),
+            'expires_at' => $this->calculateExpiry($targetPackage),
+            'session_timeout' => $targetPackage->session_timeout ? $targetPackage->session_timeout * 3600 : null,
+            'idle_timeout' => $targetPackage->idle_timeout ? $targetPackage->idle_timeout * 60 : null,
+            'data_cap' => $targetPackage->data_cap,
+            'simultaneous_sessions' => $targetPackage->shared_users ?? 1,
+            'authorization_attributes' => $this->buildAuthorizationAttributes($targetPackage),
         ]);
-
-        return $this->ensureSynced($authorization);
-    }
-
-    /**
-     * Ensure a local authorization is synchronized to WinguFi Core
-     */
-    public function ensureSynced(HotspotAuthorization $authorization): HotspotAuthorization
-    {
-        if ($authorization->wingufi_core_authorization_id) {
-            return $authorization;
-        }
-
-        try {
-            $result = $this->winguFiCore->syncAuthorization($authorization);
-
-            $authorization->update([
-                'wingufi_core_authorization_id' => $result['data']['id'] ?? $result['data']['external_id'] ?? null,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('WinguFi Core authorization sync failed', [
-                'authorization_id' => $authorization->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            throw $e;
-        }
 
         return $authorization;
     }
@@ -185,12 +155,17 @@ class HotspotAuthorizationService
     }
 
     /**
-     * Generate a RADIUS username/password pair for the captive-portal handoff.
+     * Generate a hotspot username/password pair for the captive-portal handoff.
      * The password is encrypted before storage.
      */
-    private function generateRadiusCredentials(?string $clientIdentifier): array
+    private function generateHotspotCredentials(?string $clientIdentifier): array
     {
-        $username = $clientIdentifier ?: 'guest-' . Str::random(16);
+        if ($clientIdentifier) {
+            $username = 'u-' . substr(hash('sha256', $clientIdentifier), 0, 6);
+        } else {
+            $username = 'g-' . Str::random(6);
+        }
+
         $password = Str::random(16);
 
         return [
@@ -202,9 +177,6 @@ class HotspotAuthorizationService
 
     /**
      * Calculate expiry time based on package.
-     *
-     * Mirrors the priority used by WinguFiCoreService::packageValiditySeconds
-     * so the local authorization expiry stays consistent with the Core.
      */
     private function calculateExpiry(Package $package): ?\Carbon\CarbonInterface
     {
@@ -220,11 +192,13 @@ class HotspotAuthorizationService
             return now()->addDays($package->validity_days);
         }
 
-        return null;
+        // Default to 24 hours — must never return null, otherwise
+        // sessions won't appear as active in the admin portal.
+        return now()->addDay();
     }
 
     /**
-     * Build authorization attributes for RADIUS
+     * Build authorization attributes for the hotspot profile
      */
     private function buildAuthorizationAttributes(Package $package): array
     {

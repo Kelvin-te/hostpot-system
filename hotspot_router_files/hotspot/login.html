@@ -1,46 +1,600 @@
-<!--
-    This is a GENERATED template. Placeholders such as {RouterIdentifier} and
-    {PortalUrl} are auto-filled per router by
-    RouterController::downloadHotspotFiles() / HotspotFileGeneratorService.
-    Do not hand-edit and reuse this file across multiple routers - always
-    (re)generate it from the admin panel so the identifier stays unique.
--->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connecting...</title>
-    <link rel="stylesheet" href="css/hotspot.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{CompanyName} - WiFi Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/hotspot.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
+
 <body>
 
-<div class="card">
-    <div class="brand"></div>
-    <div class="spinner"></div>
-    <h2>Connecting...</h2>
-    <p>Please wait while we redirect you to the portal.</p>
+  <div class="page-body">
 
-    <form id="portal" method="get"
-          action="{PortalUrl}" style="display: none;">
+    <div id="toast" class="toast"></div>
 
-    <input type="hidden" name="router" value="{RouterIdentifier}">
+    <div class="brand-logo" id="brandLogo"><img src="" alt="" id="brandLogoImg"></div>
+    <div class="brand" id="brandName">Billing System</div>
 
-    <input type="hidden" name="mac" value="$(mac)">
-    <input type="hidden" name="ip" value="$(ip)">
-    <input type="hidden" name="link-login" value="$(link-login)">
-    <input type="hidden" name="link-orig" value="$(link-orig)">
-    <input type="hidden" name="chap-id" value="$(chap-id)">
-    <input type="hidden" name="chap-challenge" value="$(chap-challenge)">
+    <table class="pkg-table" id="packagesTable">
+      <tbody id="packagesBody"></tbody>
+    </table>
 
-</form>
+    <div class="action-buttons">
+      <button class="btn-action light" onclick="openAlreadyPaid()">Already Paid?</button>
+      <button class="btn-action green" onclick="openVoucher()">Voucher Login</button>
+    </div>
 
-    <small>$(mac) &middot; $(ip)</small>
-</div>
+    <div class="need-help">Need help? Call | WhatsApp <a id="supportLink" href="#">Contact support</a></div>
+    <div class="footer">Powered by <span id="footerBrandName">Sterke Digital</span></div>
 
-<script>
-    document.getElementById('portal').submit();
-</script>
+  </div>
 
+  <div class="overlay" id="buyOverlay">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Complete Purchase</div>
+      <div class="modal-sub">Enter your Safaricom M-PESA number<span class="mpesa-logo">M-PESA</span></div>
+      <div class="modal-pkg-badge">
+        <span id="modalPkgName">-</span>
+        <span id="modalPkgPrice">KSH -</span>
+      </div>
+      <input id="buyPhone" class="input-field" type="tel" placeholder="07XX XXX XXX" maxlength="10">
+      <div class="modal-note" id="modalNote"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-pay" id="btnPay" onclick="submitBuy()">SEND REQUEST</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="alreadyPaidOverlay">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Already Paid?</div>
+      <div class="modal-sub">Enter your phone number, M-PESA code, or paste the full M-PESA SMS message</div>
+      <input id="alreadyInput" class="input-field" type="text" placeholder="07XX XXX XXX · QK12ABC3DE · or paste SMS">
+      <div class="modal-note" id="alreadyNote"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeAlreadyPaid()">Cancel</button>
+        <button class="btn-pay" id="btnConnect" onclick="handleAlreadyPaid()">CONNECT</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="voucherOverlay">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Voucher Login</div>
+      <div class="modal-sub">Enter your voucher code</div>
+      <input id="voucherInput" class="input-field" type="text" placeholder="Enter voucher code">
+      <div class="modal-note" id="voucherNote"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeVoucher()">Cancel</button>
+        <button class="btn-pay" id="btnVoucherConnect" onclick="handleVoucherLogin()">CONNECT</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="md5.js"></script>
+  <script>
+    var API_BASE_URL = "{ApiBaseUrl}";
+    var PLATFORM_ID = "{RouterIdentifier}";
+    var HASH = "";
+    var ROUTER_HOST = "$(ip)";
+    var MAC = "$(mac)";
+    var BRAND_NAME = "{CompanyName}";
+    var SUPPORT_PHONE = "{SupportPhone}";
+    var CURRENCY = "{Currency}" || "KSH";
+    var PACKAGES = [];
+    var PREVIEW_MODE = false;
+    var selectedPlan = null;
+    var currentCheckoutRequestId = null;
+    var pollTimer = null;
+
+    function init() {
+      var displayBrandName = BRAND_NAME || "WIFI";
+      var brandText = document.getElementById("brandName");
+      var brandLogo = document.getElementById("brandLogo");
+      var brandLogoImg = document.getElementById("brandLogoImg");
+
+      brandLogoImg.onload = function () {
+        brandText.style.display = "none";
+        brandLogo.style.display = "block";
+      };
+      brandLogoImg.onerror = function () {
+        brandText.style.display = "block";
+        brandText.textContent = displayBrandName;
+        brandLogo.style.display = "none";
+      };
+      brandLogoImg.alt = displayBrandName;
+      brandLogoImg.src = "logo.png";
+
+      var footerBrand = document.getElementById("footerBrandName");
+      if (footerBrand) footerBrand.textContent = displayBrandName;
+      var el = document.getElementById("supportLink");
+      el.textContent = SUPPORT_PHONE || "Contact support";
+      el.href = SUPPORT_PHONE ? "tel:" + SUPPORT_PHONE.replace(/\s/g, "") : "#";
+
+      if (PACKAGES && PACKAGES.length > 0) {
+        renderPackages(PACKAGES);
+      } else {
+        renderPackages(PACKAGES, "Loading packages...");
+      }
+      if (!PREVIEW_MODE) fetchPackages();
+
+      var saved = localStorage.getItem("wifiPhone");
+      if (saved) document.getElementById("alreadyInput").value = saved;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+      });
+    }
+
+    function normalizePackage(pkg) {
+      var speed = String(pkg.speed || "").trim();
+      var rateLimit = String(pkg.rate_limit || pkg.rateLimit || "").trim();
+      var dataCap = String(pkg.data_cap || pkg.dataCap || "").trim();
+      return {
+        id: String(pkg.id || ""),
+        name: String(pkg.name || "WiFi Package"),
+        price: Number(pkg.price || 0),
+        period: String(pkg.period || ""),
+        usage: String(pkg.usage || ""),
+        speed: speed,
+        rateLimit: rateLimit,
+        dataCap: dataCap,
+        devices: pkg.devices || pkg.shared_users || "",
+        category: String(pkg.category || ""),
+        accountNumber: String(pkg.accountNumber || ""),
+        routerHost: String(pkg.routerHost || "")
+      };
+    }
+
+    function formatPeriod(period, usage) {
+      var label = String(period || "").trim();
+      var data = String(usage || "").trim();
+      if (label && data) return label + " / " + data;
+      return label || data || "WiFi access";
+    }
+
+    function renderPackages(packages, emptyText) {
+      var table = document.getElementById("packagesTable");
+      table.innerHTML = "";
+
+      packages = Array.isArray(packages)
+        ? packages.slice().sort(function (a, b) { return Number(a.price || 0) - Number(b.price || 0); })
+        : packages;
+
+      if (!packages || packages.length === 0) {
+        var tbody = document.createElement("tbody");
+        tbody.id = "packagesBody";
+        table.appendChild(tbody);
+        var thead = document.createElement("thead");
+        var hRow = document.createElement("tr");
+        var hCell = document.createElement("th");
+        hCell.colSpan = 2;
+        hCell.textContent = "Internet Packages";
+        hRow.appendChild(hCell);
+        thead.appendChild(hRow);
+        table.appendChild(thead);
+
+        var row = document.createElement("tr");
+        var cell = document.createElement("td");
+        cell.colSpan = 2;
+        cell.className = "pkg-empty";
+        cell.textContent = emptyText || "No packages available. Please contact customer care.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+      }
+
+      var capped = packages.filter(function (p) { return !!p.dataCap && p.dataCap !== "Unlimited"; });
+      var unlimited = packages.filter(function (p) { return !p.dataCap || p.dataCap === "Unlimited"; });
+
+      if (unlimited.length > 0) {
+        renderPackageGroup(table, "Unlimited Plans", unlimited);
+      }
+      
+      if (capped.length > 0) {
+        renderPackageGroup(table, "Regular Plans", capped);
+      }
+    }
+
+    function renderPackageGroup(table, label, pkgs) {
+      var thead = document.createElement("thead");
+      var hRow = document.createElement("tr");
+      var hCell = document.createElement("th");
+      hCell.colSpan = 2;
+      hCell.textContent = label;
+      hRow.appendChild(hCell);
+      thead.appendChild(hRow);
+      table.appendChild(thead);
+
+      var tbody = document.createElement("tbody");
+      table.appendChild(tbody);
+
+      pkgs.forEach(function (pkg) {
+        var row = document.createElement("tr");
+        row.onclick = function () { openBuyModal(pkg.id); };
+
+        var nameCell = document.createElement("td");
+        nameCell.className = "pkg-name";
+        nameCell.textContent = pkg.name;
+        var descSpan = document.createElement("span");
+        descSpan.className = "pkg-desc";
+        var descParts = [];
+        if (pkg.period) descParts.push(pkg.period);
+        if (pkg.devices) descParts.push(pkg.devices + (pkg.devices > 1 ? " devices" : " device"));
+        descSpan.textContent = descParts.join(" - ") || "WiFi";
+        nameCell.appendChild(descSpan);
+        row.appendChild(nameCell);
+
+        var priceCell = document.createElement("td");
+        priceCell.className = "pkg-price";
+        if (Number(pkg.price) === 0) {
+          priceCell.innerHTML = '<span class="pkg-price free">FREE</span>';
+        } else {
+          priceCell.textContent = CURRENCY + " " + pkg.price;
+        }
+        row.appendChild(priceCell);
+
+        tbody.appendChild(row);
+      });
+    }
+
+    function fetchPackages() {
+      if (!PLATFORM_ID || PLATFORM_ID === "your-platform-id") {
+        renderPackages(PACKAGES, "Platform not configured. Please contact customer care.");
+        return;
+      }
+
+      fetch(API_BASE_URL + "/api/hotspot/packages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.type === "success" && Array.isArray(data.packages)) {
+            PACKAGES = data.packages
+              .filter(function (pkg) { return String(pkg.category || "").toLowerCase() !== "homefibre"; })
+              .map(normalizePackage);
+            renderPackages(PACKAGES);
+          } else {
+            if (!PACKAGES || PACKAGES.length === 0) {
+              renderPackages(PACKAGES, (data && data.message) || "Packages unavailable. Please contact customer care.");
+            }
+          }
+        })
+        .catch(function () {
+          if (!PACKAGES || PACKAGES.length === 0) {
+            renderPackages(PACKAGES, "Could not load packages. Please contact customer care.");
+          }
+        });
+    }
+
+    function openBuyModal(pkgId) {
+      selectedPlan = PACKAGES.find(function (p) { return p.id === pkgId; });
+      if (!selectedPlan) return;
+
+      if (Number(selectedPlan.price) === 0) {
+        activateFreePackage(pkgId);
+        return;
+      }
+
+      document.getElementById("modalPkgName").textContent = selectedPlan.name;
+      document.getElementById("modalPkgPrice").textContent = CURRENCY + " " + selectedPlan.price;
+      var note = document.getElementById("modalNote");
+      note.textContent = "";
+      note.className = "modal-note";
+      var saved = localStorage.getItem("wifiPhone");
+      document.getElementById("buyPhone").value = saved || "";
+      var btn = document.getElementById("btnPay");
+      btn.disabled = false;
+      btn.innerHTML = "PAY " + CURRENCY + " " + selectedPlan.price;
+      document.getElementById("buyOverlay").classList.add("open");
+    }
+
+    function activateFreePackage(pkgId) {
+      var pkg = PACKAGES.find(function (p) { return p.id === pkgId; });
+      if (!pkg) return;
+
+      showToast("Activating free package...", "info");
+
+      fetch(API_BASE_URL + "/api/hotspot/activate-free", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId: pkg.id, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || data.success === false) {
+            throw new Error((data && data.message) || "Activation failed. Please try again.");
+          }
+          showToast(data.message || "Free package activated. Connecting...", "success");
+          doLogin(data.username, data.password);
+        })
+        .catch(function (error) {
+          showToast(error.message || "Activation failed. Please try again.", "error");
+        });
+    }
+
+    function closeModal() {
+      document.getElementById("buyOverlay").classList.remove("open");
+      stopPaymentWatch();
+    }
+
+    function openAlreadyPaid() {
+      var saved = localStorage.getItem("wifiPhone");
+      document.getElementById("alreadyInput").value = saved || "";
+      setAlreadyNote("");
+      var btn = document.getElementById("btnConnect");
+      btn.disabled = false;
+      btn.textContent = "CONNECT";
+      document.getElementById("alreadyPaidOverlay").classList.add("open");
+    }
+
+    function closeAlreadyPaid() {
+      document.getElementById("alreadyPaidOverlay").classList.remove("open");
+    }
+
+    function openVoucher() {
+      document.getElementById("voucherInput").value = "";
+      setVoucherNote("");
+      var btn = document.getElementById("btnVoucherConnect");
+      btn.disabled = false;
+      btn.textContent = "CONNECT";
+      document.getElementById("voucherOverlay").classList.add("open");
+    }
+
+    function closeVoucher() {
+      document.getElementById("voucherOverlay").classList.remove("open");
+    }
+
+    function setAlreadyNote(msg, type) {
+      var n = document.getElementById("alreadyNote");
+      n.textContent = msg;
+      n.className = "modal-note" + (type ? " " + type : "");
+    }
+
+    function setVoucherNote(msg, type) {
+      var n = document.getElementById("voucherNote");
+      n.textContent = msg;
+      n.className = "modal-note" + (type ? " " + type : "");
+    }
+
+    function validPhone(p) { return /^(07|01)\d{8}$/.test(p.replace(/\s/g, "")); }
+
+    function submitBuy() {
+      var raw = document.getElementById("buyPhone").value.trim();
+      var phone = raw.replace(/\s/g, "");
+      if (!selectedPlan) { setModalNote("Select a package first.", "error"); return; }
+      if (!validPhone(phone)) {
+        setModalNote("Enter a valid number starting with 07 or 01", "error"); return;
+      }
+      localStorage.setItem("wifiPhone", phone);
+      var btn = document.getElementById("btnPay");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Sending...';
+
+      fetch(API_BASE_URL + "/api/hotspot/stkpush", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone, packageId: selectedPlan.id, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || data.success === false) {
+            throw new Error((data && data.message) || "Request failed. Please try again.");
+          }
+
+          currentCheckoutRequestId = data.checkoutRequestId;
+          setModalNote("Check your phone and enter your M-PESA PIN. We will connect you after payment.", "success");
+          btn.innerHTML = "WAITING";
+
+          if (currentCheckoutRequestId) {
+            localStorage.setItem("wifiTransactionId", currentCheckoutRequestId);
+            startPaymentPoll(currentCheckoutRequestId);
+          } else {
+            btn.disabled = false;
+            btn.innerHTML = "PAY " + CURRENCY + " " + selectedPlan.price;
+          }
+        })
+        .catch(function (error) {
+          setModalNote(error.message || "Request failed. Please try again.", "error");
+          btn.disabled = false;
+          btn.innerHTML = "PAY " + CURRENCY + " " + selectedPlan.price;
+        });
+    }
+
+    function startPaymentPoll(checkoutRequestId) {
+      if (pollTimer) clearInterval(pollTimer);
+      var attempts = 0;
+      var maxAttempts = 60;
+      pollTimer = setInterval(function () {
+        attempts++;
+        if (attempts > maxAttempts) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          var btn = document.getElementById("btnPay");
+          btn.disabled = false;
+          btn.innerHTML = "PAY " + CURRENCY + " " + (selectedPlan ? selectedPlan.price : "");
+          setModalNote("Payment confirmation timed out. Please try again.", "error");
+          return;
+        }
+        fetch(API_BASE_URL + "/api/hotspot/payment-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ checkoutRequestId: checkoutRequestId, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data && (data.status === "COMPLETE" || data.status === "FAILED")) {
+              data.checkoutRequestId = checkoutRequestId;
+              handlePaymentEvent(data);
+            }
+          })
+          .catch(function () { });
+      }, 3000);
+    }
+
+    function stopPaymentWatch() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = null;
+    }
+
+    function handlePaymentEvent(data) {
+      if (!data || (data.checkoutRequestId && data.checkoutRequestId !== currentCheckoutRequestId)) return;
+      var status = data.status || "";
+      var loginCode = data.loginCode || data.username || "";
+      var password = data.password || loginCode;
+      var message = data.message || "";
+      var btn = document.getElementById("btnPay");
+
+      if (status === "COMPLETE") {
+        stopPaymentWatch();
+        localStorage.removeItem("wifiTransactionId");
+        setModalNote(message || "Payment successful. Connecting you...", "success");
+        if (loginCode) doLogin(loginCode, password);
+        return;
+      }
+
+      if (status === "FAILED") {
+        stopPaymentWatch();
+        setModalNote(message || "Payment failed. Please try again.", "error");
+        btn.disabled = false;
+        btn.innerHTML = "PAY " + CURRENCY + " " + (selectedPlan ? selectedPlan.price : "");
+      }
+    }
+
+    function extractMpesaCode(text) {
+      var m = text.match(/\b([A-Z]{2}[0-9A-Z]{7,10})\b/);
+      return m ? m[1] : null;
+    }
+
+    function handleAlreadyPaid() {
+      var raw = document.getElementById("alreadyInput").value.trim();
+      if (!raw) { setAlreadyNote("Enter your phone, M-PESA code, or paste the message.", "error"); return; }
+
+      var code = extractMpesaCode(raw.toUpperCase());
+      var phone = "";
+      if (!code) {
+        phone = raw.replace(/\s/g, "");
+        if (!validPhone(phone) && !/^[A-Z0-9]{8,12}$/.test(raw.toUpperCase())) {
+          setAlreadyNote("Could not find a valid M-PESA code or phone number.", "error"); return;
+        }
+      }
+      if (validPhone(phone)) localStorage.setItem("wifiPhone", phone);
+
+      var btn = document.getElementById("btnConnect");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Checking...';
+
+      fetch(API_BASE_URL + "/api/hotspot/lookup-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: code || phone || raw, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.success && data.username && data.password) {
+            setAlreadyNote("Code found. Connecting you...", "success");
+            closeAlreadyPaid();
+            doLogin(data.username, data.password);
+          } else {
+            setAlreadyNote((data && data.message) || "No active session found. Please try again.", "error");
+            btn.disabled = false;
+            btn.innerHTML = "CONNECT";
+          }
+        })
+        .catch(function () {
+          setAlreadyNote("Connection check failed. Please try again.", "error");
+          btn.disabled = false;
+          btn.innerHTML = "CONNECT";
+        });
+    }
+
+    function handleVoucherLogin() {
+      var code = document.getElementById("voucherInput").value.trim();
+      if (!code) { setVoucherNote("Enter your voucher code.", "error"); return; }
+      if (!/^[A-Za-z0-9._@-]{3,64}$/.test(code)) {
+        setVoucherNote("Enter a valid voucher code.", "error"); return;
+      }
+
+      var btn = document.getElementById("btnVoucherConnect");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Checking...';
+
+      fetch(API_BASE_URL + "/api/hotspot/verify-voucher", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.success) {
+            setVoucherNote("Voucher verified. Connecting you...", "success");
+            closeVoucher();
+            doLogin(data.code || code, data.password || data.code || code);
+            return;
+          }
+          setVoucherNote((data && data.message) || "Voucher was not found.", "error");
+          btn.disabled = false;
+          btn.innerHTML = "CONNECT";
+        })
+        .catch(function () {
+          setVoucherNote("Voucher check failed. Please try again.", "error");
+          btn.disabled = false;
+          btn.innerHTML = "CONNECT";
+        });
+    }
+
+    function doLogin(username, password) {
+      var chapId = "$(chap-id)";
+      var chapChallenge = "$(chap-challenge)";
+      var loginUrl = "$(link-login-only)";
+      var finalPass = password;
+
+      if (typeof hexMD5 === "function" && chapId && chapChallenge
+        && chapId.indexOf("$(") === -1 && chapChallenge.indexOf("$(") === -1) {
+        finalPass = hexMD5(chapId + password + chapChallenge);
+      }
+
+      if (loginUrl && loginUrl.indexOf("$(") === -1) {
+        var form = document.createElement("form");
+        form.method = "POST";
+        form.action = loginUrl;
+        function addField(n, v) { var i = document.createElement("input"); i.type = "hidden"; i.name = n; i.value = v; form.appendChild(i); }
+        addField("username", username);
+        addField("password", finalPass);
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        window.location.replace("$(link-login-only)?username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(finalPass));
+      }
+    }
+
+    function showToast(msg, type) {
+      var t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = "toast show" + (type === "error" ? " error" : "");
+      setTimeout(function () { t.className = "toast"; }, 5000);
+    }
+
+    function setModalNote(msg, type) {
+      var n = document.getElementById("modalNote");
+      n.textContent = msg;
+      n.className = "modal-note" + (type ? " " + type : "");
+    }
+
+    init();
+  </script>
 </body>
+
 </html>

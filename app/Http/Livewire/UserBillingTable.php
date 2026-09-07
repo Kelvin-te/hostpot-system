@@ -45,16 +45,8 @@ class UserBillingTable extends DataTableComponent
                         $stripeParameter = $row->id;
                         $stripeUrl = route($stripeUrlName, ['param' => $stripeParameter]);
                         $stripeButton = "<a href='{$stripeUrl}' class='btn btn-danger'>{$stripeUrlText}</a>";
-                        
-                        // Add bKash button
-                        $bkashUrlName = 'bkash-create-payment';
-                        $bkashUrlText = 'Pay with bKash';
-                        $bkashParameter = $row->id;
-                        $bkashUrl = route($bkashUrlName, ['param' => $bkashParameter]);
-                        $bkashButton = "<a href='{$bkashUrl}' class='btn btn-success'>{$bkashUrlText}</a>";
 
-                        // Return both buttons
-                        return new HtmlString($stripeButton . ' | ' . $bkashButton);
+                        return new HtmlString($stripeButton);
                     }
                 }),
         ];

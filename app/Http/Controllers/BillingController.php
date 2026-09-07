@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Billing;
+use App\Models\PaymentTransaction;
 use App\Models\User;
+use App\Services\BillingReportService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -12,7 +14,48 @@ class BillingController extends Controller
 {
     public function index()
     {
-        return view('billing.index');
+        $reportService = app(BillingReportService::class);
+
+        $from = Carbon::now()->subDays(30)->startOfDay();
+        $to = Carbon::now()->endOfDay();
+
+        $summary = $reportService->getRevenueSummary($from, $to);
+        $topCustomers = $reportService->getTopCustomers(10);
+
+        return view('billing.index', compact('summary', 'topCustomers'));
+    }
+
+    /**
+     * Show invoice for a specific transaction.
+     */
+    public function invoice(PaymentTransaction $transaction)
+    {
+        $reportService = app(BillingReportService::class);
+        $invoiceNumber = $reportService->generateInvoiceNumber($transaction);
+
+        $transaction->load(['user', 'package', 'router']);
+
+        return view('billing.invoice', compact('transaction', 'invoiceNumber'));
+    }
+
+    /**
+     * Revenue dashboard with charts.
+     */
+    public function dashboard()
+    {
+        if (!auth()->user()->isAdmin()) {
+            return redirect('/');
+        }
+
+        $reportService = app(BillingReportService::class);
+
+        $from = Carbon::now()->subDays(30)->startOfDay();
+        $to = Carbon::now()->endOfDay();
+
+        $summary = $reportService->getRevenueSummary($from, $to);
+        $topCustomers = $reportService->getTopCustomers(10);
+
+        return view('billing.dashboard', compact('summary', 'topCustomers'));
     }
 
     public function create()

@@ -103,7 +103,7 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-medium text-gray-900">{{ $item->package->name ?? 'Unknown' }}</div>
-                                                <div class="text-xs text-gray-500">{{ $item->package->rate_limit ?? 'N/A' }}</div>
+                                                <div class="text-xs text-gray-500">{{ $item->package->data_cap ?? 'N/A' }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {{ number_format($item->session_count) }}

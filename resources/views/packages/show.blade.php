@@ -73,8 +73,8 @@
                                     <span class="font-semibold text-gray-900">{{ $package->bandwidth_download ?? 'Unlimited' }} Mbps</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Rate Limit:</span>
-                                    <span class="font-semibold text-gray-900">{{ $package->rate_limit ?? 'Not set' }}</span>
+                                    <span class="text-gray-600">Data Cap:</span>
+                                    <span class="font-semibold text-gray-900">{{ $package->data_cap ?? 'Not set' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -86,8 +86,8 @@
                             </h4>
                             <div class="space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Idle Timeout:</span>
-                                    <span class="font-semibold text-gray-900">{{ $package->idle_timeout ?? 'N/A' }} minutes</span>
+                                    <span class="text-gray-600">Session Timeout:</span>
+                                    <span class="font-semibold text-gray-900">{{ $package->idle_timeout ? $package->getValidityDisplay() : 'N/A' }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Validity:</span>

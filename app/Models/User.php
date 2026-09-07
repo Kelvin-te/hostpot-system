@@ -28,6 +28,14 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
+        'router_id',
+        'mac_address',
+        'total_spent',
+        'total_sessions',
+        'total_data_used',
+        'last_session_at',
+        'wallet_balance',
+        'status',
     ];
 
     /**
@@ -47,6 +55,9 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_session_at' => 'datetime',
+        'wallet_balance' => 'decimal:2',
+        'total_spent' => 'decimal:2',
     ];
 
     public function isAdmin(): bool
@@ -62,10 +73,15 @@ class User extends Authenticatable
     public function due_amount($id){
         $user = self::where('id', $id)->firstOrFail();
 
-        $bill = Billing::where('user_id', $user->id)->sum('package_price');
-        $pay = Payment::where('user_id', $user->id)->sum('package_price');
+        $totalBilled = PaymentTransaction::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->sum('amount');
 
-        return $bill - $pay;
+        $totalPaid = PaymentTransaction::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->sum('amount');
+
+        return $totalBilled - $totalPaid;
     }
 
     public function detail() {
@@ -78,5 +94,51 @@ class User extends Authenticatable
 
     public function payment() {
         return $this->hasMany(Payment::class);
+    }
+
+    public function transactions() {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
+    public function sessions() {
+        return $this->hasMany(HotspotSession::class);
+    }
+
+    public function router() {
+        return $this->belongsTo(Router::class);
+    }
+
+    public function walletTransactions() {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function getActiveSessionAttribute(): ?HotspotSession
+    {
+        return $this->sessions()->active()->latest('created_at')->first();
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeSuspended($query)
+    {
+        return $query->where('status', 'suspended');
+    }
+
+    public function scopeBanned($query)
+    {
+        return $query->where('status', 'banned');
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
+    public function isBanned(): bool
+    {
+        return $this->status === 'banned';
     }
 }

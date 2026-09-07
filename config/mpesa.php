@@ -20,7 +20,6 @@ return [
     'callback_url' => env('MPESA_CALLBACK_URL'),
 
     // Tenant identifier embedded in STK Push AccountReference for shared paybill reconciliation.
-    // Defaults to the client_id portion of the WinguFi Core API token (e.g. 'sterke-admin').
     'tenant_id' => env('TENANT_ID'),
 
     /*

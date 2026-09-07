@@ -274,12 +274,12 @@ class MpesaService
                 return false;
             }
 
-            // Only handle callbacks that belong to this WinguFi platform instance.
+            // Only handle callbacks that belong to this hotspot platform instance.
             // The stored account_reference uses the HSP{tenant_id} prefix for all
-            // platform payments so upstream routers/aggregators can identify them.
+            // platform payments so routers can identify them.
             $accountReference = $transaction->account_reference;
             if (!$accountReference || !str_starts_with(strtoupper($accountReference), 'HSP')) {
-                Log::info('Ignoring non-WinguFi M-Pesa callback', [
+                Log::info('Ignoring non-hotspot M-Pesa callback', [
                     'checkout_request_id' => $checkoutRequestId,
                     'account_reference' => $accountReference,
                 ]);

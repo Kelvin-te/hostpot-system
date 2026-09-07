@@ -12,8 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('hotspot:disconnect-expired')->everyMinute();
+        $schedule->command('session:enforce-expiry')->everyMinute();
         $schedule->command('sessions:sync')->everyFiveMinutes();
+        $schedule->command('session:send-expiry-alerts')->everyFiveMinutes();
+        $schedule->command('wallet:check-auto-renewals')->everyFiveMinutes();
+        $schedule->command('packages:sync-profiles')->everyFifteenMinutes();
+        $schedule->command('users:prune-orphans')->everyFifteenMinutes();
     }
 
     /**

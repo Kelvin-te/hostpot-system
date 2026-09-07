@@ -63,11 +63,11 @@
                         
                         <div class="pb-6">
                             <div class="grid-cols-4 md:grid-cols-4 gap-4 text-right">
-                                <a href="{{ route('packages.clone.form', ['source_router_id' => $router->id]) }}" class="inline-flex items-center justify-center px-4 py-2 text-indigo-600 font-medium rounded text-sm transition duration-200">
+                                <a href="{{ route('packages.copy.form', ['router_id' => $router->id]) }}" class="inline-flex items-center justify-center px-4 py-2 text-indigo-600 font-medium rounded text-sm transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8M16 7v8M4 7h16M4 15h16"></path>
                                     </svg>
-                                    Clone Packages
+                                    Copy Packages
                                 </a>
                                 <a href="{{ route('log', ['param' => $router]) }}" class="inline-flex items-center justify-center px-4 py-2 text-green-600 font-medium rounded text-sm transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,6 +217,37 @@
                                     <span class="text-gray-600">Uptime:</span>
                                     <span class="text-gray-900">{{ $systemInfo['uptime'] ?? '-' }}</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Router Setup Checklist -->
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
+                        <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="pe-2 text-teal-600 rounded">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-800 ml-2">Setup Checklist</h3>
+                            </div>
+                            <button type="button" id="refresh-checklist-btn" class="text-xs text-teal-600 hover:text-teal-800 font-medium">
+                                Refresh
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <div id="checklist-progress-bar" class="mb-4 hidden">
+                                <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                    <span>Progress</span>
+                                    <span id="checklist-progress-text">0/0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="checklist-progress-fill" class="bg-teal-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div id="setup-checklist-body" class="space-y-3">
+                                <div class="text-center text-gray-400 py-4 text-sm">Loading checklist...</div>
                             </div>
                         </div>
                     </div>
@@ -421,46 +452,14 @@
                                         <span class="text-gray-900 font-medium" id="hotspot-server-ip">-</span>
                                     </div>
                                 </div>
-                                <button id="sync-hotspot-info-btn" class="w-full mt-3 bg-cyan-700 hover:bg-cyan-800 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
-                                    Sync HotSpot Gateway IP
-                                </button>
-                                <a href="{{ route('router.hotspot-files', $router->id) }}" class="block text-center w-full mt-2 bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
-                                    Download Hotspot Files
-                                </a>
+                                <div class="mt-3 text-right">
+                                    <a href="{{ route('router.hotspot-files', $router->id) }}" class="text-xs text-slate-600 hover:text-slate-800 underline">
+                                        Download hotspot files
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- RADIUS Client Card -->
-                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                            <div class="px-4 py-3 border-b border-gray-200">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="pe-2 text-teal-600 rounded">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                            </svg>
-                                        </div>
-                                        <h3 class="text-sm font-semibold text-gray-800 ml-2">RADIUS Client</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4">
-                                <div class="space-y-2 text-sm" id="radius-client">
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">NAS Status:</span>
-                                        <span class="text-gray-900 font-medium" id="radius-status">
-                                            {{ $router->radiusNas && $router->radiusNas->is_active ? 'Provisioned' : 'Not Provisioned' }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <button id="provision-radius-btn" class="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
-                                    Provision RADIUS
-                                </button>
-                                <button id="configure-portal-btn" class="w-full mt-2 bg-teal-700 hover:bg-teal-800 text-white font-medium py-2 px-3 rounded text-sm transition duration-200">
-                                    Configure External Portal
-                                </button>
-                            </div>
-                        </div>
                         <!-- Walled Garden Card -->
                         <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
                             <div class="px-4 py-3 border-b border-gray-200">
@@ -576,7 +575,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                    },
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -666,123 +666,6 @@
                 });
             });
             
-            // Provision RADIUS Button
-            document.getElementById('provision-radius-btn').addEventListener('click', function() {
-                const btn = this;
-                const originalText = btn.textContent;
-                
-                btn.disabled = true;
-                btn.textContent = 'Provisioning...';
-                btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
-                btn.classList.add('bg-gray-400');
-                
-                fetch(`{{ url('/') }}/router/${routerId}/provision-radius`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('radius-status').textContent = 'Provisioned';
-                        showNotification(data.message, 'success');
-                    } else {
-                        showNotification(data.message || 'RADIUS provisioning failed', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('RADIUS provisioning failed: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                    btn.classList.remove('bg-gray-400');
-                    btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
-                });
-            });
-
-            // Configure External Portal Button
-            document.getElementById('configure-portal-btn').addEventListener('click', function() {
-                const btn = this;
-                const originalText = btn.textContent;
-                
-                btn.disabled = true;
-                btn.textContent = 'Configuring...';
-                btn.classList.remove('bg-teal-700', 'hover:bg-teal-800');
-                btn.classList.add('bg-gray-400');
-                
-                fetch(`{{ url('/') }}/router/${routerId}/configure-portal`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification(data.message, 'success');
-                    } else {
-                        showNotification(data.message || 'Portal configuration failed', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('Portal configuration failed: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                    btn.classList.remove('bg-gray-400');
-                    btn.classList.add('bg-teal-700', 'hover:bg-teal-800');
-                });
-            });
-
-            // Sync HotSpot Gateway IP Button
-            document.getElementById('sync-hotspot-info-btn').addEventListener('click', function() {
-                const btn = this;
-                const originalText = btn.textContent;
-
-                btn.disabled = true;
-                btn.textContent = 'Syncing...';
-                btn.classList.remove('bg-cyan-700', 'hover:bg-cyan-800');
-                btn.classList.add('bg-gray-400');
-
-                fetch(`{{ url('/') }}/router/${routerId}/sync-hotspot-info`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('hotspot-server-ip').textContent = data.hotspot_server_ip || 'Not detected';
-                        if (data.warning) {
-                            showNotification(data.warning, 'error');
-                        } else {
-                            showNotification(data.message, 'success');
-                        }
-                    } else {
-                        showNotification(data.message || 'HotSpot info sync failed', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('HotSpot info sync failed: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                    btn.classList.remove('bg-gray-400');
-                    btn.classList.add('bg-cyan-700', 'hover:bg-cyan-800');
-                });
-            });
-            
             // Apply Walled Garden Button
             document.getElementById('apply-walled-garden-btn').addEventListener('click', function() {
                 const btn = this;
@@ -798,7 +681,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                    },
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -825,6 +709,127 @@
             
             // Load Diagnostics on Page Load
             loadDiagnostics();
+            loadSetupChecklist();
+
+            // Refresh Checklist Button
+            document.getElementById('refresh-checklist-btn').addEventListener('click', function() {
+                loadSetupChecklist();
+            });
+
+            function loadSetupChecklist() {
+                fetch(`{{ url('/') }}/router/${routerId}/setup-checklist`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.checklist) {
+                        renderChecklist(data.checklist);
+                    } else {
+                        document.getElementById('setup-checklist-body').innerHTML =
+                            '<div class="text-center text-red-400 py-4 text-sm">Failed to load checklist</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading checklist:', error);
+                    document.getElementById('setup-checklist-body').innerHTML =
+                        '<div class="text-center text-red-400 py-4 text-sm">Failed to load checklist</div>';
+                });
+            }
+
+            function renderChecklist(checklist) {
+                const body = document.getElementById('setup-checklist-body');
+                const progressBar = document.getElementById('checklist-progress-bar');
+                const progressFill = document.getElementById('checklist-progress-fill');
+                const progressText = document.getElementById('checklist-progress-text');
+
+                if (!checklist.steps || checklist.steps.length === 0) {
+                    body.innerHTML = '<div class="text-center text-gray-400 py-4 text-sm">No steps available</div>';
+                    return;
+                }
+
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                let doneCount = 0;
+
+                body.innerHTML = checklist.steps.map(function(step, index) {
+                    const isDone = step.done;
+                    if (isDone) doneCount++;
+
+                    const statusIcon = isDone
+                        ? '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
+                        : '<svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7zm-1-4a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"></path></svg>';
+
+                    const actionButton = isDone
+                        ? '<button type="button" class="redo-step-btn text-xs text-teal-600 hover:text-teal-800 font-medium" data-route="' + step.action_route + '" data-index="' + index + '">Redo</button>'
+                        : '<button type="button" class="do-step-btn text-xs text-white bg-teal-600 hover:bg-teal-700 px-2 py-1 rounded font-medium" data-route="' + step.action_route + '" data-index="' + index + '">Do</button>';
+
+                    const doneClass = isDone ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100';
+
+                    return '<div class="step-item flex items-start justify-between p-3 rounded-lg border ' + doneClass + '" data-step-index="' + index + '">' +
+                        '<div class="flex items-start">' +
+                            '<div class="flex-shrink-0 mt-0.5">' + statusIcon + '</div>' +
+                            '<div class="ml-3">' +
+                                '<p class="text-sm font-medium text-gray-900">' + (index + 1) + '. ' + escapeHtml(step.label) + '</p>' +
+                                '<p class="text-xs text-gray-500">' + escapeHtml(step.description) + '</p>' +
+                                '<p class="step-status text-xs mt-1 ' + (isDone ? 'text-green-600' : 'text-amber-600') + '">' + (isDone ? 'Done' : 'Pending') + '</p>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="ml-3 flex-shrink-0">' + actionButton + '</div>' +
+                    '</div>';
+                }).join('');
+
+                // Bind action buttons
+                document.querySelectorAll('.do-step-btn, .redo-step-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        const route = this.getAttribute('data-route');
+                        const index = this.getAttribute('data-index');
+                        runChecklistStep(route, index, this);
+                    });
+                });
+
+                // Update progress
+                progressBar.classList.remove('hidden');
+                progressText.textContent = doneCount + '/' + checklist.steps.length;
+                progressFill.style.width = (doneCount / checklist.steps.length * 100) + '%';
+            }
+
+            function runChecklistStep(route, index, button) {
+                const originalHtml = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<span class="text-xs">...</span>';
+
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                fetch(`{{ url('/') }}/router/${routerId}/${route}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message || 'Step completed', 'success');
+                        // Refresh checklist after short delay
+                        setTimeout(loadSetupChecklist, 1000);
+                    } else {
+                        showNotification(data.message || 'Step failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Step failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    button.innerHTML = originalHtml;
+                });
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
             
             // Reboot Button
             document.getElementById('reboot-btn').addEventListener('click', function() {
@@ -845,7 +850,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                    },
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -882,7 +888,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                    },
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {

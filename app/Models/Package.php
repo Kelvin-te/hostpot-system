@@ -24,9 +24,20 @@ class Package extends Model
         'session_timeout',
         'idle_timeout',
         'shared_users',
-        'rate_limit',
+        'data_cap',
         'validity_minutes',
         'is_active'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'bandwidth_upload' => 'integer',
+        'bandwidth_download' => 'integer',
+        'session_timeout' => 'integer',
+        'idle_timeout' => 'integer',
+        'shared_users' => 'integer',
+        'validity_minutes' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     public function router() {
@@ -82,9 +93,9 @@ class Package extends Model
     }
 
     /**
-     * Get the effective RADIUS session timeout in seconds.
+     * Get the effective hotspot session timeout in seconds.
      *
-     * Mirrors the package validity priority used by WinguFi Core so the
+     * Mirrors the package validity priority used for session durations so the
      * session timeout always matches the package duration. The legacy
      * session_timeout field is only used as a fallback.
      */

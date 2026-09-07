@@ -54,13 +54,18 @@ class UserDashboardController extends Controller
             ->with('package')
             ->get();
 
+        $walletBalance = (float) $user->wallet_balance;
+        $walletTransactions = $user->walletTransactions()->latest()->take(5)->get();
+
         return view('user.dashboard', compact(
             'activeSessions',
             'recentSessions',
             'totalSpent',
             'totalSessions',
             'totalDataUsed',
-            'recentTransactions'
+            'recentTransactions',
+            'walletBalance',
+            'walletTransactions'
         ));
     }
 
@@ -183,6 +188,18 @@ class UserDashboardController extends Controller
     }
 
     /**
+     * Wallet top-up page
+     */
+    public function walletTopup()
+    {
+        $user = Auth::user();
+        $walletBalance = (float) $user->wallet_balance;
+        $transactions = $user->walletTransactions()->latest()->paginate(20);
+
+        return view('user.wallet', compact('walletBalance', 'transactions'));
+    }
+
+    /**
      * Get Active Session Details (AJAX)
      */
     public function activeSessionData(Request $request)
@@ -197,7 +214,7 @@ class UserDashboardController extends Controller
             ->map(function ($session) {
                 $dataUsed = $session->bytes_total / (1024 * 1024); // MB
                 $limitMB = 0;
-                if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->rate_limit, $matches)) {
+                if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->data_cap, $matches)) {
                     $limitMB = $matches[2] === 'GB' ? $matches[1] * 1024 : $matches[1];
                 }
 

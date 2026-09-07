@@ -24,7 +24,7 @@
                             <label class="block text-sm font-medium text-gray-700">Package</label>
                             <select name="package_id" class="mt-1 block w-full rounded border-gray-300">
                                 @foreach($packages as $pkg)
-                                    <option value="{{ $pkg->id }}">{{ $pkg->name }} ({{ config('app.currency') }} {{ number_format($pkg->price,0) }})</option>
+                                    <option value="{{ $pkg->id }}">{{ $pkg->name }} ({{ config('app.currency') }} {{ number_format($pkg->price,0) }}) — {{ $pkg->router?->name ?? 'No router' }}</option>
                                 @endforeach
                             </select>
                         </div>

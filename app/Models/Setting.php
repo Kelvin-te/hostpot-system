@@ -17,6 +17,11 @@ class Setting extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'walled_garden_domains' => 'array',
+        'walled_garden_ips' => 'array',
+    ];
+
     protected $fillable = [
         'mail_server',
         'mail_username',

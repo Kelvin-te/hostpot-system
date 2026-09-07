@@ -20,7 +20,7 @@
             </div>
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
                     <div class="flex items-center">
                         <div class="flex-1">
@@ -53,6 +53,17 @@
                         <div class="text-4xl text-purple-500 opacity-50">📊</div>
                     </div>
                 </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
+                    <div class="flex items-center">
+                        <div class="flex-1">
+                            <div class="text-sm text-gray-600">Wallet Balance</div>
+                            <div class="text-3xl font-bold text-indigo-600">KES {{ number_format($walletBalance, 0) }}</div>
+                            <a href="{{ route('user.wallet') }}" class="text-xs text-indigo-500 hover:text-indigo-700 mt-1">Top up →</a>
+                        </div>
+                        <div class="text-4xl text-indigo-500 opacity-50">👛</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Active Sessions -->
@@ -77,7 +88,7 @@
                                         @php
                                             $dataUsedMB = $session->bytes_total / (1024 * 1024);
                                             $limitMB = 0;
-                                            if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->rate_limit, $matches)) {
+                                            if (preg_match('/(\d+(?:\.\d+)?)\s*(GB|MB)/i', $session->package->data_cap, $matches)) {
                                                 $limitMB = $matches[2] === 'GB' ? $matches[1] * 1024 : $matches[1];
                                             }
                                             $percentage = $limitMB > 0 ? min(100, ($dataUsedMB / $limitMB) * 100) : 0;

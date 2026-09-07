@@ -3,36 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotspot Status - {Company}</title>
+    <title>Session Status - {CompanyName}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/hotspot.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
 
-<div class="card">
-    <div class="brand"></div>
-    <div class="success-box">
-        <h2>Connection Active</h2>
-        <p>You are logged in to the network.</p>
+<div class="main">
+<div class="wrap">
+    <div class="header">
+        <div class="brand-logo" id="brandLogo"><img src="logo.png" alt="{CompanyName}" id="brandLogoImg"></div>
+        <div class="brand" id="brandName">{CompanyName}</div>
     </div>
 
-    <ul class="status-list">
-        <li><span class="label">Username</span><span class="value">$(username)</span></li>
-        <li><span class="label">IP address</span><span class="value">$(ip)</span></li>
-        <li><span class="label">MAC address</span><span class="value">$(mac)</span></li>
-        <li><span class="label">Connected</span><span class="value">$(uptime)</span></li>
-        <li><span class="label">Downloaded</span><span class="value">$(bytes-out-nice)</span></li>
-        <li><span class="label">Uploaded</span><span class="value">$(bytes-in-nice)</span></li>
-    </ul>
+    <div class="card">
+        <div class="success-box">
+            <p style="font-weight:700;font-size:18px">Connection Active</p>
+            <p>You are connected to the internet.</p>
+        </div>
 
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-        <a href="{PortalUrl}/portal/status?router={RouterIdentifier}" style="background: #0e770e; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 1rem; display: block;">
-            Manage Package & Account →
-        </a>
-        <a href="$(link-logout)" style="font-size: 0.9rem; color: #dc2626; text-decoration: none; padding: 6px;">
-            Disconnect Session
-        </a>
+        <ul class="status-list">
+            <li><span class="label">Username</span><span class="value">$(username)</span></li>
+            <li><span class="label">IP address</span><span class="value">$(ip)</span></li>
+            <li><span class="label">MAC address</span><span class="value">$(mac)</span></li>
+            <li><span class="label">Connected for</span><span class="value">$(uptime)</span></li>
+            <li><span class="label">Downloaded</span><span class="value">$(bytes-out-nice)</span></li>
+            <li><span class="label">Uploaded</span><span class="value">$(bytes-in-nice)</span></li>
+            <li><span class="label">Time remaining</span><span class="value">$(session-time-left)</span></li>
+        </ul>
+
+        <a href="status.html" class="btn btn-primary mt-16" style="text-decoration:none">Refresh Status</a>
+        <div class="text-center mt-16">
+            <a href="$(link-logout)" style="font-size:14px;color:#c44;text-decoration:none">Disconnect Session</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Powered by {CompanyName}</p>
     </div>
 </div>
+</div>
+
+<script>
+(function() {
+    var img = document.getElementById('brandLogoImg');
+    var logo = document.getElementById('brandLogo');
+    var name = document.getElementById('brandName');
+    if (!img || !logo || !name) return;
+    img.onload = function() { logo.style.display = 'block'; name.style.display = 'none'; };
+    img.onerror = function() { logo.style.display = 'none'; name.style.display = 'block'; };
+    img.src = 'logo.png?' + Date.now();
+})();
+</script>
 
 </body>
 </html>

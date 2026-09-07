@@ -84,7 +84,7 @@
                                                             @endif
                                                         </div>
                                                         <div class="text-xs text-gray-500">
-                                                            {{ $package->rate_limit }} • {{ $package->bandwidth_download }}/{{ $package->bandwidth_upload }} Mbps
+                                                            {{ $package->data_cap }} • {{ $package->bandwidth_download }}/{{ $package->bandwidth_upload }} Mbps
                                                         
                                                     </div>
                                                 </div>

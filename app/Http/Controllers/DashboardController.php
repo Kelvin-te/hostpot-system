@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Billing;
 use App\Models\Package;
 use App\Models\Payment;
+use App\Models\PaymentTransaction;
 use App\Models\Ticket;
 use App\Models\User;
 use Carbon\Carbon;
@@ -19,17 +20,23 @@ class DashboardController extends Controller
         }
 
         $totalPackages = Package::count();
-        $totalBills = Billing::sum('package_price');
-        $totalPayments  = Payment::sum('package_price');
+        $totalRevenue = PaymentTransaction::where('status', 'completed')->sum('amount');
         $totalUsers = User::count();
         $openTickets = Ticket::where('status', 'Open')->count();
         $recentUsers = User::with('detail')->with(['billing', 'detail'])->latest()->take(5)->get();
-        $recentPayments = Payment::with('user')->latest()->take(5)->get();
+        $recentTransactions = PaymentTransaction::with(['user', 'package'])->latest()->take(5)->get();
         $recentTickets = Ticket::latest()->take(5)->get();
-        $paymentsThisMonth = Payment::whereMonth('created_at', now()->month)->sum('package_price');
-        $billsThisMonth = Billing::whereMonth('created_at', now()->month)->sum('package_price');
-        $paymentsThisYear = Payment::whereYear('created_at', now()->year)->sum('package_price');
-        $billsThisYear = Billing::whereYear('created_at', now()->year)->sum('package_price');
+
+        $revenueThisMonth = PaymentTransaction::where('status', 'completed')
+            ->whereMonth('created_at', now()->month)->sum('amount');
+        $revenueThisYear = PaymentTransaction::where('status', 'completed')
+            ->whereYear('created_at', now()->year)->sum('amount');
+
+        // Gateway breakdown
+        $mpesaRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'mpesa')->sum('amount');
+        $paystackRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'paystack')->sum('amount');
+        $manualRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'manual')->sum('amount');
+        $walletRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'wallet')->sum('amount');
 
         $usersWithDueCount = User::with('detail')->get()
             ->filter(function ($user) {
@@ -40,55 +47,42 @@ class DashboardController extends Controller
                 return $user->due_amount($user->id) > 0;
             });
 
-        // Fetch the monthly billing and payment data
-        $billingData = Billing::whereYear('created_at', Carbon::now()->year)
-            ->get()->groupBy(function ($billing) {
-                return $billing->created_at->format('F');
-            })->map(function ($billings) {
-                return $billings->sum('package_price');
+        // Monthly revenue data for charts
+        $revenueData = PaymentTransaction::where('status', 'completed')
+            ->whereYear('created_at', Carbon::now()->year)
+            ->get()->groupBy(function ($transaction) {
+                return $transaction->created_at->format('F');
+            })->map(function ($transactions) {
+                return $transactions->sum('amount');
             });
 
-        $paymentData = Payment::whereYear('created_at', Carbon::now()->year)
-            ->get()->groupBy(function ($payment) {
-                return $payment->created_at->format('F');
-            })->map(function ($payments) {
-                return $payments->sum('package_price');
-            });
-
-        // Fetch the daily billing and payment data for the current month
+        // Daily revenue data for current month
         $daysInMonth = Carbon::now()->daysInMonth;
-        $dailyBillingData = [];
-        $dailyPaymentData = [];
+        $dailyRevenueData = [];
 
         for ($day = 1; $day <= $daysInMonth; $day++) {
-            $dailyBillingAmount = Billing::whereDate('created_at', Carbon::now()->year . '-' . Carbon::now()->month . '-' . $day)
-                ->sum('package_price');
-
-            $dailyPaymentAmount = Payment::whereDate('created_at', Carbon::now()->year . '-' . Carbon::now()->month . '-' . $day)
-                ->sum('package_price');
-
-            $dailyBillingData[] = $dailyBillingAmount;
-            $dailyPaymentData[] = $dailyPaymentAmount;
+            $dailyRevenueData[] = PaymentTransaction::where('status', 'completed')
+                ->whereDate('created_at', Carbon::now()->year . '-' . Carbon::now()->month . '-' . $day)
+                ->sum('amount');
         }
 
         return view('dashboard', compact(
             'totalUsers',
-            'totalBills',
-            'totalPayments',
-            'paymentsThisMonth',
-            'billsThisMonth',
-            'recentPayments',
+            'totalRevenue',
+            'revenueThisMonth',
+            'recentTransactions',
             'recentUsers',
             'totalPackages',
-            'paymentsThisYear',
-            'billsThisYear',
+            'revenueThisYear',
             'usersWithDueCount',
             'usersWithDueList',
             'openTickets',
-            'billingData',
-            'paymentData',
-            'dailyBillingData',
-            'dailyPaymentData',
+            'revenueData',
+            'dailyRevenueData',
+            'mpesaRevenue',
+            'paystackRevenue',
+            'manualRevenue',
+            'walletRevenue',
             'recentTickets'
         ));
     }

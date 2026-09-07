@@ -3,21 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotspot Error</title>
+    <title>Error - {CompanyName}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/hotspot.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
 
-<div class="card">
-    <div class="brand"></div>
-    <h2>Something went wrong</h2>
-
-    <div class="error-box">
-        <p>$(error)</p>
+<div class="main">
+<div class="wrap">
+    <div class="header">
+        <div class="brand-logo" id="brandLogo"><img src="logo.png" alt="{CompanyName}" id="brandLogoImg"></div>
+        <div class="brand" id="brandName">{CompanyName}</div>
     </div>
 
-    <a href="$(link-login)">Try again</a>
+    <div class="card">
+        <div class="error-box">
+            <p style="font-weight:700;font-size:18px">Something went wrong</p>
+            <p>$(error)</p>
+        </div>
+        <a href="$(link-login)" class="btn btn-primary" style="text-decoration:none">Try Again</a>
+    </div>
+
+    <div class="footer">
+        <p>Powered by {CompanyName}</p>
+    </div>
 </div>
+</div>
+
+<script>
+(function() {
+    var img = document.getElementById('brandLogoImg');
+    var logo = document.getElementById('brandLogo');
+    var name = document.getElementById('brandName');
+    if (!img || !logo || !name) return;
+    img.onload = function() { logo.style.display = 'block'; name.style.display = 'none'; };
+    img.onerror = function() { logo.style.display = 'none'; name.style.display = 'block'; };
+    img.src = 'logo.png?' + Date.now();
+})();
+</script>
 
 </body>
 </html>

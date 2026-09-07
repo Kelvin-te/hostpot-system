@@ -61,7 +61,7 @@ class HotspotFileGeneratorService
 
             $extension = strtolower(pathinfo($item, PATHINFO_EXTENSION));
 
-            if (in_array($extension, ['html', 'css', 'js', 'txt'], true)) {
+            if (in_array($extension, ['html', 'css', 'js', 'txt', 'json'], true)) {
                 $contents = file_get_contents($sourcePath);
                 $contents = strtr($contents, $replacements);
                 $zip->addFromString($zipEntryName, $contents);
@@ -76,12 +76,19 @@ class HotspotFileGeneratorService
      */
     private function replacements(Router $router): array
     {
-        $companyName = Setting::first()?->company_name ?: config('app.name', 'Hotspot');
+        $setting = Setting::first();
+        $companyName = $setting?->company_name ?: config('app.name', 'Hotspot');
+        $supportPhone = $setting?->support_phone ?: '';
+        $currency = $setting?->currency ?: 'KSH';
 
         return [
             '{RouterIdentifier}' => $router->identifier,
-            '{PortalUrl}' => route('portal.landing'),
+            '{PortalUrl}' => rtrim(config('app.url'), '/'),
             '{Company}' => $companyName,
+            '{CompanyName}' => $companyName,
+            '{ApiBaseUrl}' => rtrim(config('app.url'), '/'),
+            '{SupportPhone}' => $supportPhone,
+            '{Currency}' => $currency,
         ];
     }
 }

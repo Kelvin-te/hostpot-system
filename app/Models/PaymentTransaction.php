@@ -18,6 +18,8 @@ class PaymentTransaction extends Model
         'account_reference',
         'transaction_desc',
         'status',
+        'gateway',
+        'type',
         'mpesa_receipt_number',
         'transaction_date',
         'response_code',
@@ -29,7 +31,8 @@ class PaymentTransaction extends Model
         'package_id',
         'user_id',
         'session_id',
-        'voucher_id'
+        'voucher_id',
+        'router_id',
     ];
 
     protected $casts = [
@@ -62,6 +65,14 @@ class PaymentTransaction extends Model
     public function session()
     {
         return $this->belongsTo(HotspotSession::class);
+    }
+
+    /**
+     * Get the router associated with this transaction
+     */
+    public function router()
+    {
+        return $this->belongsTo(Router::class);
     }
 
     /**
@@ -115,7 +126,7 @@ class PaymentTransaction extends Model
     /**
      * Mark transaction as failed
      */
-    public function markAsFailed(string $reason = null, int $resultCode = null): bool
+    public function markAsFailed(?string $reason = null, ?int $resultCode = null): bool
     {
         return $this->update([
             'status' => 'failed',
@@ -155,5 +166,37 @@ class PaymentTransaction extends Model
     {
         $timeout = config('mpesa.transaction_timeout', 300);
         return $query->where('created_at', '>', Carbon::now()->subSeconds($timeout));
+    }
+
+    /**
+     * Scope for filtering by gateway
+     */
+    public function scopeGateway($query, string $gateway)
+    {
+        return $query->where('gateway', $gateway);
+    }
+
+    /**
+     * Scope for filtering by type
+     */
+    public function scopeOfType($query, string $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    /**
+     * Scope for filtering by router
+     */
+    public function scopeForRouter($query, int $routerId)
+    {
+        return $query->where('router_id', $routerId);
+    }
+
+    /**
+     * Check if transaction is refundable (completed and within 24 hours)
+     */
+    public function isRefundable(): bool
+    {
+        return $this->isCompleted() && $this->created_at->gt(Carbon::now()->subDay());
     }
 }

@@ -7,7 +7,6 @@ use App\Models\Package;
 use App\Models\PaymentTransaction;
 use App\Models\Router;
 use App\Services\HotspotAuthorizationService;
-use App\Services\WinguFiCoreService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -47,12 +46,6 @@ class HotspotAuthorizationReuseTest extends TestCase
 
     public function test_repeated_free_authorization_request_reuses_existing_authorization(): void
     {
-        $this->mock(WinguFiCoreService::class, function ($mock) {
-            // Sync must only happen once: the second call reuses the already
-            // synced authorization (ensureSynced short-circuits).
-            $mock->shouldReceive('syncAuthorization')->once()->andReturn(['data' => ['id' => 111]]);
-        });
-
         $service = app(HotspotAuthorizationService::class);
         $clientIdentifier = 'device-stable-identifier';
 
@@ -65,10 +58,6 @@ class HotspotAuthorizationReuseTest extends TestCase
 
     public function test_expired_authorization_is_not_reused_and_a_new_one_is_created(): void
     {
-        $this->mock(WinguFiCoreService::class, function ($mock) {
-            $mock->shouldReceive('syncAuthorization')->twice()->andReturn(['data' => ['id' => 222]]);
-        });
-
         $service = app(HotspotAuthorizationService::class);
         $clientIdentifier = 'device-stable-identifier';
 
@@ -83,10 +72,6 @@ class HotspotAuthorizationReuseTest extends TestCase
 
     public function test_revoked_authorization_is_not_silently_reused(): void
     {
-        $this->mock(WinguFiCoreService::class, function ($mock) {
-            $mock->shouldReceive('syncAuthorization')->twice()->andReturn(['data' => ['id' => 333]]);
-        });
-
         $service = app(HotspotAuthorizationService::class);
         $clientIdentifier = 'device-stable-identifier';
 
@@ -101,10 +86,6 @@ class HotspotAuthorizationReuseTest extends TestCase
 
     public function test_using_free_package_a_does_not_block_free_package_b_authorization(): void
     {
-        $this->mock(WinguFiCoreService::class, function ($mock) {
-            $mock->shouldReceive('syncAuthorization')->twice()->andReturn(['data' => ['id' => 444]]);
-        });
-
         $freePackageB = Package::create([
             'name' => 'Free Package B',
             'price' => 0,
@@ -126,13 +107,6 @@ class HotspotAuthorizationReuseTest extends TestCase
 
     public function test_paid_package_behavior_is_unchanged(): void
     {
-        $this->mock(WinguFiCoreService::class, function ($mock) {
-            $mock->shouldReceive('externalAuthorizationIdForPayment')->andReturnUsing(
-                fn ($paymentId) => 'auth-admin-ptx-' . $paymentId
-            );
-            $mock->shouldReceive('syncAuthorization')->once()->andReturn(['data' => ['id' => 555]]);
-        });
-
         $paidPackage = Package::create([
             'name' => 'Paid Package',
             'price' => 50,

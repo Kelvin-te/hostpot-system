@@ -30,7 +30,7 @@ class VoucherController extends Controller
 
     public function create()
     {
-        $packages = Package::orderBy('name')->get();
+        $packages = Package::with('router')->orderBy('name')->get();
         return view('vouchers.create', compact('packages'));
     }
 

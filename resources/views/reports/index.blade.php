@@ -139,7 +139,7 @@
                                         </div>
                                         <div class="flex justify-between text-xs text-gray-500 mt-1">
                                             <span>KES {{ number_format($package->price, 2) }}</span>
-                                            <span>{{ $package->rate_limit }}</span>
+                                            <span>{{ $package->data_cap }}</span>
                                         </div>
                                     </div>
                                 @endforeach

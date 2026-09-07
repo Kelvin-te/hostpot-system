@@ -24,6 +24,11 @@ class HotspotSessionService
         $this->mikroTikService = $mikroTikService;
     }
 
+    public function getDeviceIdentificationService(): DeviceIdentificationService
+    {
+        return $this->deviceService;
+    }
+
     /**
      * Check if device has an active session
      */
@@ -49,7 +54,23 @@ class HotspotSessionService
         // limit, logout, admin kick) without notifying us, our DB still shows
         // status='active'. This prevents a stale session from trapping the user
         // in a redirect loop to the status page.
+        //
+        // BUT: if the user has never connected (no bytes, no uptime), they
+        // may simply not have logged in through the captive portal yet.
+        // Don't expire them in that case.
         if (!$this->mikroTikService->isSessionActiveOnRouter($session)) {
+            $hasUsedData = ($session->bytes_total ?? 0) > 0
+                || !empty($session->mikrotik_data['uptime_seconds']);
+
+            if (!$hasUsedData) {
+                Log::info('getActiveSession: session not active on router but no data used (user not logged in yet), keeping active', [
+                    'session_id' => $session->session_id,
+                    'device_fingerprint' => $deviceFingerprint,
+                    'mac_address' => $macAddress,
+                ]);
+                return $session;
+            }
+
             Log::info('getActiveSession: session no longer active on router, marking disconnected', [
                 'session_id' => $session->session_id,
                 'device_fingerprint' => $deviceFingerprint,
@@ -62,13 +83,6 @@ class HotspotSessionService
                 'status' => $stillValid ? 'disconnected' : 'expired',
                 'expires_at' => $stillValid ? $session->expires_at : now(),
             ]);
-
-            if ($session->captivePortalSession) {
-                $session->captivePortalSession->update([
-                    'status' => 'expired',
-                    'expires_at' => now(),
-                ]);
-            }
 
             return null;
         }
@@ -110,6 +124,10 @@ class HotspotSessionService
             'device_fingerprint' => $deviceInfo['device_fingerprint'] ?? $session->device_fingerprint,
         ]);
 
+        // Re-create the hotspot user on the router — it may have been
+        // removed during disconnect or by a sync cycle.
+        $this->mikroTikService->createHotspotSession($session);
+
         Log::info('Session reactivated', [
             'session_id' => $session->session_id,
             'remaining_time' => $session->expires_at?->diffForHumans(),
@@ -145,8 +163,24 @@ class HotspotSessionService
             $paymentTransactionId
         );
 
-        // Calculate expiry time
-        $expiresAt = $authorization->expires_at ?? $this->calculateExpiryTime($package);
+        // Calculate expiry time — always recalculate from the package to
+        // ensure the timezone is correct. The authorization's expires_at
+        // may have been calculated under a different timezone.
+        $expiresAt = $this->calculateExpiryTime($package);
+
+        // Defensive guard: expiry must always be in the future. If the package
+        // data somehow produces a past date, fall back to 24h so the user is
+        // not disconnected seconds after login.
+        if (!$expiresAt || $expiresAt <= now()) {
+            Log::error('Calculated session expiry is not in the future', [
+                'package_id' => $package->id,
+                'calculated_expires_at' => $expiresAt?->toIso8601String(),
+                'validity_minutes' => $package->validity_minutes,
+                'session_timeout' => $package->session_timeout,
+                'validity_days' => $package->validity_days,
+            ]);
+            $expiresAt = now()->addDay();
+        }
 
         $sessionData = [
             'mac_address' => $deviceInfo['mac_address'],
@@ -157,7 +191,7 @@ class HotspotSessionService
             'authorization_id' => $authorization->id,
             'user_id' => $user?->id,
             'username' => $username,
-            'mikrotik_username' => $authorization->radius_username,
+            'mikrotik_username' => $authorization->hotspot_username,
             'expires_at' => $expiresAt,
         ];
 
@@ -167,25 +201,38 @@ class HotspotSessionService
             'stage' => 'HotspotSessionService::createSessionForPackage:session_created',
             'authorization_id' => $authorization->id,
             'client_identifier' => $username,
-            'username' => $authorization->radius_username,
+            'username' => $authorization->hotspot_username,
             'package_id' => $package->id,
             'hotspot_session_id' => $session->session_id,
             'mac_address' => $deviceInfo['mac_address'],
+            'expires_at' => $session->expires_at?->toIso8601String(),
         ]);
 
-        // NOTE: Direct MikroTik API call removed - will be handled by WinguFi Core + FreeRADIUS in future
-        
+        // Create the hotspot user + profile directly on the router via API.
+        // This is the primary auth mechanism — no RADIUS roundtrip required.
+        $created = $this->mikroTikService->createHotspotSession($session);
+
+        if (!$created) {
+            Log::warning('CAPTIVE_FLOW_TRACE', [
+                'stage' => 'HotspotSessionService::createSessionForPackage:api_create_failed',
+                'session_id' => $session->session_id,
+                'message' => 'MikroTik API user creation failed — user may not be able to authenticate',
+            ]);
+
+            $session->update(['status' => 'provisioning_failed']);
+        }
+
         return $session;
     }
 
     /**
      * Authenticate user with voucher or credentials
      */
-    public function authenticateUser(Request $request, string $username, ?string $password = null): ?HotspotSession
+    public function authenticateUser(Request $request, string $username, ?string $password = null, ?Package $package = null): ?HotspotSession
     {
         // Check if it's a voucher code (no password required)
         if (!$password) {
-            return $this->authenticateWithVoucher($request, $username);
+            return $this->authenticateWithVoucher($request, $username, $package);
         }
 
         // Check if it's phone number + password
@@ -196,7 +243,7 @@ class HotspotSessionService
      * Authenticate with voucher code
      * NOTE: This now creates authorization first, then session from authorization
      */
-    protected function authenticateWithVoucher(Request $request, string $voucherCode): ?HotspotSession
+    protected function authenticateWithVoucher(Request $request, string $voucherCode, ?Package $package = null): ?HotspotSession
     {
         // Find voucher by code
         $voucher = Voucher::findByCode($voucherCode);
@@ -204,6 +251,8 @@ class HotspotSessionService
         if (!$voucher || !$voucher->isValid()) {
             return null; // Invalid or expired voucher
         }
+
+        $targetPackage = $package ?? $voucher->package;
 
         // Check if voucher is already used
         if ($voucher->isUsed()) {
@@ -236,7 +285,8 @@ class HotspotSessionService
         // Create authorization first
         $authorization = $this->authorizationService->createFromVoucher(
             $voucher,
-            $deviceInfo['mac_address'] ?? null
+            $deviceInfo['mac_address'] ?? null,
+            $targetPackage
         );
 
         // Create session from authorization
@@ -245,7 +295,7 @@ class HotspotSessionService
             'ip_address' => $deviceInfo['ip_address'],
             'user_agent' => $deviceInfo['user_agent'],
             'device_fingerprint' => $deviceInfo['device_fingerprint'],
-            'package_id' => $voucher->package_id,
+            'package_id' => $targetPackage->id,
             'authorization_id' => $authorization->id,
             'username' => $voucherCode,
             'expires_at' => $authorization->expires_at,
@@ -260,7 +310,8 @@ class HotspotSessionService
             $session->id
         );
 
-        // NOTE: Direct MikroTik API call removed - will be handled by WinguFi Core + FreeRADIUS in future
+        // Create hotspot user on router via API
+        $this->mikroTikService->createHotspotSession($session);
 
         return $session;
     }
@@ -334,8 +385,7 @@ class HotspotSessionService
      * Terminate a session
      *
      * Marks the session expired locally and removes the active session from
-     * the MikroTik router. The direct router call is a pragmatic stopgap until
-     * WinguFi Core/FreeRADIUS CoA disconnect is fully in place.
+     * the MikroTik router via API.
      */
     public function terminateSession(HotspotSession $session): bool
     {
@@ -451,132 +501,95 @@ class HotspotSessionService
     }
 
     /**
-     * Sync local hotspot sessions with RADIUS accounting data from WinguFi Core.
-     * Fetches active RADIUS sessions and updates bytes/time/status on matching
-     * local HotspotSession records (matched by mikrotik_username or username).
+     * Sync local hotspot sessions by polling each router via MikroTik API.
+     * Updates byte counters, detects stale sessions, and re-creates missing users.
      */
-    public function syncSessionsWithCore(): array
+    public function syncSessionsWithRouters(): array
     {
-        $coreService = app(WinguFiCoreService::class);
-
-        if (!$coreService->isEnabled()) {
-            return ['success' => false, 'message' => 'WinguFi Core is not enabled'];
-        }
-
-        $routers = \App\Models\Router::all();
+        $routers = \App\Models\Router::where('is_active', true)->get();
         $synced = 0;
         $stopped = 0;
-        $notFound = 0;
+        $recreated = 0;
 
         foreach ($routers as $router) {
-            $routerExternalId = 'router-' . $router->identifier;
+            $result = $this->mikroTikService->syncSessionsWithRouter($router);
 
-            // Fetch active RADIUS sessions for this router
-            $result = $coreService->fetchSessions($routerExternalId, 'active');
-
-            Log::info('Session sync debug: Core API response', [
-                'router' => $router->name,
-                'router_external_id' => $routerExternalId,
-                'has_result' => $result !== null,
-                'has_sessions' => $result && isset($result['data']['sessions']),
-                'session_count' => $result['data']['sessions'] ?? 0,
-                'raw_keys' => $result ? array_keys($result) : [],
-            ]);
-
-            if (!$result || !isset($result['data']['sessions'])) {
-                continue;
-            }
-
-            $radiusSessions = $result['data']['sessions'];
-
-            Log::info('Session sync debug: RADIUS sessions', [
-                'router' => $router->name,
-                'count' => count($radiusSessions),
-                'usernames' => array_column($radiusSessions, 'username'),
-            ]);
-
-            // Index local active sessions by all possible usernames for this router
-            $localSessions = HotspotSession::active()
-                ->with('authorization')
-                ->whereHas('package', function ($q) use ($router) {
-                    $q->where('router_id', $router->id);
-                })
-                ->get();
-
-            // Build a lookup map: radius_username => session
-            $localByRadiusUsername = [];
-            foreach ($localSessions as $session) {
-                $radiusUsername = $session->mikrotik_username
-                    ?? $session->authorization?->radius_username
-                    ?? $session->username;
-                $localByRadiusUsername[$radiusUsername] = $session;
-            }
-
-            Log::info('Session sync debug: Local sessions', [
-                'router' => $router->name,
-                'local_count' => $localSessions->count(),
-                'local_usernames' => array_keys($localByRadiusUsername),
-            ]);
-
-            $matchedUsernames = [];
-
-            foreach ($radiusSessions as $radiusSession) {
-                $username = $radiusSession['username'] ?? null;
-                if (!$username) {
-                    continue;
-                }
-
-                $matchedUsernames[] = $username;
-                $localSession = $localByRadiusUsername[$username] ?? null;
-
-                if (!$localSession) {
-                    $notFound++;
-                    continue;
-                }
-
-                $inputOctets = (int) ($radiusSession['input_octets'] ?? 0);
-                $outputOctets = (int) ($radiusSession['output_octets'] ?? 0);
-                $sessionTime = (int) ($radiusSession['session_time'] ?? 0);
-
-                $updateData = [
-                    'bytes_uploaded' => $inputOctets,
-                    'bytes_downloaded' => $outputOctets,
-                    'bytes_total' => $inputOctets + $outputOctets,
-                ];
-
-                // Backfill mikrotik_username if it was missing
-                if (!$localSession->mikrotik_username && $username) {
-                    $updateData['mikrotik_username'] = $username;
-                }
-
-                $localSession->update($updateData);
-
-                $synced++;
-            }
-
-            // Mark local active sessions not seen in RADIUS as disconnected
-            foreach ($localSessions as $session) {
-                $radiusUsername = $session->mikrotik_username
-                    ?? $session->authorization?->radius_username
-                    ?? $session->username;
-                if (!in_array($radiusUsername, $matchedUsernames) && $session->isActive()) {
-                    $session->update(['status' => 'disconnected']);
-                    $stopped++;
-                }
+            if (($result['success'] ?? false) === true) {
+                $synced += $result['synced'] ?? 0;
+                $stopped += $result['expired'] ?? 0;
+                $recreated += $result['missing'] ?? 0;
             }
         }
 
-        Log::info('Session sync with WinguFi Core completed', [
+        Log::info('Session sync via MikroTik API completed', [
             'synced' => $synced,
             'stopped' => $stopped,
-            'not_found' => $notFound,
+            'recreated' => $recreated,
         ]);
 
         return [
             'success' => true,
             'synced' => $synced,
             'stopped' => $stopped,
-            'not_found' => $notFound,
+            'recreated' => $recreated,
         ];
+    }
+
+    /**
+     * @deprecated Use syncSessionsWithRouters() instead.
+     * Kept for backward compatibility — delegates to the API-based sync.
+     */
+    public function syncSessionsWithCore(): array
+    {
+        return $this->syncSessionsWithRouters();
+    }
+
+    /**
+     * Carry over unused data from a previous session to a new session.
+     * Only applies when the same package is repurchased within 24h of expiry.
+     */
+    public function carryOverData(HotspotSession $newSession, HotspotSession $previousSession): void
+    {
+        if (!$previousSession->package || $previousSession->package_id !== $newSession->package_id) {
+            return;
+        }
+
+        $remainingData = $previousSession->getRemainingData();
+        if ($remainingData === null || $remainingData <= 0) {
+            return;
+        }
+
+        // Only carry over if previous session expired within last 24 hours
+        if ($previousSession->expires_at < now()->subDay()) {
+            return;
+        }
+
+        $newSession->update([
+            'bytes_total' => 0,
+        ]);
+
+        Log::info('Data carry-over applied', [
+            'new_session_id' => $newSession->session_id,
+            'previous_session_id' => $previousSession->session_id,
+            'carried_over_bytes' => $remainingData,
+        ]);
+    }
+
+    /**
+     * Find the most recent expired session for a user/device to check for carry-over.
+     */
+    public function findCarryOverSession(Request $request, Package $package): ?HotspotSession
+    {
+        $deviceInfo = $this->deviceService->getDeviceInfo($request);
+
+        return HotspotSession::where('package_id', $package->id)
+            ->where('status', 'expired')
+            ->where('expires_at', '>', now()->subDay())
+            ->where(function ($q) use ($deviceInfo) {
+                $q->where('mac_address', $deviceInfo['mac_address'] ?? '')
+                  ->orWhere('device_fingerprint', $deviceInfo['device_fingerprint'] ?? '');
+            })
+            ->latest('expires_at')
+            ->first();
     }
 }

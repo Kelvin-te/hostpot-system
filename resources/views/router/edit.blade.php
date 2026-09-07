@@ -33,32 +33,8 @@
                                     <x-text-input id="identifier" name="identifier" type="text" class="mt-1 block w-full bg-gray-100 font-mono" value="{{ $router->identifier }}" disabled></x-text-input>
                                     <p class="mt-1 text-xs text-gray-500">{{ __('Auto-generated. Copy this value into the router\'s MikroTik login.html file (the "router" hidden field) so the hotspot login page identifies this router correctly.') }}</p>
                                 </div>
-                                <div>
-                                    <x-input-label for="location" :value="__('Location')" class="mt-4"></x-input-label>
-                                    <x-text-input id="location" name="location" type="text" class="mt-1 block w-full" value="{{ $router->location }}"></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('location')"></x-input-error>
-                                </div>
-                                <div>
-                                    <x-input-label for="ip" :value="__('Router IP')" class="mt-4"></x-input-label>
-                                    <x-text-input id="ip" name="ip" type="text" class="mt-1 block w-full" value="{{ $router->ip }}" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('ip')"></x-input-error>
-                                </div>
-                                <div>
-                                    <x-input-label for="username" :value="__('Router username')" class="mt-4"></x-input-label>
-                                    <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" value="{{ $router->username }}" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('username')"></x-input-error>
-                                </div>
-                                <div>
-                                    <x-input-label for="password" :value="__('Router password')" class="mt-4"></x-input-label>
-                                    <x-text-input id="password" name="password" type="text" class="mt-1 block w-full" value="{{ $router->password }}" required></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('password')"></x-input-error>
-                                </div>
-                                <div>
-                                    <x-input-label for="api_port" :value="__('API Port')" class="mt-4"></x-input-label>
-                                    <x-text-input id="api_port" name="api_port" type="number" class="mt-1 block w-full" value="{{ $router->api_port ?? 8728 }}" required></x-text-input>
-                                    <p class="mt-1 text-xs text-gray-500">{{ __('Default plain API port is 8728, API-SSL is 8729') }}</p>
-                                    <x-input-error class="mt-2" :messages="$errors->get('api_port')"></x-input-error>
-                                </div>
+
+                                @include('router._form')
 
                                 <div class="flex items-center gap-4 mt-4">
                                     <x-primary-button>{{ __('Update') }}</x-primary-button>

@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
+use App\Models\PaymentTransaction;
 use App\Models\Setting;
-use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Http\Request;
 
@@ -12,7 +11,9 @@ class InvoiceDownload extends Controller
 {
     public function __invoke(Request $request)
     {
-        $invoice = Payment::where('invoice', $request->row)->with('billing')->firstOrFail();
+        $invoice = PaymentTransaction::where('id', $request->row)
+            ->with(['user', 'package'])
+            ->firstOrFail();
 
         if (Setting::doesntExist()) {
             return redirect()->back()->with('error','Insert ISP information first');

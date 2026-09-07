@@ -35,9 +35,12 @@ class Router extends Model
         return $this->hasMany(Package::class);
     }
 
-    public function radiusNas()
-    {
-        return $this->hasOne(RadiusNas::class);
+    public function sessions() {
+        return $this->hasManyThrough(HotspotSession::class, Package::class);
+    }
+
+    public function transactions() {
+        return $this->hasMany(PaymentTransaction::class);
     }
 
     /**

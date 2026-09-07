@@ -29,8 +29,8 @@
                         </div>
                         @if (auth()->user()->isAdmin())
                             <div class="flex space-x-2">
-                                <a href="{{ route('packages.clone.form') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
-                                    📋 Clone Package
+                                <a href="{{ route('packages.copy.form') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
+                                    📋 Copy to Router
                                 </a>
                                 <a href="{{ route('packages.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
                                     ➕ Create New

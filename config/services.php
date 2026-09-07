@@ -37,10 +37,6 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
-    'bkash' => [
-        'merchant_id' => env('BKASH_MERCHANT_ID'),
-    ],
-
     'vintex' => [
         'api_url' => env('VINTEX_API_URL', 'https://sms.vintextechnologies.com/api/sendMessage'),
         'email' => env('VINTEX_EMAIL'),
@@ -48,17 +44,11 @@ return [
         'sender_id' => env('VINTEX_SENDER_ID', 'STERKE'),
     ],
 
-    'wingufi' => [
-        'base_url' => env('WINGUFI_CORE_BASE_URL', 'https://wingufi-core.test/api/v1'),
-        'token' => env('WINGUFI_CORE_API_TOKEN'),
-        'source_system' => env('WINGUFI_SOURCE_SYSTEM', config('app.name', 'admin')),
-        'enabled' => env('WINGUFI_CORE_ENABLED', true),
-    ],
-
-    'radius' => [
-        'server_host' => env('RADIUS_SERVER_HOST'),
-        'auth_port' => env('RADIUS_SERVER_AUTH_PORT', 1812),
-        'acct_port' => env('RADIUS_SERVER_ACCT_PORT', 1813),
+    'paystack' => [
+        'secret_key' => env('PAYSTACK_SECRET_KEY'),
+        'public_key' => env('PAYSTACK_PUBLIC_KEY'),
+        'callback_url' => env('PAYSTACK_CALLBACK_URL'),
+        'base_url' => env('PAYSTACK_BASE_URL', 'https://api.paystack.co'),
     ],
 
 ];
