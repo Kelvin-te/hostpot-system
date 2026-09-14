@@ -62,19 +62,13 @@ class HotspotSessionService
             $hasUsedData = ($session->bytes_total ?? 0) > 0
                 || !empty($session->mikrotik_data['uptime_seconds']);
 
+            // Not logged in yet — this is the normal state before captive-portal login.
             if (!$hasUsedData) {
-                Log::info('getActiveSession: session not active on router but no data used (user not logged in yet), keeping active', [
-                    'session_id' => $session->session_id,
-                    'device_fingerprint' => $deviceFingerprint,
-                    'mac_address' => $macAddress,
-                ]);
                 return $session;
             }
 
-            Log::info('getActiveSession: session no longer active on router, marking disconnected', [
+            Log::info('Hotspot session disconnected on router', [
                 'session_id' => $session->session_id,
-                'device_fingerprint' => $deviceFingerprint,
-                'mac_address' => $macAddress,
             ]);
 
             $stillValid = $session->expires_at && $session->expires_at > now();
@@ -197,26 +191,13 @@ class HotspotSessionService
 
         $session = HotspotSession::createSession($sessionData);
 
-        Log::info('CAPTIVE_FLOW_TRACE', [
-            'stage' => 'HotspotSessionService::createSessionForPackage:session_created',
-            'authorization_id' => $authorization->id,
-            'client_identifier' => $username,
-            'username' => $authorization->hotspot_username,
-            'package_id' => $package->id,
-            'hotspot_session_id' => $session->session_id,
-            'mac_address' => $deviceInfo['mac_address'],
-            'expires_at' => $session->expires_at?->toIso8601String(),
-        ]);
-
         // Create the hotspot user + profile directly on the router via API.
         // This is the primary auth mechanism — no RADIUS roundtrip required.
         $created = $this->mikroTikService->createHotspotSession($session);
 
         if (!$created) {
-            Log::warning('CAPTIVE_FLOW_TRACE', [
-                'stage' => 'HotspotSessionService::createSessionForPackage:api_create_failed',
+            Log::warning('Hotspot session provisioning failed', [
                 'session_id' => $session->session_id,
-                'message' => 'MikroTik API user creation failed — user may not be able to authenticate',
             ]);
 
             $session->update(['status' => 'provisioning_failed']);

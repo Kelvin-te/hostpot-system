@@ -108,7 +108,6 @@ class VintexSmsService
             Log::error('SMS service error', [
                 'phone' => $phone,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ]);
 
             return [

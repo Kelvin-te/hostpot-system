@@ -17,9 +17,6 @@ class RouterController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->isAdmin()) {
-            return redirect('/');
-        }
         
         $routers = Router::orderBy("name","asc")->get();
         return view("router.index", compact("routers"));
@@ -30,9 +27,6 @@ class RouterController extends Controller
      */
     public function create()
     {
-        if (!auth()->user()->isAdmin()) {
-            return redirect('/');
-        }
 
         return view('router.create');
     }
@@ -131,9 +125,6 @@ class RouterController extends Controller
      */
     public function show(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return redirect('/');
-        }
         
         // Initialize data arrays
         $connectionStatus = null;
@@ -182,9 +173,6 @@ class RouterController extends Controller
      */
     public function edit(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return redirect('/');
-        }
         return view('router.edit', compact('router'));
     }
 
@@ -222,9 +210,6 @@ class RouterController extends Controller
      */
     public function destroy(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return redirect('/');
-        }
         
         $router->delete();
         return redirect('router')->with('success', __('Router deleted successfully'));
@@ -235,9 +220,6 @@ class RouterController extends Controller
      */
     public function testConnection(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -257,9 +239,6 @@ class RouterController extends Controller
      */
     public function getSystemInfo(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -279,9 +258,6 @@ class RouterController extends Controller
      */
     public function getInterfaces(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -301,9 +277,6 @@ class RouterController extends Controller
      */
     public function reboot(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -328,9 +301,6 @@ class RouterController extends Controller
      */
     public function backup(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -355,9 +325,6 @@ class RouterController extends Controller
      */
     public function getConfig(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -382,9 +349,6 @@ class RouterController extends Controller
      */
     public function getAllStatuses()
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         $routers = Router::all();
         $mikrotikService = app(MikroTikService::class);
@@ -450,9 +414,6 @@ class RouterController extends Controller
      */
     public function configurePortal(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -478,9 +439,6 @@ class RouterController extends Controller
      */
     public function setupHotspot(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -506,9 +464,6 @@ class RouterController extends Controller
      */
     public function syncPackageProfiles(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         $mikrotikService = app(MikroTikService::class);
         $result = $mikrotikService->syncPackageProfiles($router);
@@ -526,9 +481,6 @@ class RouterController extends Controller
      */
     public function syncHotspotInfo(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         $mikrotikService = app(MikroTikService::class);
         $hotspotResult = $mikrotikService->testHotspotService($router);
@@ -562,9 +514,6 @@ class RouterController extends Controller
      */
     public function downloadHotspotFiles(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return redirect('/');
-        }
 
         $generator = new HotspotFileGeneratorService();
         $zipPath = $generator->generateZip($router);
@@ -580,9 +529,6 @@ class RouterController extends Controller
      */
     public function uploadHotspotFiles(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $service = new MikroTikService();
@@ -599,9 +545,6 @@ class RouterController extends Controller
      */
     public function applyWalledGarden(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -629,8 +572,6 @@ class RouterController extends Controller
                 parse_url(config('app.url'), PHP_URL_HOST),
                 'fonts.googleapis.com',
                 'fonts.gstatic.com',
-                'matunet.net',
-                '*.matunet.net',
                 '*.sterkedigital.com',
                 '*.vintextechnologies.com',
                 // OS captive portal detection endpoints
@@ -640,8 +581,12 @@ class RouterController extends Controller
                 'detectportal.firefox.com',
             ];
             
-            $allDomains = array_merge($predefinedDomains, $domains);
-            
+            $allDomains = array_values(array_unique(array_filter(
+                array_merge($predefinedDomains, $domains),
+                fn($d) => !empty($d)
+            )));
+            $ips = array_values(array_unique(array_filter($ips, fn($ip) => !empty($ip))));
+
             if ($mikrotikService->applyWalledGarden($router, $allDomains, $ips)) {
                 return response()->json([
                     'success' => true,
@@ -718,9 +663,6 @@ class RouterController extends Controller
      */
     public function getTrafficStats(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -740,9 +682,6 @@ class RouterController extends Controller
      */
     public function getHealth(Router $router)
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         try {
             $mikrotikService = app(MikroTikService::class);
@@ -762,9 +701,6 @@ class RouterController extends Controller
      */
     public function getAllTrafficStats()
     {
-        if (!auth()->user()->isAdmin()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
 
         $routers = Router::where('is_active', true)->get();
         $mikrotikService = app(MikroTikService::class);

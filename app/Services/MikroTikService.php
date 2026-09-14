@@ -487,20 +487,10 @@ class MikroTikService
             $profileData['rate-limit'] = $rateLimit;
         }
 
-        $limitBytes = $this->parseDataCapToBytes($package->data_cap);
-        if ($limitBytes) {
-            $profileData['limit-bytes-total'] = (string) $limitBytes;
-        }
-
-        Log::info('Sending profile data to router', [
+        Log::info('Creating hotspot user profile on router', [
             'profile_name' => $profileName,
             'package_id' => $package->id,
             'rate_limit' => $rateLimit,
-            'bandwidth_upload' => $package->bandwidth_upload,
-            'bandwidth_download' => $package->bandwidth_download,
-            'data_cap' => $package->data_cap,
-            'limit_bytes_total' => $limitBytes,
-            'profile_data' => $profileData,
         ]);
 
         $sharedUsers = $this->formatSharedUsers($package->shared_users ?? null);
@@ -548,11 +538,6 @@ class MikroTikService
         $rateLimit = $this->formatRateLimit($package);
         if ($rateLimit) {
             $profileData['rate-limit'] = $rateLimit;
-        }
-
-        $limitBytes = $this->parseDataCapToBytes($package->data_cap);
-        if ($limitBytes) {
-            $profileData['limit-bytes-total'] = (string) $limitBytes;
         }
 
         $sharedUsers = $this->formatSharedUsers($package->shared_users ?? null);
@@ -1192,11 +1177,6 @@ class MikroTikService
 
                     if (!$hasUsedData) {
                         // User hasn't logged in yet — skip, don't expire
-                        Log::info('Sync: session not active on router but no data used (user not logged in yet), skipping', [
-                            'session_id' => $session->session_id,
-                            'username' => $username,
-                            'router_id' => $router->id,
-                        ]);
                         continue;
                     }
 
@@ -1437,21 +1417,24 @@ class MikroTikService
                 ];
             }
             
-            $query = new Query('/ip/hotspot/walled-garden/print');
-            $entries = $client->query($query)->read();
-            
+            $apiHost = parse_url(rtrim(config('app.url'), '/'), PHP_URL_HOST);
+
             $domains = [];
             $ips = [];
             $hasApiHost = false;
-            $apiHost = parse_url(rtrim(config('app.url'), '/'), PHP_URL_HOST);
-            
-            foreach ($entries as $entry) {
+
+            $hostEntries = $client->query(new Query('/ip/hotspot/walled-garden/print'))->read();
+            foreach ($hostEntries as $entry) {
                 if (!empty($entry['dst-host'])) {
                     $domains[] = $entry['dst-host'];
                     if ($apiHost && str_contains($entry['dst-host'], $apiHost)) {
                         $hasApiHost = true;
                     }
                 }
+            }
+
+            $ipEntries = $client->query(new Query('/ip/hotspot/walled-garden/ip/print'))->read();
+            foreach ($ipEntries as $entry) {
                 if (!empty($entry['dst-address'])) {
                     $ips[] = $entry['dst-address'];
                 }
@@ -1540,8 +1523,11 @@ class MikroTikService
                 if (empty($existingEntries)) {
                     $addGardenQuery = new Query('/ip/hotspot/walled-garden/add');
                     $addGardenQuery->equal('dst-host', $host);
-                    $addGardenQuery->equal('action', 'accept');
-                    $client->query($addGardenQuery)->read();
+                    $response = $client->query($addGardenQuery)->read();
+
+                    if ($this->responseHasError($response)) {
+                        throw new Exception("Router rejected walled garden host {$host}: " . $this->responseErrorMessage($response));
+                    }
                 }
             }
 
@@ -1772,68 +1758,151 @@ class MikroTikService
                 return false;
             }
 
-            // Get existing walled garden entries
-            $query = new Query('/ip/hotspot/walled-garden/print');
-            $entries = $client->query($query)->read();
-
+            // Get existing walled garden entries from both host and IP menus
             $existingDomains = [];
             $existingIps = [];
-            $entriesById = [];
 
-            foreach ($entries as $entry) {
-                $id = $entry['.id'] ?? null;
-                $dstHost = $entry['dst-host'] ?? null;
-                $dstAddr = $entry['dst-address'] ?? null;
-
-                if ($dstHost) {
-                    $existingDomains[$dstHost] = $id;
+            $hostEntries = $client->query(new Query('/ip/hotspot/walled-garden/print'))->read();
+            foreach ($hostEntries as $entry) {
+                if (!empty($entry['dst-host'])) {
+                    $existingDomains[$entry['dst-host']] = $entry['.id'] ?? null;
                 }
-                if ($dstAddr) {
-                    $existingIps[$dstAddr] = $id;
-                }
-                $entriesById[$id] = $entry;
             }
+
+            $ipEntries = $client->query(new Query('/ip/hotspot/walled-garden/ip/print'))->read();
+            foreach ($ipEntries as $entry) {
+                if (!empty($entry['dst-address'])) {
+                    $existingIps[$entry['dst-address']] = $entry['.id'] ?? null;
+                }
+            }
+
+            $desiredDomains = array_values(array_filter($domains, fn($d) => !empty($d)));
+            $desiredIps = array_values(array_filter($ips, fn($i) => !empty($i)));
+
+            $addedDomains = 0;
+            $addedIps = 0;
+            $errors = [];
 
             // Add missing domain entries
-            $desiredDomains = array_filter($domains, fn($d) => !empty($d));
             foreach ($desiredDomains as $domain) {
-                if (!isset($existingDomains[$domain])) {
-                    $addQuery = new Query('/ip/hotspot/walled-garden/add');
-                    $addQuery->equal('dst-host', $domain);
-                    $addQuery->equal('action', 'accept');
-                    $client->query($addQuery)->read();
+                if (isset($existingDomains[$domain])) {
+                    continue;
                 }
+
+                $addQuery = new Query('/ip/hotspot/walled-garden/add');
+                $addQuery->equal('dst-host', $domain);
+                $response = $client->query($addQuery)->read();
+
+                if ($this->responseHasError($response)) {
+                    $errors[] = "Failed to add domain {$domain}: " . $this->responseErrorMessage($response);
+                    continue;
+                }
+
+                $addedDomains++;
             }
 
-            // Add missing IP entries
-            $desiredIps = array_filter($ips, fn($i) => !empty($i));
+            // Add missing IP entries under the dedicated IP walled-garden menu
             foreach ($desiredIps as $ip) {
-                if (!isset($existingIps[$ip])) {
-                    $addQuery = new Query('/ip/hotspot/walled-garden/add');
-                    $addQuery->equal('dst-address', $ip);
-                    $addQuery->equal('action', 'accept');
-                    $client->query($addQuery)->read();
+                if (isset($existingIps[$ip])) {
+                    continue;
                 }
+
+                $addQuery = new Query('/ip/hotspot/walled-garden/ip/add');
+                $addQuery->equal('dst-address', $ip);
+                $response = $client->query($addQuery)->read();
+
+                if ($this->responseHasError($response)) {
+                    $errors[] = "Failed to add IP {$ip}: " . $this->responseErrorMessage($response);
+                    continue;
+                }
+
+                $addedIps++;
+            }
+
+            // Verify entries were actually persisted
+            $verifyDomains = $client->query(new Query('/ip/hotspot/walled-garden/print'))->read();
+            $verifyIps = $client->query(new Query('/ip/hotspot/walled-garden/ip/print'))->read();
+            $persistedDomains = array_filter(array_column($verifyDomains, 'dst-host'));
+            $persistedIps = array_filter(array_column($verifyIps, 'dst-address'));
+            $missingDomains = array_diff($desiredDomains, $persistedDomains);
+            $missingIps = array_diff($desiredIps, $persistedIps);
+
+            if (!empty($missingDomains) || !empty($missingIps)) {
+                $errors[] = 'Entries missing after apply. Missing domains: ' . implode(', ', $missingDomains) .
+                            '; Missing IPs: ' . implode(', ', $missingIps);
+            }
+
+            if (!empty($errors)) {
+                throw new Exception(implode(' | ', $errors));
             }
 
             Log::info('Walled garden applied to router (idempotent)', [
                 'router_id' => $router->id,
                 'domains_count' => count($desiredDomains),
                 'ips_count' => count($desiredIps),
-                'domains_added' => count(array_diff($desiredDomains, array_keys($existingDomains))),
-                'ips_added' => count(array_diff($desiredIps, array_keys($existingIps))),
+                'domains_added' => $addedDomains,
+                'ips_added' => $addedIps,
             ]);
-            
+
             return true;
-            
+
         } catch (Exception $e) {
             Log::error('Failed to apply walled garden to router', [
                 'router_id' => $router->id,
                 'error' => $e->getMessage()
             ]);
-            
+
             return false;
         }
+    }
+
+    /**
+     * Determine whether a RouterOS API response contains an error/trap.
+     */
+    private function responseHasError($response): bool
+    {
+        if (!is_array($response) || empty($response)) {
+            return true;
+        }
+
+        if (isset($response['after']['message'])) {
+            return true;
+        }
+
+        foreach ($response as $item) {
+            if (is_array($item) && (isset($item['message']) || isset($item['after']['message']))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Extract the error message from a RouterOS API response.
+     */
+    private function responseErrorMessage($response): string
+    {
+        if (!is_array($response)) {
+            return 'Invalid response from router';
+        }
+
+        if (isset($response['after']['message'])) {
+            return $response['after']['message'];
+        }
+
+        foreach ($response as $item) {
+            if (is_array($item)) {
+                if (isset($item['after']['message'])) {
+                    return $item['after']['message'];
+                }
+                if (isset($item['message'])) {
+                    return $item['message'];
+                }
+            }
+        }
+
+        return 'Unknown router API error';
     }
 
     /**

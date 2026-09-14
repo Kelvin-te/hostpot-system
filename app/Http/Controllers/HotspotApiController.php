@@ -173,8 +173,10 @@ class HotspotApiController extends Controller
             return $packages;
         }
 
-        // Get the IDs of free packages this device has already used
+        // Get the IDs of free packages this device has already used.
+        // Provisioning failures don't count as actual use — the user never got online.
         $usedFreePackageIds = HotspotSession::where('mac_address', $macAddress)
+            ->where('status', '!=', 'provisioning_failed')
             ->whereHas('package', function ($q) {
                 $q->where('price', 0);
             })
@@ -228,11 +230,13 @@ class HotspotApiController extends Controller
 
         $this->prepareRequest($request);
 
-        // Prevent the same device from claiming the same free package more than once
+        // Prevent the same device from claiming the same free package more than once,
+        // but allow a retry if the only existing record is a failed provisioning attempt.
         $macAddress = $this->deviceService->getMacAddress($request);
         if ($macAddress) {
             $hasUsedThisPackage = HotspotSession::where('mac_address', $macAddress)
                 ->where('package_id', $package->id)
+                ->where('status', '!=', 'provisioning_failed')
                 ->exists();
 
             if ($hasUsedThisPackage) {
@@ -241,6 +245,12 @@ class HotspotApiController extends Controller
                     'message' => 'You have already used this free package on this device.',
                 ]);
             }
+
+            // Clean up stale failed provisioning attempts so the retry starts fresh
+            HotspotSession::where('mac_address', $macAddress)
+                ->where('package_id', $package->id)
+                ->where('status', 'provisioning_failed')
+                ->delete();
         }
 
         try {
@@ -251,6 +261,21 @@ class HotspotApiController extends Controller
                 $this->deviceService->getStableClientIdentifier($request),
                 null
             );
+
+            // If the router could not create the hotspot user/profile, the session is
+            // unusable. Don't tell the user it succeeded and send them to a login
+            // that will fail.
+            if ($session->status === 'provisioning_failed') {
+                Log::warning('Hotspot API: Free package provisioning failed', [
+                    'session_id' => $session->session_id,
+                    'package_id' => $package->id,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Activation failed. Please try again.',
+                ]);
+            }
 
             $authorization = $session->authorization;
 

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Router;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class RouterIdentificationService
 {
@@ -22,28 +21,12 @@ class RouterIdentificationService
         }
 
         if (!$identifier) {
-            Log::info('HOTSPOT_FLOW_TRACE', [
-                'stage' => 'RouterIdentificationService::resolveRouter:no_identifier',
-                'path' => $request->path(),
-                'query_params' => $request->query(),
-            ]);
-
             return null;
         }
 
         $router = Router::where('identifier', $identifier)->first();
 
-        if (!$router) {
-            Log::info('HOTSPOT_FLOW_TRACE', [
-                'stage' => 'RouterIdentificationService::resolveRouter:identifier_not_found',
-                'path' => $request->path(),
-                'identifier_source' => $source,
-            ]);
-
-            return null;
-        }
-
-        if (!$router->is_active) {
+        if (!$router || !$router->is_active) {
             return null;
         }
 
@@ -53,24 +36,10 @@ class RouterIdentificationService
         // so a stale session is never reused.
         $sessionIdentifier = session('hotspot_router_identifier');
         if ($sessionIdentifier && $sessionIdentifier !== $identifier) {
-            Log::info('HOTSPOT_FLOW_TRACE', [
-                'stage' => 'RouterIdentificationService::resolveRouter:identifier_changed_clearing_stale_session',
-                'path' => $request->path(),
-                'old_identifier' => $sessionIdentifier,
-                'new_identifier' => $identifier,
-            ]);
-
             session()->forget('hotspot_session_token');
         }
 
         session(['hotspot_router_identifier' => $identifier]);
-
-        Log::info('HOTSPOT_FLOW_TRACE', [
-            'stage' => 'RouterIdentificationService::resolveRouter:resolved',
-            'path' => $request->path(),
-            'router_id' => $router->id,
-            'identifier_source' => $source,
-        ]);
 
         return $router;
     }
@@ -84,10 +53,6 @@ class RouterIdentificationService
         session()->forget([
             'hotspot_router_identifier',
             'hotspot_session_token',
-        ]);
-
-        Log::info('HOTSPOT_FLOW_TRACE', [
-            'stage' => 'RouterIdentificationService::clearSessionState',
         ]);
     }
 

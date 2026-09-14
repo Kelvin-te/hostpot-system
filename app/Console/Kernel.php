@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('session:enforce-expiry')->everyMinute();
-        $schedule->command('sessions:sync')->everyFiveMinutes();
+        $schedule->command('sessions:sync')->everyMinute();
         $schedule->command('session:send-expiry-alerts')->everyFiveMinutes();
         $schedule->command('wallet:check-auto-renewals')->everyFiveMinutes();
         $schedule->command('packages:sync-profiles')->everyFifteenMinutes();

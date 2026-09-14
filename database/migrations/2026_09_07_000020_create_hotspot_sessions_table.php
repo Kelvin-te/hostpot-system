@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('hotspot_sessions', function (Blueprint $table) {
+            $table->id();
+            $table->string('mac_address')->nullable()->index();
+            $table->string('ip_address')->nullable();
+            $table->text('user_agent')->nullable();
+            $table->string('device_fingerprint')->nullable()->index();
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
+            $table->foreignId('authorization_id')->nullable()->constrained('hotspot_authorizations')->onDelete('set null');
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('username')->nullable();
+            $table->string('mikrotik_username')->nullable();
+            $table->string('mikrotik_password')->nullable();
+            $table->string('mikrotik_profile')->nullable();
+            $table->string('session_id')->unique();
+            $table->timestamp('started_at');
+            $table->timestamp('expires_at')->index();
+            $table->unsignedBigInteger('bytes_uploaded')->default(0);
+            $table->unsignedBigInteger('bytes_downloaded')->default(0);
+            $table->unsignedBigInteger('bytes_total')->default(0);
+            $table->enum('status', ['active', 'disconnected', 'expired', 'blocked', 'paused', 'provisioning_failed'])->default('active')->index();
+            $table->json('mikrotik_data')->nullable();
+            $table->timestamps();
+
+            $table->index(['mac_address', 'status']);
+            $table->index(['expires_at', 'status']);
+            $table->index(['session_id', 'status']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('hotspot_sessions');
+    }
+};

@@ -99,10 +99,6 @@ class SessionExpiryService
             || !empty($session->mikrotik_data['uptime_seconds']);
 
         if (!$hasUsedData) {
-            Log::info('SessionExpiryService: skipping disconnect — user has not logged in yet', [
-                'session_id' => $session->session_id,
-                'user_id' => $session->user_id,
-            ]);
             return 'skipped';
         }
 
