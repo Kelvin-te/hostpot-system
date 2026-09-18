@@ -148,7 +148,7 @@ class HotspotSessionService
             throw new ActiveSessionConflictException($existing);
         }
 
-        // Create authorization first
+        // Create authorization first (reuses existing if applicable)
         $authorization = $this->authorizationService->createFromPackage(
             $package,
             $user,
@@ -156,6 +156,15 @@ class HotspotSessionService
             $deviceInfo['mac_address'] ?? null,
             $paymentTransactionId
         );
+
+        // Enforce simultaneous_sessions limit for multi-device packages
+        $activeSessionCount = $authorization->sessions()->active()->count();
+        if ($activeSessionCount >= $authorization->simultaneous_sessions) {
+            throw new ActiveSessionConflictException(
+                $authorization->sessions()->active()->first(),
+                "Maximum concurrent sessions ({$authorization->simultaneous_sessions}) reached for this package"
+            );
+        }
 
         // Calculate expiry time — always recalculate from the package to
         // ensure the timezone is correct. The authorization's expires_at
@@ -237,38 +246,64 @@ class HotspotSessionService
 
         // Check if voucher is already used
         if ($voucher->isUsed()) {
-            // Voucher already used, but check if it's the same device
             $deviceFingerprint = $this->deviceService->generateDeviceFingerprint($request);
             $existingSession = $voucher->session;
-            
-            if ($existingSession && $existingSession->device_fingerprint === $deviceFingerprint) {
-                // Same device — return the session if it's still active
-                if ($existingSession->isActive()) {
-                    return $existingSession;
+
+            // Multi-device packages: allow reuse on different devices
+            if ($targetPackage->shared_users > 1) {
+                // Check if this authorization has reached its simultaneous_sessions limit
+                if ($existingSession && $existingSession->authorization) {
+                    $activeSessionCount = $existingSession->authorization->sessions()->active()->count();
+                    if ($activeSessionCount >= $targetPackage->shared_users) {
+                        return null; // Limit reached
+                    }
                 }
-                
-                // If the session was disconnected but still has valid time,
-                // reactivate it so the user can continue using remaining time.
-                if ($existingSession->isReconnectable()) {
-                    return $this->reactivateSession($request, $existingSession);
-                }
-                
-                // Session is truly expired (time ran out) — fall through to
-                // create a new session if the voucher is still valid.
+                // Allow creating a new session on a different device
             } else {
-                return null; // Different device, voucher already used
+                // Single-device package: only allow same device
+                if ($existingSession && $existingSession->device_fingerprint === $deviceFingerprint) {
+                    // Same device — return the session if it's still active
+                    if ($existingSession->isActive()) {
+                        return $existingSession;
+                    }
+
+                    // If the session was disconnected but still has valid time,
+                    // reactivate it so the user can continue using remaining time.
+                    if ($existingSession->isReconnectable()) {
+                        return $this->reactivateSession($request, $existingSession);
+                    }
+
+                    // Session is truly expired (time ran out) — fall through to
+                    // create a new session if the voucher is still valid.
+                } else {
+                    return null; // Different device, single-use voucher
+                }
             }
         }
 
         // Get device info
         $deviceInfo = $this->deviceService->getDeviceInfo($request);
 
-        // Create authorization first
-        $authorization = $this->authorizationService->createFromVoucher(
-            $voucher,
-            $deviceInfo['mac_address'] ?? null,
-            $targetPackage
-        );
+        // For multi-device vouchers, reuse existing authorization if voucher is already used
+        if ($voucher->isUsed() && $targetPackage->shared_users > 1 && $existingSession && $existingSession->authorization) {
+            $authorization = $existingSession->authorization;
+        } else {
+            // Create authorization first
+            $authorization = $this->authorizationService->createFromVoucher(
+                $voucher,
+                $deviceInfo['mac_address'] ?? null,
+                $targetPackage
+            );
+        }
+
+        // Enforce simultaneous_sessions limit for multi-device packages
+        $activeSessionCount = $authorization->sessions()->active()->count();
+        if ($activeSessionCount >= $authorization->simultaneous_sessions) {
+            throw new ActiveSessionConflictException(
+                $authorization->sessions()->active()->first(),
+                "Maximum concurrent sessions ({$authorization->simultaneous_sessions}) reached for this voucher"
+            );
+        }
 
         // Create session from authorization
         $sessionData = [
@@ -284,12 +319,14 @@ class HotspotSessionService
 
         $session = HotspotSession::createSession($sessionData);
 
-        // Mark voucher as used
-        $voucher->markAsUsed(
-            $deviceInfo['mac_address'] ?? 'unknown',
-            $deviceInfo['ip_address'],
-            $session->id
-        );
+        // Mark voucher as used (only if not already used)
+        if (!$voucher->isUsed()) {
+            $voucher->markAsUsed(
+                $deviceInfo['mac_address'] ?? 'unknown',
+                $deviceInfo['ip_address'],
+                $session->id
+            );
+        }
 
         // Create hotspot user on router via API
         $this->mikroTikService->createHotspotSession($session);

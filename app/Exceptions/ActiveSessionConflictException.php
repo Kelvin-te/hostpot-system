@@ -14,10 +14,10 @@ class ActiveSessionConflictException extends Exception
 {
     public HotspotSession $existingSession;
 
-    public function __construct(HotspotSession $existingSession)
+    public function __construct(HotspotSession $existingSession, string $message = 'Device already has an active session on a different package.')
     {
         $this->existingSession = $existingSession;
 
-        parent::__construct('Device already has an active session on a different package.');
+        parent::__construct($message);
     }
 }
