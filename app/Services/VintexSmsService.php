@@ -19,15 +19,25 @@ class VintexSmsService
     public function __construct()
     {
         $this->apiUrl = config('services.vintex.api_url', 'https://sms.vintextechnologies.com/api/sendMessage');
-        $this->email = config('services.vintex.email');
-        $this->bearerToken = config('services.vintex.bearer_token');
 
-        // Load company details from Settings table (graceful fallback if table doesn't exist)
+        // Load settings from Settings table (graceful fallback if table doesn't exist)
         $settings = null;
         try {
             $settings = \App\Models\Setting::first();
         } catch (Exception $e) {
             // Settings table might not exist during migrations or tests
+        }
+
+        // Email and Bearer Token: check Setting.sms_api_key first, fall back to config
+        // Note: sms_api_key stores both email and bearer token in format "email|bearer_token"
+        $settingApiKey = $settings?->sms_api_key;
+        if (!empty($settingApiKey) && str_contains($settingApiKey, '|')) {
+            [$email, $token] = explode('|', $settingApiKey, 2);
+            $this->email = trim($email);
+            $this->bearerToken = trim($token);
+        } else {
+            $this->email = config('services.vintex.email');
+            $this->bearerToken = config('services.vintex.bearer_token');
         }
 
         // Sender ID: check Setting.sms_sender_id first, fall back to config

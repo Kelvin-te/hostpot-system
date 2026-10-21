@@ -13,16 +13,51 @@ class MpesaService
     protected $consumerKey;
     protected $consumerSecret;
     protected $shortcode;
+    protected $tillNumber;
     protected $passkey;
     protected $callbackUrl;
+    protected $mpesaType;
 
     public function __construct()
     {
-        $this->consumerKey = config('mpesa.consumer_key');
-        $this->consumerSecret = config('mpesa.consumer_secret');
-        $this->shortcode = config('mpesa.shortcode');
-        $this->passkey = config('mpesa.passkey');
+        // Prioritize database settings over env vars
+        $settings = \App\Models\Setting::first();
+
+        $this->consumerKey = $settings && !empty($settings->mpesa_consumer_key) 
+            ? $settings->mpesa_consumer_key 
+            : config('mpesa.consumer_key');
+        
+        $this->consumerSecret = $settings && !empty($settings->mpesa_consumer_secret) 
+            ? $settings->mpesa_consumer_secret 
+            : config('mpesa.consumer_secret');
+        
+        $this->shortcode = $settings && !empty($settings->mpesa_shortcode)
+            ? $settings->mpesa_shortcode
+            : config('mpesa.shortcode');
+
+        $this->tillNumber = $settings && !empty($settings->mpesa_till_number)
+            ? $settings->mpesa_till_number
+            : null;
+
+        $this->passkey = $settings && !empty($settings->mpesa_passkey)
+            ? $settings->mpesa_passkey
+            : config('mpesa.passkey');
+
         $this->callbackUrl = config('mpesa.callback_url');
+
+        $this->mpesaType = $settings && !empty($settings->mpesa_type)
+            ? $settings->mpesa_type
+            : 'paybill';
+
+        Log::info('M-Pesa Service initialized', [
+            'source' => $settings && !empty($settings->mpesa_consumer_key) ? 'database' : 'config',
+            'shortcode' => $this->shortcode,
+            'till_number' => $this->tillNumber,
+            'consumer_key_prefix' => substr($this->consumerKey, 0, 10) . '...',
+            'passkey_set' => !empty($this->passkey),
+            'mpesa_type' => $this->mpesaType,
+            'callback_url' => $this->callbackUrl,
+        ]);
     }
 
     /**
@@ -105,20 +140,32 @@ class MpesaService
 
             // Generate timestamp
             $timestamp = date('YmdHis');
-            
-            // Generate password
+
+            // Generate password - use shortcode for both paybill and buygoods
             $password = base64_encode($this->shortcode . $this->passkey . $timestamp);
 
             $url = config('mpesa.urls.stk_push');
 
+            // Determine TransactionType based on M-Pesa type
+            $transactionType = $this->mpesaType === 'buygoods'
+                ? 'CustomerBuyGoodsOnline'
+                : 'CustomerPayBillOnline';
+
+            // For Buy Goods, use Shortcode as BusinessShortCode and Till Number as PartyB
+            $businessShortCode = $this->shortcode;
+
+            $partyB = $this->mpesaType === 'buygoods' && $this->tillNumber
+                ? $this->tillNumber
+                : $this->shortcode;
+
             $requestData = [
-                'BusinessShortCode' => $this->shortcode,
+                'BusinessShortCode' => $businessShortCode,
                 'Password' => $password,
                 'Timestamp' => $timestamp,
-                'TransactionType' => 'CustomerPayBillOnline',
+                'TransactionType' => $transactionType,
                 'Amount' => (int) $amount,
                 'PartyA' => $formattedPhone,
-                'PartyB' => $this->shortcode,
+                'PartyB' => $partyB,
                 'PhoneNumber' => $formattedPhone,
                 'CallBackURL' => $this->callbackUrl,
                 'AccountReference' => $accountReference,

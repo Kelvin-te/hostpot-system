@@ -18,7 +18,7 @@ class PaymentTable extends DataTableComponent
 
     public function builder(): Builder
     {
-        return PaymentTransaction::query()->with(['user', 'package', 'router']);
+        return PaymentTransaction::query()->with(['user', 'package', 'router'])->latest();
     }
 
     public function columns(): array
@@ -60,7 +60,8 @@ class PaymentTable extends DataTableComponent
                 ->html(),
             LinkColumn::make('Action')
                 ->title(fn($row) => 'Download')
-                ->location(fn($row) => route('invoice.download', ['row' => $row->id])),
+                ->location(fn($row) => $row->id ? route('invoice.download', ['row' => $row->id]) : '#')
+                ->attributes(fn($row) => $row->id ? [] : ['class' => 'pointer-events-none opacity-50']),
         ];
     }
 }

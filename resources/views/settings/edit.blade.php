@@ -1,30 +1,85 @@
 <x-app-layout>
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-4 sm:p-8">
-                    @if(session('success'))
-                        <div class="alert alert-success text-gray-400">
-                            {{ session('success') }}
+                <div class="flex">
+                    <!-- Side Navigation -->
+                    <div class="w-64 bg-gray-50 border-r border-gray-200 flex-shrink-0 hidden lg:block">
+                        <div class="p-6 sticky top-6">
+                            <h2 class="font-semibold text-lg text-gray-800 mb-4">{{ __('Settings') }}</h2>
+                            <nav class="space-y-1">
+                                <a href="#section-isp" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('ISP Information') }}
+                                </a>
+                                <a href="#section-app" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Application Settings') }}
+                                </a>
+                                <a href="#section-walled-garden" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Walled Garden') }}
+                                </a>
+                                <a href="#section-billing" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Billing Settings') }}
+                                </a>
+                                <a href="#section-sms" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('SMS Settings') }}
+                                </a>
+                                <a href="#section-payment" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Payment Gateway') }}
+                                </a>
+                                <a href="#section-email" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Email Settings') }}
+                                </a>
+                                <a href="#section-security" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Security Settings') }}
+                                </a>
+                                <a href="#section-support" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Support/Contact') }}
+                                </a>
+                                <a href="#section-free-package" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Free Package') }}
+                                </a>
+                                <a href="#section-invoice" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Invoice Settings') }}
+                                </a>
+                                <a href="#section-branding" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Branding') }}
+                                </a>
+                                <a href="#section-backup" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                    {{ __('Backup Settings') }}
+                                </a>
+                            </nav>
                         </div>
-                    @endif
+                    </div>
 
-                    @if(session('error'))
-                        <div class="alert alert-danger text-red-600">
-                            {{ session('error') }}
-                        </div>
-                    @endif
+                    <!-- Main Content -->
+                    <div class="flex-1 p-4 sm:p-8">
+                        @if(session('success'))
+                            <div class="alert alert-success text-gray-400 mb-4">
+                                {{ session('success') }}
+                            </div>
+                        @endif
 
-                        <h2 class="font-semibold text-xl text-gray-800 leading-tight border-b-2 border-slate-100 pb-4">
+                        @if(session('error'))
+                            <div class="alert alert-danger text-red-600 mb-4">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
+                        <h2 class="font-semibold text-xl text-gray-800 leading-tight border-b-2 border-slate-100 pb-4 mb-6">
                             {{ __('Application Settings') }}
                         </h2>
 
-                    <form method="post" action="{{ route('settings.update') }}" class="mt-6 space-y-6">
-                        @csrf
-                        @method('patch')
+                        <form method="post" action="{{ route('settings.update') }}" class="space-y-6">
+                            @csrf
+                            @method('patch')
 
                         <!-- Company Information Section -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div id="section-isp" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('ISP Information') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Update your company information.") }}</p>
@@ -60,7 +115,7 @@
                         <hr class="my-6">
 
                         <!-- Application Settings Section -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div id="section-app" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('Application Settings') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Configure global application settings.") }}</p>
@@ -90,7 +145,7 @@
                         <hr class="my-6">
 
                         <!-- Walled Garden Settings Section -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div id="section-walled-garden" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('Walled Garden Settings') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Configure walled garden for captive portal.") }}</p>
@@ -159,8 +214,9 @@
 
                             <div>
                                 <div>
-                                    <x-input-label for="sms_api_key" value="{{ __('SMS API Key') }}" class="mt-4"></x-input-label>
-                                    <x-text-input id="sms_api_key" name="sms_api_key" type="text" class="mt-1 block w-full" value="{{ old('sms_api_key', $settings->sms_api_key ?? '') }}"></x-text-input>
+                                    <x-input-label for="sms_api_key" value="{{ __('SMS API Key (Email|BearerToken)') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="sms_api_key" name="sms_api_key" type="text" class="mt-1 block w-full" value="{{ old('sms_api_key', $settings->sms_api_key ?? '') }}" placeholder="your@email.com|your_bearer_token"></x-text-input>
+                                    <p class="mt-1 text-xs text-gray-500">{{ __('Format: email|bearer_token (separated by pipe |)') }}</p>
                                     <x-input-error class="mt-2" :messages="$errors->get('sms_api_key')"></x-input-error>
                                 </div>
 
@@ -187,13 +243,19 @@
                                     </select>
                                     <x-input-error class="mt-2" :messages="$errors->get('expiry_warnings_enabled')"></x-input-error>
                                 </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <a href="{{ route('settings.test-sms') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-medium text-sm text-gray-700 hover:bg-gray-200">
+                                        {{ __('Test SMS Configuration') }}
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
                         <hr class="my-6">
 
                         <!-- Payment Gateway Settings Section -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div id="section-payment" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('Payment Gateway Settings') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Configure payment gateway credentials.") }}</p>
@@ -201,13 +263,19 @@
 
                             <div>
                                 <div>
-                                    <x-input-label for="mpesa_api_key" value="{{ __('M-Pesa API Key') }}" class="mt-4"></x-input-label>
-                                    <x-text-input id="mpesa_api_key" name="mpesa_api_key" type="text" class="mt-1 block w-full" value="{{ old('mpesa_api_key', $settings->mpesa_api_key ?? '') }}"></x-text-input>
-                                    <x-input-error class="mt-2" :messages="$errors->get('mpesa_api_key')"></x-input-error>
+                                    <x-input-label for="mpesa_consumer_key" value="{{ __('M-Pesa Consumer Key') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="mpesa_consumer_key" name="mpesa_consumer_key" type="text" class="mt-1 block w-full" value="{{ old('mpesa_consumer_key', $settings->mpesa_consumer_key ?? '') }}"></x-text-input>
+                                    <x-input-error class="mt-2" :messages="$errors->get('mpesa_consumer_key')"></x-input-error>
                                 </div>
 
                                 <div>
-                                    <x-input-label for="mpesa_shortcode" value="{{ __('M-Pesa Shortcode') }}" class="mt-4"></x-input-label>
+                                    <x-input-label for="mpesa_consumer_secret" value="{{ __('M-Pesa Consumer Secret') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="mpesa_consumer_secret" name="mpesa_consumer_secret" type="password" class="mt-1 block w-full" value="{{ old('mpesa_consumer_secret', $settings->mpesa_consumer_secret ?? '') }}"></x-text-input>
+                                    <x-input-error class="mt-2" :messages="$errors->get('mpesa_consumer_secret')"></x-input-error>
+                                </div>
+
+                                <div>
+                                    <x-input-label for="mpesa_shortcode" value="{{ __('M-Pesa Shortcode (Head Office Number for Buy Goods, Paybill Number for Paybill)') }}" class="mt-4"></x-input-label>
                                     <x-text-input id="mpesa_shortcode" name="mpesa_shortcode" type="text" class="mt-1 block w-full" value="{{ old('mpesa_shortcode', $settings->mpesa_shortcode ?? '') }}"></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('mpesa_shortcode')"></x-input-error>
                                 </div>
@@ -219,9 +287,31 @@
                                 </div>
 
                                 <div>
+                                    <x-input-label for="mpesa_type" value="{{ __('M-Pesa Type') }}" class="mt-4"></x-input-label>
+                                    <select id="mpesa_type" name="mpesa_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        <option value="paybill" {{ old('mpesa_type', $settings->mpesa_type ?? 'paybill') === 'paybill' ? 'selected' : '' }}>Paybill</option>
+                                        <option value="buygoods" {{ old('mpesa_type', $settings->mpesa_type ?? 'paybill') === 'buygoods' ? 'selected' : '' }}>Buy Goods Till Number</option>
+                                    </select>
+                                    <x-input-error class="mt-2" :messages="$errors->get('mpesa_type')"></x-input-error>
+                                </div>
+
+                                <div>
+                                    <x-input-label for="mpesa_till_number" value="{{ __('M-Pesa Till Number (Buy Goods only)') }}" class="mt-4"></x-input-label>
+                                    <x-text-input id="mpesa_till_number" name="mpesa_till_number" type="text" class="mt-1 block w-full" value="{{ old('mpesa_till_number', $settings->mpesa_till_number ?? '') }}" placeholder="Required for Buy Goods Till Numbers"></x-text-input>
+                                    <p class="mt-1 text-xs text-gray-500">The Till Number associated with your Buy Goods account. Required only when using Buy Goods Till Number.</p>
+                                    <x-input-error class="mt-2" :messages="$errors->get('mpesa_till_number')"></x-input-error>
+                                </div>
+
+                                <div>
                                     <x-input-label for="payment_timeout_minutes" value="{{ __('Payment Timeout (minutes)') }}" class="mt-4"></x-input-label>
                                     <x-text-input id="payment_timeout_minutes" name="payment_timeout_minutes" type="number" min="1" class="mt-1 block w-full" value="{{ old('payment_timeout_minutes', $settings->payment_timeout_minutes ?? 15) }}"></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('payment_timeout_minutes')"></x-input-error>
+                                </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <a href="{{ route('settings.test-mpesa') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-medium text-sm text-gray-700 hover:bg-gray-200">
+                                        {{ __('Test M-Pesa Configuration') }}
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -229,7 +319,7 @@
                         <hr class="my-6">
 
                         <!-- Email Settings Section -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div id="section-email" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('Email Settings') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Configure SMTP email settings.") }}</p>
@@ -265,13 +355,19 @@
                                     <x-text-input id="email_from_address" name="email_from_address" type="email" class="mt-1 block w-full" value="{{ old('email_from_address', $settings->email_from_address ?? '') }}"></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('email_from_address')"></x-input-error>
                                 </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <a href="{{ route('settings.test-email') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-medium text-sm text-gray-700 hover:bg-gray-200">
+                                        {{ __('Test Email Configuration') }}
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
                         <hr class="my-6">
 
                         <!-- Security Settings Section -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div id="section-security" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('Security Settings') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Configure security and password policies.") }}</p>
@@ -382,7 +478,7 @@
                         <hr class="my-6">
 
                         <!-- Invoice Settings Section -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div id="section-invoice" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-lg font-medium text-gray-900">{{ __('Invoice Settings') }}</h2>
                                 <p class="mt-1 text-sm text-gray-600">{{ __("Configure invoice generation and formatting.") }}</p>
@@ -471,6 +567,8 @@
                             <x-primary-button>{{ __('Save Settings') }}</x-primary-button>
                         </div>
                     </form>
+
+                    </div>
                 </div>
             </div>
         </div>

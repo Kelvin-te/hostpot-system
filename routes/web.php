@@ -92,6 +92,9 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
 
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings/test-sms', [SettingsController::class, 'testSms'])->name('settings.test-sms');
+    Route::get('/settings/test-mpesa', [SettingsController::class, 'testMpesa'])->name('settings.test-mpesa');
+    Route::get('/settings/test-email', [SettingsController::class, 'testEmail'])->name('settings.test-email');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

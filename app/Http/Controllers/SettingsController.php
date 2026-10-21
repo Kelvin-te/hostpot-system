@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Services\VintexSmsService;
+use App\Services\MpesaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class SettingsController extends Controller
 {
@@ -47,9 +51,12 @@ class SettingsController extends Controller
             'expiry_warnings_enabled' => 'nullable|boolean',
             
             // Payment Gateway Settings
-            'mpesa_api_key' => 'nullable|string',
+            'mpesa_consumer_key' => 'nullable|string',
+            'mpesa_consumer_secret' => 'nullable|string',
             'mpesa_shortcode' => 'nullable|string',
             'mpesa_passkey' => 'nullable|string',
+            'mpesa_type' => 'nullable|in:paybill,buygoods',
+            'mpesa_till_number' => 'nullable|string',
             'card_payment_gateway' => 'nullable|string',
             'card_payment_api_key' => 'nullable|string',
             'payment_timeout_minutes' => 'nullable|integer|min:1',
@@ -133,5 +140,106 @@ class SettingsController extends Controller
         $settings->save();
 
         return back()->with('success', __('Update successful'));
+    }
+
+    public function testSms()
+    {
+        $settings = Setting::first();
+        
+        if (!$settings || empty($settings->sms_api_key) || empty($settings->sms_sender_id)) {
+            return back()->with('error', __('SMS API key and Sender ID are required'));
+        }
+
+        if (empty($settings->support_phone)) {
+            return back()->with('error', __('Support phone number is required in settings to send test SMS'));
+        }
+
+        try {
+            $smsService = new VintexSmsService();
+            $result = $smsService->sendSms(
+                $settings->support_phone,
+                'This is a test message from your hotspot admin system. SMS configuration is working correctly.'
+            );
+
+            if ($result['success']) {
+                return back()->with('success', __('Test SMS sent successfully to ') . $settings->support_phone);
+            } else {
+                return back()->with('error', __('Failed to send test SMS: ') . $result['message']);
+            }
+        } catch (\Exception $e) {
+            Log::error('SMS test failed', ['error' => $e->getMessage()]);
+            return back()->with('error', __('SMS test failed: ') . $e->getMessage());
+        }
+    }
+
+    public function testMpesa()
+    {
+        $settings = Setting::first();
+        
+        if (!$settings || empty($settings->mpesa_consumer_key) || empty($settings->mpesa_consumer_secret) || empty($settings->mpesa_shortcode) || empty($settings->mpesa_passkey)) {
+            return back()->with('error', __('M-Pesa credentials (Consumer Key, Consumer Secret, Shortcode, and Passkey) are required'));
+        }
+
+        if (empty($settings->support_phone)) {
+            return back()->with('error', __('Support phone number is required in settings to send test payment'));
+        }
+
+        try {
+            $mpesaService = new MpesaService();
+            $result = $mpesaService->stkPush(
+                $settings->support_phone,
+                1.00,
+                'TEST-' . time(),
+                'Test payment from hotspot admin'
+            );
+
+            if ($result['success']) {
+                return back()->with('success', __('Test STK Push initiated to ') . $settings->support_phone . __('. Check your phone to complete the KES 1 payment.'));
+            } else {
+                return back()->with('error', __('Failed to initiate test payment: ') . $result['message']);
+            }
+        } catch (\Exception $e) {
+            Log::error('M-Pesa test failed', ['error' => $e->getMessage()]);
+            return back()->with('error', __('M-Pesa test failed: ') . $e->getMessage());
+        }
+    }
+
+    public function testEmail()
+    {
+        $settings = Setting::first();
+        
+        if (!$settings || empty($settings->smtp_host) || empty($settings->smtp_username) || empty($settings->smtp_password)) {
+            return back()->with('error', __('SMTP configuration (Host, Username, and Password) is required'));
+        }
+
+        $testEmail = $settings->support_email ?? $settings->email_from_address ?? $settings->smtp_username;
+        
+        if (empty($testEmail)) {
+            return back()->with('error', __('Support email or Email From Address is required in settings to send test email'));
+        }
+
+        try {
+            // Temporarily configure SMTP settings
+            config([
+                'mail.mailers.smtp.host' => $settings->smtp_host,
+                'mail.mailers.smtp.port' => $settings->smtp_port ?? 587,
+                'mail.mailers.smtp.username' => $settings->smtp_username,
+                'mail.mailers.smtp.password' => $settings->smtp_password,
+                'mail.mailers.smtp.encryption' => $settings->smtp_encryption ?? 'tls',
+                'mail.from.address' => $settings->email_from_address ?? $settings->smtp_username,
+                'mail.from.name' => $settings->email_from_name ?? config('app.name'),
+            ]);
+
+            Mail::raw('This is a test email from your hotspot admin system. Email configuration is working correctly.', function ($message) use ($testEmail, $settings) {
+                $message->to($testEmail)
+                    ->subject('Test Email - Hotspot Admin')
+                    ->from($settings->email_from_address ?? $settings->smtp_username, $settings->email_from_name ?? config('app.name'));
+            });
+
+            return back()->with('success', __('Test email sent successfully to ') . $testEmail);
+        } catch (\Exception $e) {
+            Log::error('Email test failed', ['error' => $e->getMessage()]);
+            return back()->with('error', __('Email test failed: ') . $e->getMessage());
+        }
     }
 }
