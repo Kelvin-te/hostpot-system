@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Scopes\BelongsToCompanyScope;
 
 /**
  * User
@@ -18,12 +19,19 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, Billable;
 
+    protected static function booted()
+    {
+        // Don't apply company scope to User model
+        // Users need to be queryable for authentication
+    }
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
+        'company_id',
         'name',
         'email',
         'phone',
@@ -106,6 +114,10 @@ class User extends Authenticatable
 
     public function router() {
         return $this->belongsTo(Router::class);
+    }
+
+    public function company() {
+        return $this->belongsTo(Company::class);
     }
 
     public function walletTransactions() {

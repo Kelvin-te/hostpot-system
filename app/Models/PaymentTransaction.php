@@ -11,6 +11,7 @@ class PaymentTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'company_id',
         'checkout_request_id',
         'merchant_request_id',
         'phone_number',
@@ -73,6 +74,14 @@ class PaymentTransaction extends Model
     public function router()
     {
         return $this->belongsTo(Router::class);
+    }
+
+    /**
+     * Get the company associated with this transaction
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

@@ -16,6 +16,7 @@ class Package extends Model
     use HasFactory;
 
     protected $fillable = [
+        'company_id',
         'name',
         'price',
         'router_id',
@@ -42,6 +43,10 @@ class Package extends Model
 
     public function router() {
         return $this->belongsTo(Router::class);
+    }
+
+    public function company() {
+        return $this->belongsTo(Company::class);
     }
 
     public function sessions() {

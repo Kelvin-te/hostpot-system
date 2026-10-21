@@ -23,6 +23,7 @@ class Setting extends Model
     ];
 
     protected $fillable = [
+        'company_id',
         'mail_server',
         'mail_username',
         'mail_password',
@@ -89,5 +90,10 @@ class Setting extends Model
 
         Config::set('app.name', $settings->app_name ? $settings->app_name : 'visp');
         Config::set('app.timezone', $settings->timezone ? $settings->timezone : 'UTC');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

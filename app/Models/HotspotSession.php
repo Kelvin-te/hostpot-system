@@ -12,6 +12,7 @@ class HotspotSession extends Model
     use HasFactory;
 
     protected $fillable = [
+        'company_id',
         'mac_address',
         'ip_address',
         'user_agent',
@@ -64,6 +65,14 @@ class HotspotSession extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the company associated with this session
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

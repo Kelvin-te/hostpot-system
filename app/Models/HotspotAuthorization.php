@@ -12,6 +12,7 @@ class HotspotAuthorization extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'company_id',
         'authorization_key',
         'router_id',
         'package_id',
@@ -59,6 +60,11 @@ class HotspotAuthorization extends Model
     public function voucher(): BelongsTo
     {
         return $this->belongsTo(Voucher::class);
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function sessions()

@@ -5,12 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Services\MikroTikService;
+use App\Scopes\BelongsToCompanyScope;
 
 class Router extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::addGlobalScope(new BelongsToCompanyScope);
+    }
+
     protected $fillable = [
+        'company_id',
         'name',
         'identifier',
         'location',
@@ -41,6 +48,10 @@ class Router extends Model
 
     public function transactions() {
         return $this->hasMany(PaymentTransaction::class);
+    }
+
+    public function company() {
+        return $this->belongsTo(Company::class);
     }
 
     /**
