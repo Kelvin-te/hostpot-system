@@ -5,6 +5,7 @@ namespace App\Models;
 use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Scopes\BelongsToCompanyScope;
 
 /**
  * Package
@@ -14,6 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 class Package extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new BelongsToCompanyScope);
+    }
 
     protected $fillable = [
         'company_id',

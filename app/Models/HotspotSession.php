@@ -6,10 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Carbon\Carbon;
+use App\Scopes\BelongsToCompanyScope;
 
 class HotspotSession extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new BelongsToCompanyScope);
+    }
 
     protected $fillable = [
         'company_id',

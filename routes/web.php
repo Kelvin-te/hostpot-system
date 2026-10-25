@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AddComment;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BillingDownload;
@@ -35,6 +36,9 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Admin Dashboard now at /dashboard (keeps name 'dashboard')
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/administration', function () {return view('administration');})->name('administration');
+
+    // Company management
+    Route::resource('/companies', CompanyController::class);
 
     // Package copy to router (must be before resource to avoid /packages/{package} capturing)
     Route::get('/packages/copy-to-router', [PackageController::class, 'copyToRouterForm'])->name('packages.copy.form');
@@ -152,6 +156,11 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Landing page
+Route::get('/', function () {
+    return view('landing');
+})->name('landing');
 
 // Staff authentication and management
 Route::get('/staff/login', [StaffAuthController::class, 'create'])->name('staff.login')->middleware('guest:staff');

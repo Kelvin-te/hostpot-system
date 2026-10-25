@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Billing;
+use App\Models\Company;
 use App\Models\Detail;
 use App\Models\Package;
 use App\Models\User;
@@ -11,7 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Str;
 
 class UserController extends Controller
 {
@@ -38,7 +39,8 @@ class UserController extends Controller
         }
 
         $packages = Package::orderBy('name')->get();
-        return view('users.create', compact('packages'));
+        $companies = Company::active()->orderBy('name')->get();
+        return view('users.create', compact('packages', 'companies'));
     }
 
     public function store(Request $request)
@@ -46,6 +48,7 @@ class UserController extends Controller
         $this->validate($request, [
             "phone" => "required|unique:users,phone",
             "package_id" => "required|exists:packages,id",
+            "company_id" => "nullable|exists:companies,id",
         ]);
 
         $package = Package::findOrFail($request->package_id);
@@ -57,6 +60,7 @@ class UserController extends Controller
                 $user->email = null;
                 $user->password = Hash::make(Str::random(32));
                 $user->phone = $request->phone;
+                $user->company_id = $request->company_id;
                 $user->save();
 
                 $details = new Detail();

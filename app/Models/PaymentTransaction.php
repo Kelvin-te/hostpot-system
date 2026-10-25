@@ -5,10 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Scopes\BelongsToCompanyScope;
 
 class PaymentTransaction extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new BelongsToCompanyScope);
+    }
 
     protected $fillable = [
         'company_id',

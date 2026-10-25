@@ -24,6 +24,16 @@
 
                             <div>
                                 <div>
+                                    <x-input-label for="company_id" :value="__('Company')" class="mt-4"></x-input-label>
+                                    <select id="company_id" name="company_id" class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                                        <option value="">{{ __('Select company (optional)') }}</option>
+                                        @foreach($companies as $company)
+                                            <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <x-input-error class="mt-2" :messages="$errors->get('company_id')"></x-input-error>
+                                </div>
+                                <div class="mt-4">
                                     <x-input-label for="phone" :value="__('Phone number')" class="mt-4"></x-input-label>
                                     <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone')" required></x-text-input>
                                     <x-input-error class="mt-2" :messages="$errors->get('phone')"></x-input-error>

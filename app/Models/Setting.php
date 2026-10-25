@@ -6,6 +6,8 @@ use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Auth;
+use App\Scopes\BelongsToCompanyScope;
 
 
 /**
@@ -16,6 +18,11 @@ use Illuminate\Support\Facades\Config;
 class Setting extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new BelongsToCompanyScope);
+    }
 
     protected $casts = [
         'walled_garden_domains' => 'array',
@@ -86,7 +93,14 @@ class Setting extends Model
 
     public static function loadSettings()
     {
-        $settings = self::firstOrFail();
+        $query = self::query();
+
+        // If user is authenticated and has a company, load their company's settings
+        if (Auth::check() && Auth::user()->company_id) {
+            $query->where('company_id', Auth::user()->company_id);
+        }
+
+        $settings = $query->firstOrFail();
 
         Config::set('app.name', $settings->app_name ? $settings->app_name : 'visp');
         Config::set('app.timezone', $settings->timezone ? $settings->timezone : 'UTC');

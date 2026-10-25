@@ -60,8 +60,24 @@ class Company extends Model
         return $this->hasMany(HotspotAuthorization::class);
     }
 
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class)->latest();
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscription && $this->subscription->isActive();
+    }
+
+    public function getSubscriptionStatusAttribute(): string
+    {
+        if (!$this->subscription) return 'No Subscription';
+        return ucfirst($this->subscription->status);
     }
 }

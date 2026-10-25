@@ -15,16 +15,21 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
-        <div class="flex justify-center items-center">
-            <div class="w-1/2 bg-gray-100 min-h-screen">
-                
+        <div class="flex min-h-screen">
+            <!-- Left side - decorative (hidden on mobile) -->
+            <div class="hidden lg:flex lg:w-1/2 bg-gray-100 items-center justify-center">
+                <div class="text-center p-8">
+                    <h1 class="text-4xl font-bold text-gray-800 mb-4">Welcome Back</h1>
+                    <p class="text-gray-600 text-lg">Sign in to access your dashboard</p>
+                </div>
             </div>
-            <div class="w-1/2 flex justify-center align-center">
 
-                <div class="w-full sm:max-w-sm mt-6 px-6 py-4 bg-white">
-                    <div class="flex justify-center mb-6">
+            <!-- Right side - login form -->
+            <div class="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8">
+                <div class="w-full max-w-md">
+                    <div class="flex justify-center mb-8">
                         <a href="{{ route('dashboard') }}">
-                            <x-application-logo  class="w-full max-w-[190px] h-auto" />
+                            <x-application-logo class="w-full max-w-[190px] h-auto" />
                         </a>
                     </div>
                     {{ $slot }}

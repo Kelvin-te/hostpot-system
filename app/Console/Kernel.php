@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('wallet:check-auto-renewals')->everyFiveMinutes();
         $schedule->command('packages:sync-profiles')->everyFifteenMinutes();
         $schedule->command('users:prune-orphans')->everyFifteenMinutes();
+        $schedule->command('subscriptions:check-expiry')->daily();
     }
 
     /**
