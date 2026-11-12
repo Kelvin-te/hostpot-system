@@ -300,6 +300,46 @@ class ReportController extends Controller
     /**
      * Export report to CSV
      */
+    /**
+     * Payment reconciliation: completed vs pending vs failed, missing M-Pesa
+     * receipts, and amount mismatches — for matching against Safaricom statements.
+     */
+    public function reconciliation(Request $request)
+    {
+        $fromDate = $request->get('from_date', now()->subDays(30)->format('Y-m-d'));
+        $toDate = $request->get('to_date', now()->format('Y-m-d'));
+        $range = [$fromDate . ' 00:00:00', $toDate . ' 23:59:59'];
+
+        $base = fn () => PaymentTransaction::whereBetween('created_at', $range);
+
+        $summary = [
+            'completed' => (clone $base())->where('status', 'completed')->count(),
+            'pending' => (clone $base())->where('status', 'pending')->count(),
+            'failed' => (clone $base())->where('status', 'failed')->count(),
+            'completed_amount' => (clone $base())->where('status', 'completed')->sum('amount'),
+            'pending_amount' => (clone $base())->where('status', 'pending')->sum('amount'),
+            'missing_receipt' => (clone $base())->where('status', 'completed')->whereNull('mpesa_receipt_number')->count(),
+            'stale_pending' => (clone $base())->where('status', 'pending')->where('created_at', '<', now()->subHours(2))->count(),
+        ];
+
+        $byGateway = (clone $base())->select('gateway', 'status', DB::raw('COUNT(*) as cnt'), DB::raw('SUM(amount) as total'))->groupBy('gateway', 'status')->get();
+
+        $issues = PaymentTransaction::whereBetween('created_at', $range)
+            ->where(function ($q) {
+                $q->where('status', 'pending')->where('created_at', '<', now()->subHours(2))
+                  ->orWhere(function ($q2) {
+                      $q2->where('status', 'completed')->whereNull('mpesa_receipt_number');
+                  });
+            })
+            ->latest()
+            ->limit(100)
+            ->get();
+
+        $recent = (clone $base())->latest()->limit(50)->get();
+
+        return view('reports.reconciliation', compact('summary', 'byGateway', 'issues', 'recent', 'fromDate', 'toDate'));
+    }
+
     public function export(Request $request)
     {
         $type = $request->get('type', 'revenue');
