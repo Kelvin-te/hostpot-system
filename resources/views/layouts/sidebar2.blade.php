@@ -67,6 +67,10 @@
                     <x-slot name="icon">🖧</x-slot>
                     {{ __('Routers') }}
                 </x-sidebar-item>
+                <x-sidebar-item :href="route('static-ips.index')" :active="request()->routeIs('static-ips.*')">
+                    <x-slot name="icon">🔢</x-slot>
+                    {{ __('Static IPs') }}
+                </x-sidebar-item>
                 <x-sidebar-item :href="route('vouchers.index')" :active="request()->routeIs('vouchers.index')">
                     <x-slot name="icon">🎟️</x-slot>
                     {{ __('Vouchers') }}

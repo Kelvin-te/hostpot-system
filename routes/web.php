@@ -104,6 +104,13 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Show route must be last to avoid conflicts with specific routes
     Route::get('/router/{router}', [RouterController::class, 'show'])->name('router.show')->where('router', '[0-9]+');
 
+    // Static IP management (IPAM-lite)
+    Route::get('/static-ips', [\App\Http\Controllers\StaticIpController::class, 'index'])->name('static-ips.index');
+    Route::get('/static-ips/create', [\App\Http\Controllers\StaticIpController::class, 'create'])->name('static-ips.create');
+    Route::post('/static-ips', [\App\Http\Controllers\StaticIpController::class, 'store'])->name('static-ips.store');
+    Route::post('/static-ips/{staticIp}/sync', [\App\Http\Controllers\StaticIpController::class, 'sync'])->name('static-ips.sync');
+    Route::delete('/static-ips/{staticIp}', [\App\Http\Controllers\StaticIpController::class, 'destroy'])->name('static-ips.destroy');
+
     Route::middleware('staff.role:admin')->group(function () {
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');

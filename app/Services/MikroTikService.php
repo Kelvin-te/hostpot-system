@@ -439,6 +439,86 @@ class MikroTikService
     }
 
     /**
+     * Create or update a DHCP static lease binding an IP to a MAC on a router.
+     */
+    public function provisionStaticLease(Router $router, string $ip, string $mac, ?string $comment = null): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            if (!$client) {
+                return ['success' => false, 'message' => 'Cannot connect to router'];
+            }
+
+            $existing = $client->query(
+                (new Query('/ip/dhcp-server/lease/print'))->where('address', $ip)
+            )->read();
+
+            if (!empty($existing)) {
+                $set = new Query('/ip/dhcp-server/lease/set');
+                $set->equal('.id', $existing[0]['.id']);
+                $set->equal('mac-address', $mac);
+                $set->equal('dynamic', 'no');
+                if ($comment !== null) {
+                    $set->equal('comment', $comment);
+                }
+                $client->query($set)->read();
+            } else {
+                $add = new Query('/ip/dhcp-server/lease/add');
+                $add->equal('address', $ip);
+                $add->equal('mac-address', $mac);
+                $add->equal('dynamic', 'no');
+                if ($comment !== null) {
+                    $add->equal('comment', $comment);
+                }
+                $client->query($add)->read();
+            }
+
+            return ['success' => true, 'message' => "Static lease {$ip} -> {$mac} provisioned"];
+        } catch (Exception $e) {
+            Log::error('Failed to provision static lease', [
+                'router_id' => $router->id,
+                'ip' => $ip,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['success' => false, 'message' => 'Static lease provisioning failed: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Remove a DHCP lease by IP address.
+     */
+    public function removeStaticLease(Router $router, string $ip): bool
+    {
+        try {
+            $client = $this->connectToRouter($router);
+            if (!$client) {
+                return false;
+            }
+
+            $leases = $client->query(
+                (new Query('/ip/dhcp-server/lease/print'))->where('address', $ip)
+            )->read();
+
+            foreach ($leases as $lease) {
+                if (isset($lease['.id'])) {
+                    $client->query((new Query('/ip/dhcp-server/lease/remove'))->equal('.id', $lease['.id']))->read();
+                }
+            }
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Failed to remove static lease', [
+                'router_id' => $router->id,
+                'ip' => $ip,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
      * Connect to MikroTik router
      * Returns null on failure for safe error handling
      */

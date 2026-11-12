@@ -70,9 +70,9 @@ Status legend: ✅ done · 🔶 partial · ⬜ not started
 
 ### Phase 2a — Universal subscriber core
 
-12. ⬜ Subscriber unification: `connection_type` on subscribers; one `sessions` table (`connection_type` column) shared by hotspot/PPPoE/static.
-13. ⬜ PPPoE provisioning: `/ppp/secret` CRUD, ppp profile ↔ package rate limits, `/ppp/active` sync into session pipeline, expiry disconnect (`/ppp/active/remove`), renewal reconnect.
-14. ⬜ Static IP management: DHCP static leases + firewall address-lists, IPAM-lite (free/assigned/reserved), plan mapping per IP.
+12. 🔶 Subscriber unification: `connection_type` on `users` + `hotspot_sessions` ✅ (hotspot/pppoe; `static` reserved). Sessions table shared via `connection_type` column. — **TODO**: unified `sessions` rename, static-connection sessions.
+13. 🔶 PPPoE provisioning: `/ppp/secret` CRUD + `/ppp/profile` rate-limits from package bandwidth ✅ (`MikroTikService::ensurePppProfile`/`provisionPppoeSecret`/`removePppoeSecret`), `/ppp/active` sync into `hotspot_sessions` (`connection_type='pppoe'`) ✅ via `SyncRouterSessionsJob`, suspend/resume/disconnect in `PppoeService` ✅, creation UI (connection_type selector + one-time credential display) ✅, `pppoe:provision` command ✅. — **TODO**: billing-lifecycle hooks (expiry → secret removal, renewal → reconnect), PPPoE sessions in admin UI filters, portal parity.
+14. 🔶 Static IP management: `static_ips` IPAM-lite table (free/assigned/reserved, router+subscriber+package links) ✅, MikroTik DHCP static-lease provisioning (`provisionStaticLease`/`removeStaticLease`) ✅, CRUD UI with router sync ✅. — **TODO**: IP-range auto-discovery from router subnets, address-list/firewall binding for non-DHCP static, usage/billing linkage.
 15. ⬜ Provisioning drift detection: desired-state vs router-state diff → auto-heal or alert (replace fragile 15-min blind sync).
 
 ### Phase 2b — Network operations
