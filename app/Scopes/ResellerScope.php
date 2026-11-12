@@ -51,9 +51,20 @@ class ResellerScope implements Scope
      * staff user so Livewire/AJAX requests (which bypass route
      * middleware) still scope correctly; falls back to the static
      * override for console/queue contexts.
+     *
+     * The $resolving flag prevents infinite recursion: resolving the
+     * staff user itself runs a Staff query, which re-enters apply().
      */
+    protected static bool $resolving = false;
+
     protected static function currentResellerId(): ?int
     {
+        if (static::$resolving) {
+            return static::$resellerId;
+        }
+
+        static::$resolving = true;
+
         try {
             $staff = auth('staff')->user();
             if ($staff) {
@@ -61,6 +72,8 @@ class ResellerScope implements Scope
             }
         } catch (\Throwable) {
             // Auth not available (console, early boot) — use override.
+        } finally {
+            static::$resolving = false;
         }
 
         return static::$resellerId;
