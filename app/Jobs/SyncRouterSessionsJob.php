@@ -29,9 +29,13 @@ class SyncRouterSessionsJob implements ShouldQueue
 
         $result = $mikroTikService->syncSessionsWithRouter($router);
 
+        // Also sync PPPoE sessions on this router
+        $pppoeResult = app(\App\Services\PppoeService::class)->syncRouter($router);
+
         Log::info('Router session sync job completed', [
             'router_id' => $this->routerId,
-            'result' => $result,
+            'hotspot' => $result,
+            'pppoe' => $pppoeResult,
         ]);
     }
 }

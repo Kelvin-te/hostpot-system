@@ -30,6 +30,7 @@ class HotspotSession extends Model
         'bytes_downloaded',
         'bytes_total',
         'status',
+        'connection_type',
         'mikrotik_data',
     ];
 

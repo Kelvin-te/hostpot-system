@@ -212,6 +212,233 @@ class MikroTikService
     }
 
     /**
+     * Ensure a PPP profile exists on the router with the package's rate limits.
+     * Profile name convention: pkg-{package_id}
+     */
+    public function ensurePppProfile(Client $client, Package $package): string
+    {
+        $profileName = 'pkg-' . $package->id;
+
+        $existing = $client->query((new Query('/ppp/profile/print'))->where('name', $profileName))->read();
+
+        $rateLimit = '';
+        if ($package->bandwidth_upload && $package->bandwidth_download) {
+            $rateLimit = rtrim(rtrim(number_format((float) $package->bandwidth_upload, 0, '.', ''), '0'), '.') . 'M/'
+                . rtrim(rtrim(number_format((float) $package->bandwidth_download, 0, '.', ''), '0'), '.') . 'M';
+        }
+
+        if (empty($existing)) {
+            $add = new Query('/ppp/profile/add');
+            $add->equal('name', $profileName);
+            $add->equal('local-address', '');
+            if ($rateLimit !== '') {
+                $add->equal('rate-limit', $rateLimit);
+            }
+            $client->query($add)->read();
+        } elseif ($rateLimit !== '') {
+            $set = new Query('/ppp/profile/set');
+            $set->equal('.id', $existing[0]['.id']);
+            $set->equal('rate-limit', $rateLimit);
+            $client->query($set)->read();
+        }
+
+        return $profileName;
+    }
+
+    /**
+     * Create or update a PPPoE secret (/ppp/secret) for a subscriber.
+     */
+    public function provisionPppoeSecret(Router $router, string $username, string $password, Package $package): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+
+            if (!$client) {
+                return ['success' => false, 'message' => 'Cannot connect to router'];
+            }
+
+            $profileName = $this->ensurePppProfile($client, $package);
+
+            $existing = $client->query((new Query('/ppp/secret/print'))->where('name', $username))->read();
+
+            if (!empty($existing)) {
+                $set = new Query('/ppp/secret/set');
+                $set->equal('.id', $existing[0]['.id']);
+                $set->equal('password', $password);
+                $set->equal('profile', $profileName);
+                $set->equal('service', 'pppoe');
+                $set->equal('disabled', 'no');
+                $client->query($set)->read();
+            } else {
+                $add = new Query('/ppp/secret/add');
+                $add->equal('name', $username);
+                $add->equal('password', $password);
+                $add->equal('profile', $profileName);
+                $add->equal('service', 'pppoe');
+                $add->equal('disabled', 'no');
+                $client->query($add)->read();
+            }
+
+            Log::info('PPPoE secret provisioned', [
+                'router_id' => $router->id,
+                'username' => $username,
+                'profile' => $profileName,
+            ]);
+
+            return ['success' => true, 'message' => 'PPPoE credentials provisioned', 'profile' => $profileName];
+        } catch (Exception $e) {
+            Log::error('Failed to provision PPPoE secret', [
+                'router_id' => $router->id,
+                'username' => $username,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['success' => false, 'message' => 'PPPoE provisioning failed: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Remove a PPPoE secret without touching active sessions.
+     */
+    public function removePppoeSecret(Router $router, string $username): bool
+    {
+        try {
+            $client = $this->connectToRouter($router);
+
+            if (!$client) {
+                return false;
+            }
+
+            $secrets = $client->query((new Query('/ppp/secret/print'))->where('name', $username))->read();
+
+            foreach ($secrets as $secret) {
+                if (isset($secret['.id'])) {
+                    $client->query((new Query('/ppp/secret/remove'))->equal('.id', $secret['.id']))->read();
+                }
+            }
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Failed to remove PPPoE secret', [
+                'router_id' => $router->id,
+                'username' => $username,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Sync active PPPoE sessions (/ppp/active) into hotspot_sessions with
+     * connection_type='pppoe'. Matches secrets back to users via pppoe_username.
+     */
+    public function syncPppoeSessions(Router $router): array
+    {
+        try {
+            $client = $this->connectToRouter($router);
+
+            if (!$client) {
+                return ['success' => false, 'synced' => 0, 'message' => 'Cannot connect to router'];
+            }
+
+            $active = $client->query(new Query('/ppp/active/print'))->read();
+            $synced = 0;
+            $seenSessionIds = [];
+
+            foreach ($active as $conn) {
+                if (($conn['service'] ?? '') !== 'pppoe' && ($conn['service'] ?? 'pppoe') === '') {
+                    // /ppp/active only contains PPP sessions; keep all entries
+                }
+
+                $username = $conn['name'] ?? '';
+                if ($username === '') {
+                    continue;
+                }
+
+                $user = \App\Models\User::where('pppoe_username', $username)->first();
+                $callerId = $conn['caller-id'] ?? null;
+                $address = $conn['address'] ?? null;
+
+                // Stable session id per router+user+caller so reconnects update in place
+                $sessionId = 'pppoe-' . $router->id . '-' . $username . '-' . substr(md5($callerId . '|' . $address), 0, 8);
+                $seenSessionIds[] = $sessionId;
+
+                $bytesIn = $this->parseRouterOsBytes($conn['bytes-in'] ?? '0');
+                $bytesOut = $this->parseRouterOsBytes($conn['bytes-out'] ?? '0');
+
+                $packageId = $user?->package_id;
+                if (!$packageId) {
+                    // No subscribed package — skip rather than violate FK
+                    continue;
+                }
+
+                HotspotSession::updateOrCreate(
+                    ['session_id' => $sessionId],
+                    [
+                        'user_id' => $user?->id,
+                        'username' => $username,
+                        'package_id' => $packageId,
+                        'mac_address' => $callerId,
+                        'ip_address' => $address,
+                        'connection_type' => 'pppoe',
+                        'started_at' => now(),
+                        'expires_at' => null,
+                        'bytes_uploaded' => $bytesIn,
+                        'bytes_downloaded' => $bytesOut,
+                        'bytes_total' => $bytesIn + $bytesOut,
+                        'status' => 'active',
+                        'mikrotik_data' => $conn,
+                    ]
+                );
+
+                $synced++;
+            }
+
+            // Mark PPPoE sessions no longer seen on this router as disconnected
+            HotspotSession::where('connection_type', 'pppoe')
+                ->where('status', 'active')
+                ->whereHas('package', fn ($q) => $q->where('router_id', $router->id))
+                ->whereNotIn('session_id', $seenSessionIds)
+                ->update(['status' => 'disconnected']);
+
+            return ['success' => true, 'synced' => $synced];
+        } catch (Exception $e) {
+            Log::error('Failed to sync PPPoE sessions', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['success' => false, 'synced' => 0, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Parse RouterOS byte counters which may be suffixed (e.g. "1.5GiB").
+     */
+    protected function parseRouterOsBytes(string $value): int
+    {
+        $value = trim($value);
+        if ($value === '' || !is_numeric(substr($value, 0, 1)) && !in_array($value[0] ?? '', ['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])) {
+            return 0;
+        }
+
+        if (preg_match('/^([\d.]+)\s*([KMGT]i?B?)?$/i', $value, $m)) {
+            $num = (float) $m[1];
+            $unit = strtoupper($m[2] ?? '');
+            $multiplier = match (true) {
+                str_contains($unit, 'G') => 1024 ** 3,
+                str_contains($unit, 'M') => 1024 ** 2,
+                str_contains($unit, 'K') => 1024,
+                default => 1,
+            };
+            return (int) ($num * $multiplier);
+        }
+
+        return (int) $value;
+    }
+
+    /**
      * Connect to MikroTik router
      * Returns null on failure for safe error handling
      */

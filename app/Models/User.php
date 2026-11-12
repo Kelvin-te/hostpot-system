@@ -35,6 +35,10 @@ class User extends Authenticatable
         'last_session_at',
         'wallet_balance',
         'status',
+        'connection_type',
+        'package_id',
+        'pppoe_username',
+        'pppoe_password',
     ];
 
     /**
@@ -44,6 +48,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'pppoe_password',
         'remember_token',
     ];
 
@@ -57,6 +62,7 @@ class User extends Authenticatable
         'last_session_at' => 'datetime',
         'wallet_balance' => 'decimal:2',
         'total_spent' => 'decimal:2',
+        'pppoe_password' => 'encrypted',
     ];
 
     public function isAdmin(): bool
@@ -94,6 +100,10 @@ class User extends Authenticatable
 
     public function sessions() {
         return $this->hasMany(HotspotSession::class);
+    }
+
+    public function package() {
+        return $this->belongsTo(Package::class);
     }
 
     public function router() {
