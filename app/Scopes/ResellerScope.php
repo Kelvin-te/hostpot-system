@@ -29,7 +29,9 @@ class ResellerScope implements Scope
 
     public function apply(Builder $builder, Model $model): void
     {
-        if (static::$resellerId === null) {
+        $resellerId = static::currentResellerId();
+
+        if ($resellerId === null) {
             return;
         }
 
@@ -40,7 +42,27 @@ class ResellerScope implements Scope
         }
 
         if (static::$columnCache[$table]) {
-            $builder->where($table . '.reseller_id', static::$resellerId);
+            $builder->where($table . '.reseller_id', $resellerId);
         }
+    }
+
+    /**
+     * Resolve the active reseller per query. Prefers the authenticated
+     * staff user so Livewire/AJAX requests (which bypass route
+     * middleware) still scope correctly; falls back to the static
+     * override for console/queue contexts.
+     */
+    protected static function currentResellerId(): ?int
+    {
+        try {
+            $staff = auth('staff')->user();
+            if ($staff) {
+                return $staff->isReseller() ? $staff->reseller_id : null;
+            }
+        } catch (\Throwable) {
+            // Auth not available (console, early boot) — use override.
+        }
+
+        return static::$resellerId;
     }
 }

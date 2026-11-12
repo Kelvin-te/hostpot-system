@@ -26,7 +26,7 @@ class StaffTable extends DataTableComponent
             Column::make('Phone', 'phone')->sortable()->searchable(),
             Column::make('Role', 'role')->sortable(),
             Column::make('Status', 'is_active')
-                ->label(fn ($row) => $row->is_active
+                ->format(fn ($value) => $value
                     ? '<span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">' . __('Active') . '</span>'
                     : '<span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">' . __('Inactive') . '</span>')
                 ->html(),
