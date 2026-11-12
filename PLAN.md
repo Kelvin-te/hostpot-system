@@ -79,7 +79,7 @@ Status legend: ✅ done · 🔶 partial · ⬜ not started
 
 16. 🔶 Topology: deferred — single-level router model works for now; hierarchy (core→distribution→AP) needs `parent_id` on routers + UI. Not started.
 17. 🔶 Monitoring: `router_health_logs` snapshots (online, CPU, memory, uptime, rx/tx Mbps, active sessions) ✅, `RouterHealthService::poll` ✅, `PollRouterHealthJob` per router ✅, `routers:health-check` every 5 min (overlap-protected) ✅, online↔offline transition detection + SMS alert to `settings.company_phone` ✅, `routers.is_online`/`last_health_at`/`went_offline_at` ✅. — **TODO**: per-interface history graphs, flap detection, webhook alerts, dashboard health view.
-18. 🔶 Blast-radius ticketing: data now available (`active_sessions` count + down events in health logs); auto-ticket creation on router-down is the next increment.
+18. 🔶 Blast-radius ticketing: `incidents` table (router, type, affected_subscribers, open/acknowledged/resolved, opened/resolved timestamps) ✅; auto-open on router-down transition with active-session blast radius ✅; auto-resolve on recovery ✅; staff UI with ack/resolve ✅. — **TODO**: subscriber-level blast radius (list affected users), flap detection (repeated open/close), SMS/email to assigned staff, link incidents to tickets.
 
 ### Phase 2c — Reseller / landlord network
 

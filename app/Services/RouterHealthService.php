@@ -69,11 +69,46 @@ class RouterHealthService
 
         if ($wasOnline && !$online) {
             Log::warning('Router went offline', ['router_id' => $router->id, 'name' => $router->name]);
+            $this->openIncident($router);
             $this->alert("Router {$router->name} ({$router->ip_address}) is OFFLINE.");
         } elseif (!$wasOnline && $online) {
             Log::info('Router back online', ['router_id' => $router->id, 'name' => $router->name]);
+            $this->resolveIncidents($router);
             $this->alert("Router {$router->name} ({$router->ip_address}) is back ONLINE.");
         }
+    }
+
+    /**
+     * Open a blast-radius incident for a router going down, unless one is
+     * already open. Captures the number of active subscribers affected.
+     */
+    private function openIncident(Router $router): void
+    {
+        $existing = \App\Models\Incident::where('router_id', $router->id)->open()->exists();
+        if ($existing) {
+            return;
+        }
+
+        $affected = \App\Models\HotspotSession::active()
+            ->whereHas('package', fn ($q) => $q->where('router_id', $router->id))
+            ->count();
+
+        \App\Models\Incident::create([
+            'router_id' => $router->id,
+            'type' => 'router_down',
+            'title' => "Router {$router->name} offline",
+            'description' => "Router {$router->name} ({$router->ip_address}) stopped responding at " . now()->toDateTimeString() . ". {$affected} active session(s) affected.",
+            'affected_subscribers' => $affected,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+    }
+
+    private function resolveIncidents(Router $router): void
+    {
+        \App\Models\Incident::where('router_id', $router->id)
+            ->open()
+            ->update(['status' => 'resolved', 'resolved_at' => now()]);
     }
 
     private function alert(string $message): void

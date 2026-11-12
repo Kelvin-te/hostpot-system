@@ -18,6 +18,10 @@
                 <x-slot name="icon">🌐</x-slot>
                 {{ __('Sessions') }}
             </x-sidebar-item>
+            <x-sidebar-item :href="route('incidents.index')" :active="request()->routeIs('incidents.*')">
+                <x-slot name="icon">🚨</x-slot>
+                {{ __('Incidents') }}
+            </x-sidebar-item>
             <x-sidebar-item :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                 <x-slot name="icon">📊</x-slot>
                 {{ __('Reports') }}

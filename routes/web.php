@@ -104,6 +104,11 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Show route must be last to avoid conflicts with specific routes
     Route::get('/router/{router}', [RouterController::class, 'show'])->name('router.show')->where('router', '[0-9]+');
 
+    // Network incidents (blast radius)
+    Route::get('/incidents', [\App\Http\Controllers\IncidentController::class, 'index'])->name('incidents.index');
+    Route::post('/incidents/{incident}/acknowledge', [\App\Http\Controllers\IncidentController::class, 'acknowledge'])->name('incidents.acknowledge');
+    Route::post('/incidents/{incident}/resolve', [\App\Http\Controllers\IncidentController::class, 'resolve'])->name('incidents.resolve');
+
     // Static IP management (IPAM-lite)
     Route::get('/static-ips', [\App\Http\Controllers\StaticIpController::class, 'index'])->name('static-ips.index');
     Route::get('/static-ips/create', [\App\Http\Controllers\StaticIpController::class, 'create'])->name('static-ips.create');
