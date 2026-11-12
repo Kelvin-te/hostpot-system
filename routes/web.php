@@ -104,6 +104,8 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Show route must be last to avoid conflicts with specific routes
     Route::get('/router/{router}', [RouterController::class, 'show'])->name('router.show')->where('router', '[0-9]+');
 
+    Route::post('/payments/{transaction}/refund', [PaymentController::class, 'refund'])->name('payments.refund')->middleware('staff.role:admin');
+
     // Network incidents (blast radius)
     Route::get('/incidents', [\App\Http\Controllers\IncidentController::class, 'index'])->name('incidents.index');
     Route::post('/incidents/{incident}/acknowledge', [\App\Http\Controllers\IncidentController::class, 'acknowledge'])->name('incidents.acknowledge');
