@@ -139,6 +139,8 @@ class SettingsController extends Controller
         $settings->fill($validated);
         $settings->save();
 
+        \Illuminate\Support\Facades\Cache::forget('mpesa.settings');
+
         return back()->with('success', __('Update successful'));
     }
 

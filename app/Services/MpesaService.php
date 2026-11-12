@@ -20,8 +20,11 @@ class MpesaService
 
     public function __construct()
     {
-        // Prioritize database settings over env vars
-        $settings = \App\Models\Setting::first();
+        // Prioritize database settings over env vars (cached briefly — settings
+        // change rarely and this service is instantiated per payment request)
+        $settings = \Illuminate\Support\Facades\Cache::remember('mpesa.settings', 60, function () {
+            return \App\Models\Setting::first();
+        });
 
         $this->consumerKey = $settings && !empty($settings->mpesa_consumer_key) 
             ? $settings->mpesa_consumer_key 
@@ -49,14 +52,10 @@ class MpesaService
             ? $settings->mpesa_type
             : 'paybill';
 
-        Log::info('M-Pesa Service initialized', [
+        Log::debug('M-Pesa Service initialized', [
             'source' => $settings && !empty($settings->mpesa_consumer_key) ? 'database' : 'config',
             'shortcode' => $this->shortcode,
-            'till_number' => $this->tillNumber,
-            'consumer_key_prefix' => substr($this->consumerKey, 0, 10) . '...',
-            'passkey_set' => !empty($this->passkey),
             'mpesa_type' => $this->mpesaType,
-            'callback_url' => $this->callbackUrl,
         ]);
     }
 

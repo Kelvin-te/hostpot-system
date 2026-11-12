@@ -12,12 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('session:enforce-expiry')->everyMinute();
-        $schedule->command('sessions:sync')->everyMinute();
-        $schedule->command('session:send-expiry-alerts')->everyFiveMinutes();
-        $schedule->command('wallet:check-auto-renewals')->everyFiveMinutes();
-        $schedule->command('packages:sync-profiles')->everyFifteenMinutes();
-        $schedule->command('users:prune-orphans')->everyFifteenMinutes();
+        $schedule->command('session:enforce-expiry')->everyMinute()->withoutOverlapping()->onOneServer();
+        $schedule->command('sessions:sync')->everyMinute()->withoutOverlapping(10)->onOneServer();
+        $schedule->command('session:send-expiry-alerts')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+        $schedule->command('wallet:check-auto-renewals')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+        $schedule->command('packages:sync-profiles')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('users:prune-orphans')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
     }
 
     /**
