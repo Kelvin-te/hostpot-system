@@ -3,16 +3,30 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\HotspotSessionService;
+use App\Jobs\SyncRouterSessionsJob;
+use App\Models\Router;
 
 class SyncRouterSessions extends Command
 {
-    protected $signature = 'sessions:sync';
+    protected $signature = 'sessions:sync {--inline : Run router syncs in-process instead of dispatching jobs}';
     protected $description = 'Sync local sessions with router data via MikroTik API';
 
     public function handle()
     {
-        $service = app(HotspotSessionService::class);
+        if (!$this->option('inline')) {
+            $dispatched = 0;
+
+            Router::where('is_active', true)->pluck('id')->each(function ($id) use (&$dispatched) {
+                SyncRouterSessionsJob::dispatch($id);
+                $dispatched++;
+            });
+
+            $this->info("Dispatched session sync jobs for {$dispatched} router(s).");
+
+            return 0;
+        }
+
+        $service = app(\App\Services\HotspotSessionService::class);
 
         $this->info('Syncing sessions via MikroTik API...');
 

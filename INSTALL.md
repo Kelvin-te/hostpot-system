@@ -27,6 +27,8 @@ php artisan queue:work --tries=3                    # QUEUE_CONNECTION=redis rec
 php artisan schedule:work                           # or cron: * * * * * php artisan schedule:run
 ```
 
+`QUEUE_CONNECTION=sync` works for evaluation but runs STK/SMS/router jobs inside the HTTP request. For production use `redis` (or `database` + `php artisan queue:table && migrate`) and keep `queue:work` running — `sessions:sync` dispatches one job per router each minute.
+
 On Windows/WAMP use Task Scheduler for both. On Linux use systemd units or Supervisor.
 
 ## M-Pesa (Daraja)
