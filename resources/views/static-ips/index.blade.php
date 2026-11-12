@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-slate-800 shadow sm:rounded-lg">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700">
                 <div class="p-6 text-slate-900 dark:text-slate-100">
                     @if(session('success'))
                         <div class="alert alert-success text-green-600">{{ session('success') }}</div>

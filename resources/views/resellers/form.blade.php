@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-slate-800 shadow sm:rounded-lg">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700">
                 <div class="p-6 text-slate-900 dark:text-slate-100">
                     <h2 class="font-semibold text-xl mb-6 border-b-2 border-slate-100 pb-4">
                         {{ $reseller->exists ? __('Edit Reseller') : __('Add Reseller') }}
