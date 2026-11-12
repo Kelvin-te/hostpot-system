@@ -77,9 +77,9 @@ Status legend: ✅ done · 🔶 partial · ⬜ not started
 
 ### Phase 2b — Network operations
 
-16. Topology: core → distribution → AP/tower → subscriber hierarchy.
-17. Monitoring: SNMP interface traffic, per-device up/down history, health dashboard, alerts (email/SMS/webhook) on router/tower down or flapping.
-18. Blast-radius ticketing: tickets linked to affected subscribers/devices; auto-tickets on device-down.
+16. 🔶 Topology: deferred — single-level router model works for now; hierarchy (core→distribution→AP) needs `parent_id` on routers + UI. Not started.
+17. 🔶 Monitoring: `router_health_logs` snapshots (online, CPU, memory, uptime, rx/tx Mbps, active sessions) ✅, `RouterHealthService::poll` ✅, `PollRouterHealthJob` per router ✅, `routers:health-check` every 5 min (overlap-protected) ✅, online↔offline transition detection + SMS alert to `settings.company_phone` ✅, `routers.is_online`/`last_health_at`/`went_offline_at` ✅. — **TODO**: per-interface history graphs, flap detection, webhook alerts, dashboard health view.
+18. 🔶 Blast-radius ticketing: data now available (`active_sessions` count + down events in health logs); auto-ticket creation on router-down is the next increment.
 
 ### Phase 2c — Reseller / landlord network
 
