@@ -18,6 +18,8 @@ class Package extends Model
     protected $fillable = [
         'name',
         'price',
+        'reseller_id',
+        'wholesale_price',
         'router_id',
         'bandwidth_upload',
         'bandwidth_download',
@@ -31,6 +33,7 @@ class Package extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'wholesale_price' => 'decimal:2',
         'bandwidth_upload' => 'integer',
         'bandwidth_download' => 'integer',
         'session_timeout' => 'integer',
@@ -114,5 +117,10 @@ class Package extends Model
         }
 
         return null;
+    }
+
+    public function reseller()
+    {
+        return $this->belongsTo(Reseller::class);
     }
 }

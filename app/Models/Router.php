@@ -28,6 +28,7 @@ class Router extends Model
 
     protected $fillable = [
         'name',
+        'reseller_id',
         'identifier',
         'location',
         'ip_address',
@@ -102,5 +103,10 @@ class Router extends Model
     {
         $status = $this->checkStatus();
         return $status['online'] ?? false;
+    }
+
+    public function reseller()
+    {
+        return $this->belongsTo(Reseller::class);
     }
 }

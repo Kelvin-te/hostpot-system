@@ -36,6 +36,7 @@ class User extends Authenticatable
         'wallet_balance',
         'status',
         'connection_type',
+        'reseller_id',
         'package_id',
         'pppoe_username',
         'pppoe_password',
@@ -142,5 +143,10 @@ class User extends Authenticatable
     public function isBanned(): bool
     {
         return $this->status === 'banned';
+    }
+
+    public function reseller()
+    {
+        return $this->belongsTo(Reseller::class);
     }
 }

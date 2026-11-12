@@ -18,6 +18,7 @@ class Staff extends Authenticatable
         'phone',
         'password',
         'role',
+        'reseller_id',
         'is_active',
     ];
 
@@ -46,5 +47,15 @@ class Staff extends Authenticatable
     {
         $url = route('staff.password.reset', ['token' => $token, 'email' => $this->email]);
         $this->notify(new \App\Notifications\StaffResetPassword($url));
+    }
+
+    public function reseller()
+    {
+        return $this->belongsTo(Reseller::class);
+    }
+
+    public function isReseller(): bool
+    {
+        return $this->role === 'reseller';
     }
 }
