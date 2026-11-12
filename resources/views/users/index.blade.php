@@ -14,6 +14,16 @@
                             {{ session('error') }}
                         </div>
                     @endif
+
+                    @if(session('pppoe_credentials'))
+                        <div class="alert alert-info bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded mb-4">
+                            <strong>{{ __('PPPoE credentials — share with subscriber now, they will not be shown again:') }}</strong>
+                            <div class="mt-1 font-mono">
+                                {{ __('Username') }}: {{ session('pppoe_credentials.username') }}<br>
+                                {{ __('Password') }}: {{ session('pppoe_credentials.password') }}
+                            </div>
+                        </div>
+                    @endif
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
                         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                             {{ __('Users') }}

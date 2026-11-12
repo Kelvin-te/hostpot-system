@@ -46,9 +46,11 @@ class UserController extends Controller
         $this->validate($request, [
             "phone" => "required|unique:users,phone",
             "package_id" => "required|exists:packages,id",
+            "connection_type" => "nullable|in:hotspot,pppoe",
         ]);
 
         $package = Package::findOrFail($request->package_id);
+        $connectionType = $request->input('connection_type', 'hotspot');
 
         try {
             $user = DB::transaction(function () use ($request, $package) {
@@ -81,12 +83,32 @@ class UserController extends Controller
                 $billing->user_id = $user->id;
                 $billing->save();
 
-                $this->authorizationService->createFromPackage($package, $user, $user->phone);
+                if ($connectionType === 'pppoe') {
+                    $user->connection_type = 'pppoe';
+                    $user->package_id = $package->id;
+                    $user->save();
+                } else {
+                    $this->authorizationService->createFromPackage($package, $user, $user->phone);
+                }
 
                 return $user;
             });
         } catch (\Exception $e) {
             return back()->with("error", __("Failed to create user: ") . $e->getMessage());
+        }
+
+        if ($connectionType === 'pppoe') {
+            $pppoeResult = app(\App\Services\PppoeService::class)->provision($user, $package);
+
+            if (!$pppoeResult['success']) {
+                return redirect("users")->with("error", __("User created but PPPoE provisioning failed: ") . $pppoeResult['message']);
+            }
+
+            return redirect("users")->with("success", __("PPPoE user created"))
+                ->with('pppoe_credentials', [
+                    'username' => $pppoeResult['username'],
+                    'password' => $pppoeResult['password'],
+                ]);
         }
 
         return redirect("users")->with("success", __("User added successfully"));
