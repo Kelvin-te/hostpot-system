@@ -106,6 +106,15 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
 
     Route::post('/payments/{transaction}/refund', [PaymentController::class, 'refund'])->name('payments.refund')->middleware('staff.role:admin');
 
+    // Resellers / landlords
+    Route::get('/resellers', [\App\Http\Controllers\ResellerController::class, 'index'])->name('resellers.index');
+    Route::get('/resellers/create', [\App\Http\Controllers\ResellerController::class, 'create'])->name('resellers.create');
+    Route::post('/resellers', [\App\Http\Controllers\ResellerController::class, 'store'])->name('resellers.store');
+    Route::get('/resellers/{reseller}/edit', [\App\Http\Controllers\ResellerController::class, 'edit'])->name('resellers.edit');
+    Route::put('/resellers/{reseller}', [\App\Http\Controllers\ResellerController::class, 'update'])->name('resellers.update');
+    Route::post('/resellers/{reseller}/toggle', [\App\Http\Controllers\ResellerController::class, 'toggleStatus'])->name('resellers.toggle');
+    Route::delete('/resellers/{reseller}', [\App\Http\Controllers\ResellerController::class, 'destroy'])->name('resellers.destroy');
+
     // Network incidents (blast radius)
     Route::get('/incidents', [\App\Http\Controllers\IncidentController::class, 'index'])->name('incidents.index');
     Route::post('/incidents/{incident}/acknowledge', [\App\Http\Controllers\IncidentController::class, 'acknowledge'])->name('incidents.acknowledge');

@@ -79,6 +79,10 @@
                     <x-slot name="icon">🎟️</x-slot>
                     {{ __('Vouchers') }}
                 </x-sidebar-item>
+                <x-sidebar-item :href="route('resellers.index')" :active="request()->routeIs('resellers.*')">
+                    <x-slot name="icon">🏪</x-slot>
+                    {{ __('Resellers') }}
+                </x-sidebar-item>
                 <x-sidebar-item :href="route('staff.index')" :active="request()->routeIs('staff.*')">
                     <x-slot name="icon">🛡️</x-slot>
                     {{ __('Staff') }}
