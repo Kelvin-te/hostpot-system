@@ -29,7 +29,24 @@ use App\Http\Controllers\UserDisable;
 use App\Http\Controllers\UserDownload;
 use App\Http\Controllers\UserEnable;
 use App\Http\Controllers\VoucherController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+
+// Unauthenticated health check for uptime monitors / load balancers
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        $db = 'up';
+    } catch (\Throwable) {
+        $db = 'down';
+    }
+
+    return response()->json([
+        'status' => $db === 'up' ? 'ok' : 'degraded',
+        'database' => $db,
+        'time' => now()->toIso8601String(),
+    ], $db === 'up' ? 200 : 503);
+});
 
 Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Admin Dashboard now at /dashboard (keeps name 'dashboard')
