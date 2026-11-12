@@ -83,6 +83,8 @@ Status legend: ✅ done · 🔶 partial · ⬜ not started
 
 ### Phase 2c — Reseller / landlord network
 
+**Status**: 🔶 foundation + admin CRUD done. Schema (`resellers`, `reseller_id` on routers/packages/staff/users, `wholesale_price`), `Reseller` model + relations, admin CRUD UI with encrypted per-reseller M-Pesa creds ✅. — **TODO**: reseller staff login + `reseller.scope` middleware (restrict queries to own `reseller_id`), reseller dashboard, ISP-hosted `router_reseller` pivot, revenue attribution in `AccountReference` + settlement report, portal white-label via `brand_name`, voucher/package scoping boundaries.
+
 Resellers are delegated accounts *inside* one ISP's installation (not platform tenants — consistent with DB-per-ISP). A landlord buys internet wholesale and retails to tenants; an ISP reseller operates hotspots/PPPoE under their own brand.
 
 **Ownership modes:**
