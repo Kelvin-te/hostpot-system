@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('packages:sync-profiles')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('users:prune-orphans')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('routers:health-check')->everyFiveMinutes()->withoutOverlapping(10)->onOneServer();
+        $schedule->command('pppoe:enforce-expiry')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
     }
 
     /**

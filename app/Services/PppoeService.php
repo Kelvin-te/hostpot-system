@@ -52,6 +52,22 @@ class PppoeService
             'pppoe_password' => $plainPassword,
         ]);
 
+        // Refresh billing period — Detail.package_start + package validity
+        // drives expiry enforcement in pppoe:enforce-expiry
+        $detail = $user->detail;
+        if ($detail) {
+            $detail->update([
+                'package_name' => $package->name,
+                'router_name' => $router->name ?? '',
+                'package_price' => $package->price,
+                'package_start' => now(),
+                'status' => 'active',
+            ]);
+        }
+
+        // If the secret was previously disabled (suspension), re-enable it
+        $this->resume($user);
+
         return [
             'success' => true,
             'message' => 'PPPoE account provisioned',
