@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white dark:bg-slate-800 shadow sm:rounded-lg">
+                <div class="p-6 text-slate-900 dark:text-slate-100">
                     @if(session('success'))
                         <div class="alert alert-success text-green-600">{{ session('success') }}</div>
                     @endif
@@ -15,7 +15,7 @@
                         <a href="{{ route('resellers.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{{ __('Add Reseller') }}</a>
                     </div>
 
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 text-left">{{ __('Business') }}</th>
@@ -29,11 +29,11 @@
                                 <th class="px-4 py-2"></th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                             @forelse($resellers as $reseller)
                                 <tr>
                                     <td class="px-4 py-2 font-medium">{{ $reseller->business_name }}</td>
-                                    <td class="px-4 py-2">{{ $reseller->contact_name }}<br><span class="text-xs text-gray-500">{{ $reseller->phone }}</span></td>
+                                    <td class="px-4 py-2">{{ $reseller->contact_name }}<br><span class="text-xs text-slate-500">{{ $reseller->phone }}</span></td>
                                     <td class="px-4 py-2">{{ $reseller->brand_name ?? '—' }}</td>
                                     <td class="px-4 py-2">{{ !empty($reseller->mpesa_credentials) ? __('Own till') : __('ISP till') }}</td>
                                     <td class="px-4 py-2">{{ $reseller->routers_count }}</td>
@@ -51,7 +51,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="9" class="px-4 py-6 text-center text-gray-500">{{ __('No resellers yet.') }}</td></tr>
+                                <tr><td colspan="9" class="px-4 py-6 text-center text-slate-500">{{ __('No resellers yet.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>

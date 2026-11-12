@@ -1,3 +1,3 @@
-<a href="{{ $url }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white py-2 px-4 rounded uppercase">
+<a href="{{ $url }}" class="inline-flex items-center px-4 py-2 bg-slate-800 border border-transparent rounded-md font-semibold text-xs text-white py-2 px-4 rounded uppercase">
     {{ __('Create') }}
 </a>

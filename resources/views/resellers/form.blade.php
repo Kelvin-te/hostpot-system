@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white dark:bg-slate-800 shadow sm:rounded-lg">
+                <div class="p-6 text-slate-900 dark:text-slate-100">
                     <h2 class="font-semibold text-xl mb-6 border-b-2 border-slate-100 pb-4">
                         {{ $reseller->exists ? __('Edit Reseller') : __('Add Reseller') }}
                     </h2>
@@ -44,7 +44,7 @@
 
                         <div>
                             <x-input-label for="status" :value="__('Status')" />
-                            <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:text-gray-100">
+                            <select id="status" name="status" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
                                 <option value="active" {{ old('status', $reseller->status ?? 'active') === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
                                 <option value="suspended" {{ old('status', $reseller->status) === 'suspended' ? 'selected' : '' }}>{{ __('Suspended') }}</option>
                             </select>
@@ -52,7 +52,7 @@
 
                         <div class="border-t pt-4">
                             <h3 class="font-semibold mb-1">{{ __('Own M-Pesa credentials (optional)') }}</h3>
-                            <p class="text-xs text-gray-500 mb-3">{{ __('Leave blank to use the ISP till. Payments then settle directly to the reseller.') }}</p>
+                            <p class="text-xs text-slate-500 mb-3">{{ __('Leave blank to use the ISP till. Payments then settle directly to the reseller.') }}</p>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <x-input-label for="mpesa_shortcode" :value="__('Shortcode')" />
@@ -87,7 +87,7 @@
 
                         <div class="flex items-center gap-4">
                             <x-primary-button>{{ __('Save') }}</x-primary-button>
-                            <a href="{{ route('resellers.index') }}" class="text-gray-600 hover:underline">{{ __('Cancel') }}</a>
+                            <a href="{{ route('resellers.index') }}" class="text-slate-600 hover:underline">{{ __('Cancel') }}</a>
                         </div>
                     </form>
                 </div>

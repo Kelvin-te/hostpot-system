@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-4 sm:p-8">
                     @if(session('error'))
                         <div class="alert alert-danger text-red-600">
@@ -9,7 +9,7 @@
                         </div>
                     @endif
 
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight border-b-2 border-slate-100 pb-4">
+                    <h2 class="font-semibold text-xl text-slate-800 leading-tight border-b-2 border-slate-100 pb-4">
                         {{ __('Add New Router') }}
                     </h2>
 
@@ -18,8 +18,8 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Router') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Add Mikrotik router details") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Router') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Add Mikrotik router details") }}</p>
                             </div>
 
                             <div>

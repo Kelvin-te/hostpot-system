@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 text-slate-900">
                     @if(session('success'))
                         <div class="alert alert-success text-green-600">
                             {{ session('success') }}
@@ -21,7 +21,7 @@
                         </div>
                     @endif
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                             {{ __('Mikrotik Routers') }}
                         </h2>
                         <x-create-button url="{{ route('router.create') }}"></x-create-button>
@@ -74,7 +74,7 @@
                     if (trafficEl) {
                         if (router.online) {
                             trafficEl.textContent = formatRate(router.rx_rate_mbps) + ' ↓ / ' + formatRate(router.tx_rate_mbps) + ' ↑';
-                            trafficEl.className = 'router-traffic text-xs text-gray-700';
+                            trafficEl.className = 'router-traffic text-xs text-slate-700';
                         } else {
                             trafficEl.textContent = 'Offline';
                             trafficEl.className = 'router-traffic text-xs text-red-500';
@@ -93,7 +93,7 @@
                     if (uptimeEl) {
                         uptimeEl.textContent = formatUptime(router.uptime_seconds);
                         if (router.online) {
-                            uptimeEl.className = 'router-uptime text-xs text-gray-700';
+                            uptimeEl.className = 'router-uptime text-xs text-slate-700';
                         }
                     }
                 });

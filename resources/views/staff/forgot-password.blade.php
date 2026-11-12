@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    <div class="mb-4 text-sm text-slate-600 dark:text-slate-400">
         {{ __('Forgot your staff password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
     </div>
 
@@ -15,7 +15,7 @@
         </div>
 
         <div class="flex items-center justify-between mt-6">
-            <a href="{{ route('staff.login') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-4 py-2 rounded-md font-bold mr-4">{{ __('Back') }}</a>
+            <a href="{{ route('staff.login') }}" class="bg-slate-200 hover:bg-slate-300 text-slate-600 px-4 py-2 rounded-md font-bold mr-4">{{ __('Back') }}</a>
             <x-primary-button>
                 {{ __('Email Reset Link') }}
             </x-primary-button>

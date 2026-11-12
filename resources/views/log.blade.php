@@ -1,14 +1,14 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 text-slate-900">
                     @if(session('error'))
                         <div class="alert alert-danger text-red-600">
                             {{ session('error') }}
                         </div>
                     @endif
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                         {{ __('Mikrotik Log') }}
                     </h2>
                     <div class="mt-6">

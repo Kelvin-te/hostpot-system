@@ -1,38 +1,38 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                 {{ __('Package Performance Report') }}
             </h2>
             <div class="flex gap-2">
-                <a href="{{ route('reports.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                <a href="{{ route('reports.index') }}" class="inline-flex items-center px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700">
                     ← Dashboard
                 </a>
                 <a href="{{ route('reports.export', ['type' => 'packages', 'from_date' => $fromDate, 'to_date' => $toDate]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
-                    📥 Export CSV
+                    Export CSV
                 </a>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             <!-- Filters -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6">
                     <form method="GET" action="{{ route('reports.packages') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="from_date" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                            <input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="from_date" class="block text-sm font-medium text-slate-700 mb-1">From Date</label>
+                            <input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
                         <div>
-                            <label for="to_date" class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                            <input type="date" name="to_date" id="to_date" value="{{ $toDate }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="to_date" class="block text-sm font-medium text-slate-700 mb-1">To Date</label>
+                            <input type="date" name="to_date" id="to_date" value="{{ $toDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
                         <div class="flex items-end col-span-2 gap-2">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                                🔍 Apply Filter
+                                Apply Filter
                             </button>
                             <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
                                 Today
@@ -49,54 +49,54 @@
             </div>
 
             <!-- Package Performance Table -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">All Packages Performance</h3>
-                    <p class="text-sm text-gray-600 mt-1">Comprehensive overview of all package metrics</p>
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900">All Packages Performance</h3>
+                    <p class="text-sm text-slate-600 mt-1">Comprehensive overview of all package metrics</p>
                 </div>
                 <div class="p-6">
                     @if($packages->count() > 0)
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="min-w-full divide-y divide-slate-200">
+                                <thead class="bg-slate-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sessions</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Used</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Duration</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Package</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Sessions</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Revenue</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Data Used</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Avg Duration</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="bg-white divide-y divide-slate-200">
                                     @foreach($packages as $package)
                                         @php
                                             $dataGB = $package->period_data_used / (1024 * 1024 * 1024);
                                         @endphp
-                                        <tr class="hover:bg-gray-50">
+                                        <tr class="hover:bg-slate-50">
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center">
                                                     <div>
-                                                        <div class="text-sm font-medium text-gray-900">{{ $package->name }} -
+                                                        <div class="text-sm font-medium text-slate-900">{{ $package->name }} -
                                                             @if($package->router)
                                                                 <span> {{ $package->router->name }}</span>
                                                             @endif
                                                         </div>
-                                                        <div class="text-xs text-gray-500">
+                                                        <div class="text-xs text-slate-500">
                                                             {{ $package->data_cap }} • {{ $package->bandwidth_download }}/{{ $package->bandwidth_upload }} Mbps
                                                         
                                                     </div>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-semibold text-gray-900">KES {{ number_format($package->price, 0) }}</div>
-                                                <div class="text-xs text-gray-500">{{ $package->validity_days }}d validity</div>
+                                                <div class="text-sm font-semibold text-slate-900">KES {{ number_format($package->price, 0) }}</div>
+                                                <div class="text-xs text-slate-500">{{ $package->validity_days }}d validity</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-bold text-blue-600">{{ number_format($package->sessions_count) }}</div>
                                                 @if($package->sessions_count > 0)
-                                                    <div class="text-xs text-gray-500">Active usage</div>
+                                                    <div class="text-xs text-slate-500">Active usage</div>
                                                 @else
                                                     <div class="text-xs text-red-500">No sessions</div>
                                                 @endif
@@ -104,16 +104,16 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-bold text-green-600">KES {{ number_format($package->period_revenue, 0) }}</div>
                                                 @if($package->sessions_count > 0)
-                                                    <div class="text-xs text-gray-500">{{ number_format($package->period_revenue / $package->sessions_count, 0) }}/session</div>
+                                                    <div class="text-xs text-slate-500">{{ number_format($package->period_revenue / $package->sessions_count, 0) }}/session</div>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-semibold text-purple-600">{{ number_format($dataGB, 2) }} GB</div>
                                                 @if($package->sessions_count > 0)
-                                                    <div class="text-xs text-gray-500">{{ number_format($dataGB / $package->sessions_count, 2) }} GB/session</div>
+                                                    <div class="text-xs text-slate-500">{{ number_format($dataGB / $package->sessions_count, 2) }} GB/session</div>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                                 @if($package->avg_duration_minutes > 0)
                                                     @if($package->avg_duration_minutes < 60)
                                                         {{ round($package->avg_duration_minutes) }} min
@@ -143,7 +143,7 @@
                             </table>
                         </div>
                     @else
-                        <p class="text-gray-500 text-center py-8">No packages found</p>
+                        <p class="text-slate-500 text-center py-8">No packages found</p>
                     @endif
                 </div>
             </div>
@@ -163,22 +163,22 @@
                 <div class="bg-gradient-to-br from-green-50 to-green-100 overflow-hidden shadow-sm rounded-lg p-6 border-2 border-green-200">
                     <div class="flex items-start justify-between">
                         <div>
-                            <div class="text-sm font-medium text-green-600 mb-2">🏆 Top Revenue Generator</div>
-                            <div class="text-2xl font-bold text-gray-900">{{ $topPerformer->name ?? 'N/A' }}</div>
+                            <div class="text-sm font-medium text-green-600 mb-2">Top Revenue Generator</div>
+                            <div class="text-2xl font-bold text-slate-900">{{ $topPerformer->name ?? 'N/A' }}</div>
                         </div>
-                        <div class="text-5xl">💰</div>
+                        <div class="text-5xl"></div>
                     </div>
                     <div class="mt-4 flex justify-between align-center w-100">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Revenue: </span>
+                            <span class="text-slate-600">Revenue: </span>
                             <span class="font-semibold text-green-600">KES {{ number_format($topPerformer->period_revenue ?? 0, 0) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Sessions: </span>
+                            <span class="text-slate-600">Sessions: </span>
                             <span class="font-semibold">{{ number_format($topPerformer->sessions_count ?? 0) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Price: </span>
+                            <span class="text-slate-600">Price: </span>
                             <span class="font-semibold">KES {{ number_format($topPerformer->price ?? 0, 0) }}</span>
                         </div>
                     </div>
@@ -188,23 +188,23 @@
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden shadow-sm rounded-lg p-6 border-2 border-blue-200">
                     <div class="flex items-start justify-between">
                         <div>
-                            <div class="text-sm font-medium text-blue-600 mb-2">⭐ Most Popular Package</div>
-                            <div class="text-2xl font-bold text-gray-900">{{ $mostPopular->name ?? 'N/A' }}</div>
+                            <div class="text-sm font-medium text-blue-600 mb-2">Most Popular Package</div>
+                            <div class="text-2xl font-bold text-slate-900">{{ $mostPopular->name ?? 'N/A' }}</div>
                             
                         </div>
-                        <div class="text-5xl">🌟</div>
+                        <div class="text-5xl"></div>
                     </div>
                     <div class="mt-4 flex justify-between align-center w-100">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Sessions: </span>
+                            <span class="text-slate-600">Sessions: </span>
                             <span class="font-semibold text-blue-600">{{ number_format($mostPopular->sessions_count ?? 0) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Market Share: </span>
+                            <span class="text-slate-600">Market Share: </span>
                             <span class="font-semibold">{{ $totalSessions > 0 ? number_format(($mostPopular->sessions_count ?? 0) / $totalSessions * 100, 1) : 0 }}%</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Price: </span>
+                            <span class="text-slate-600">Price: </span>
                             <span class="font-semibold">KES {{ number_format($mostPopular->price ?? 0, 0) }}</span>
                         </div>
                     </div>
@@ -214,9 +214,9 @@
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Revenue Distribution -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Revenue Distribution</h3>
+                <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-900">Revenue Distribution</h3>
                     </div>
                     <div class="p-6">
                         <canvas id="revenueDistChart" height="250"></canvas>
@@ -224,9 +224,9 @@
                 </div>
 
                 <!-- Session Distribution -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Session Distribution</h3>
+                <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-900">Session Distribution</h3>
                     </div>
                     <div class="p-6">
                         <canvas id="sessionDistChart" height="250"></canvas>

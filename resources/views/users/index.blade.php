@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-700">
+                <div class="p-6 text-slate-900 dark:text-slate-100">
                     @if(session('success'))
                         <div class="alert alert-success text-green-600">
                             {{ session('success') }}
@@ -25,7 +25,7 @@
                         </div>
                     @endif
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight">
                             {{ __('Users') }}
                         </h2>
                         <div class="flex items-center">
@@ -34,11 +34,11 @@
                                 @csrf
                                 <x-danger-button>{{ __('Disable all users with due') }}</x-danger-button>
                             </form>
-                            <a href="{{ route('user.download') }}" class="ml-2 inline-flex items-center px-4 py-2 bg-orange-400 text-white dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs rounded uppercase">
+                            <a href="{{ route('user.download') }}" class="ml-2 inline-flex items-center px-4 py-2 bg-orange-400 text-white dark:bg-slate-200 border border-transparent rounded-md font-semibold text-xs rounded uppercase">
                                     {{ __('Download') }}
                                 </a>
 
-                                <a href="{{ route('users.create') }}" class="ml-2 inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white rounded uppercase">
+                                <a href="{{ route('users.create') }}" class="ml-2 inline-flex items-center px-4 py-2 bg-slate-800 dark:bg-slate-200 border border-transparent rounded-md font-semibold text-xs text-white rounded uppercase">
                                     {{ __('Create') }}
                                 </a>
                             @endif

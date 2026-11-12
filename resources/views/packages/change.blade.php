@@ -9,7 +9,7 @@
                         </div>
                     @endif
 
-                        <h2 class="font-semibold text-xl text-gray-800 dleading-tight border-b-2 border-slate-100 pb-4">
+                        <h2 class="font-semibold text-xl text-slate-800 dleading-tight border-b-2 border-slate-100 pb-4">
                             {{ __('Change Package') }}
                         </h2>
 
@@ -19,19 +19,19 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Change package') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Change package for user ") . $user->name }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Change package') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Change package for user ") . $user->name }}</p>
                             </div>
 
                             <div>
                                 <div>
                                     <x-input-label for="router" :value="__('Router')" class="mt-4"></x-input-label>
-                                    <x-text-input id="router" name="router" type="text" class="mt-1 block w-full bg-gray-100" value="{{ $router_name }}" disabled></x-text-input>
+                                    <x-text-input id="router" name="router" type="text" class="mt-1 block w-full bg-slate-100" value="{{ $router_name }}" disabled></x-text-input>
                                 </div>
 
                                 <div>
                                     <x-input-label for="package_name" :value="__('Package name')" class="mt-4"></x-input-label>
-                                    <select name="package_name" id="package_name" class="mt-1 block w-full rounded-md border border-gray-300">
+                                    <select name="package_name" id="package_name" class="mt-1 block w-full rounded-md border border-slate-300">
                                         <option value="">{{ data_get($user, 'detail.package_name', __('Select package')) }}</option>
                                         @foreach($packages as $package)
                                             <option value="{{ $package->id }}">{{ $package->name }}</option>

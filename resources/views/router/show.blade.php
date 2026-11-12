@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 text-slate-900">
                     @if(session('success'))
                         <div class="alert alert-success text-green-600 mb-4">
                             {{ session('success') }}
@@ -18,10 +18,10 @@
                     <!-- Header -->
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
                         <div>
-                            <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
+                            <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
                                 {{ $router->name }}
                             </h2>
-                            <p class="text-sm text-gray-600 mt-1">MikroTik Router Details</p>
+                            <p class="text-sm text-slate-600 mt-1">MikroTik Router Details</p>
                         </div>
                         <div class="flex space-x-3">
                             <a href="{{ route('router.edit', $router) }}"
@@ -49,7 +49,7 @@
                                 </button>
                             </form>
                             <a href="{{ route('router.index') }}"
-                               class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                               class="inline-flex items-center px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                                 </svg>
@@ -101,48 +101,48 @@
                     <!-- Router Information Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                         <!-- Basic Information Card -->
-                        <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
                             <div class="flex items-center mb-3">
                                 <div class="pe-2 text-blue-600 rounded">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-gray-800 ml-2">Basic Information</h3>
+                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Basic Information</h3>
                             </div>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Router Name:</span>
-                                    <span class="text-gray-900 font-medium">{{ $router->name }}</span>
+                                    <span class="text-slate-600">Router Name:</span>
+                                    <span class="text-slate-900 font-medium">{{ $router->name }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Location:</span>
-                                    <span class="text-gray-900">{{ $router->location ?? 'Not specified' }}</span>
+                                    <span class="text-slate-600">Location:</span>
+                                    <span class="text-slate-900">{{ $router->location ?? 'Not specified' }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">IP Address:</span>
-                                    <span class="text-gray-900 font-mono bg-gray-100 px-1 py-0.5 rounded text-xs">{{ $router->ip }}</span>
+                                    <span class="text-slate-600">IP Address:</span>
+                                    <span class="text-slate-900 font-mono bg-slate-100 px-1 py-0.5 rounded text-xs">{{ $router->ip }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Username:</span>
-                                    <span class="text-gray-900">{{ $router->username }}</span>
+                                    <span class="text-slate-600">Username:</span>
+                                    <span class="text-slate-900">{{ $router->username }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Connection Status Card -->
-                        <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
                             <div class="flex items-center mb-3">
                                 <div class="pe-2 text-green-600 rounded">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-gray-800 ml-2">Connection Status</h3>
+                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Connection Status</h3>
                             </div>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-gray-600">Status:</span>
+                                    <span class="text-slate-600">Status:</span>
                                     @if($connectionStatus)
                                         @if($connectionStatus['success'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -160,7 +160,7 @@
                                             </span>
                                         @endif
                                     @else
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
                                             <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
                                                 <circle cx="4" cy="4" r="3"></circle>
                                             </svg>
@@ -169,12 +169,12 @@
                                     @endif
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Last Ping:</span>
-                                    <span class="text-gray-900">-</span>
+                                    <span class="text-slate-600">Last Ping:</span>
+                                    <span class="text-slate-900">-</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Response Time:</span>
-                                    <span class="text-gray-900">-</span>
+                                    <span class="text-slate-600">Response Time:</span>
+                                    <span class="text-slate-900">-</span>
                                 </div>
                                 <div class="mt-3">
                                     <button id="check-status-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 py-2 rounded text-sm transition duration-200">
@@ -185,27 +185,27 @@
                         </div>
 
                         <!-- Timestamps Card -->
-                        <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
                             <div class="flex items-center mb-3">
-                                <div class="pe-2 text-gray-600 rounded">
+                                <div class="pe-2 text-slate-600 rounded">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-gray-800 ml-2">Timestamps</h3>
+                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Timestamps</h3>
                             </div>
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Added:</span>
-                                    <span class="text-gray-900">{{ $router->created_at->format('M d, Y') }}</span>
+                                    <span class="text-slate-600">Added:</span>
+                                    <span class="text-slate-900">{{ $router->created_at->format('M d, Y') }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Last Updated:</span>
-                                    <span class="text-gray-900">{{ $router->updated_at->format('M d, Y H:i') }}</span>
+                                    <span class="text-slate-600">Last Updated:</span>
+                                    <span class="text-slate-900">{{ $router->updated_at->format('M d, Y H:i') }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Last Seen:</span>
-                                    <span class="text-gray-900">
+                                    <span class="text-slate-600">Last Seen:</span>
+                                    <span class="text-slate-900">
                                         @if($connectionStatus && $connectionStatus['success'])
                                             {{ now()->format('M d, Y H:i') }}
                                         @else
@@ -214,23 +214,23 @@
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Uptime:</span>
-                                    <span class="text-gray-900">{{ $systemInfo['uptime'] ?? '-' }}</span>
+                                    <span class="text-slate-600">Uptime:</span>
+                                    <span class="text-slate-900">{{ $systemInfo['uptime'] ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Router Setup Checklist -->
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
-                        <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                    <div class="bg-white rounded-lg border border-slate-200 shadow-sm mb-6">
+                        <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="pe-2 text-teal-600 rounded">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-gray-800 ml-2">Setup Checklist</h3>
+                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Setup Checklist</h3>
                             </div>
                             <button type="button" id="refresh-checklist-btn" class="text-xs text-teal-600 hover:text-teal-800 font-medium">
                                 Refresh
@@ -238,16 +238,16 @@
                         </div>
                         <div class="p-4">
                             <div id="checklist-progress-bar" class="mb-4 hidden">
-                                <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                <div class="flex justify-between text-xs text-slate-600 mb-1">
                                     <span>Progress</span>
                                     <span id="checklist-progress-text">0/0</span>
                                 </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="w-full bg-slate-200 rounded-full h-2">
                                     <div id="checklist-progress-fill" class="bg-teal-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                                 </div>
                             </div>
                             <div id="setup-checklist-body" class="space-y-3">
-                                <div class="text-center text-gray-400 py-4 text-sm">Loading checklist...</div>
+                                <div class="text-center text-slate-400 py-4 text-sm">Loading checklist...</div>
                             </div>
                         </div>
                     </div>
@@ -255,38 +255,38 @@
                     <!-- MikroTik Specific Information -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                         <!-- System Information -->
-                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                            <div class="px-4 py-3 border-b border-gray-200">
+                        <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-slate-200">
                                 <div class="flex items-center">
                                     <div class="pe-2 text-red-600 rounded">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-gray-800 ml-2">System Info</h3>
+                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">System Info</h3>
                                 </div>
                             </div>
                             <div class="p-4">
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Model:</span>
-                                        <span class="text-gray-900 font-medium">{{ $systemInfo['board-name'] ?? $systemInfo['platform'] ?? '-' }}</span>
+                                        <span class="text-slate-600">Model:</span>
+                                        <span class="text-slate-900 font-medium">{{ $systemInfo['board-name'] ?? $systemInfo['platform'] ?? '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">RouterOS:</span>
-                                        <span class="text-gray-900 font-medium">{{ $systemInfo['version'] ?? '-' }}</span>
+                                        <span class="text-slate-600">RouterOS:</span>
+                                        <span class="text-slate-900 font-medium">{{ $systemInfo['version'] ?? '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Architecture:</span>
-                                        <span class="text-gray-900 font-medium">{{ $systemInfo['architecture-name'] ?? $systemInfo['cpu'] ?? '-' }}</span>
+                                        <span class="text-slate-600">Architecture:</span>
+                                        <span class="text-slate-900 font-medium">{{ $systemInfo['architecture-name'] ?? $systemInfo['cpu'] ?? '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">CPU Load:</span>
-                                        <span class="text-gray-900 font-medium">{{ isset($systemInfo['cpu-load']) ? $systemInfo['cpu-load'] . '%' : '-' }}</span>
+                                        <span class="text-slate-600">CPU Load:</span>
+                                        <span class="text-slate-900 font-medium">{{ isset($systemInfo['cpu-load']) ? $systemInfo['cpu-load'] . '%' : '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Memory:</span>
-                                        <span class="text-gray-900 font-medium">
+                                        <span class="text-slate-600">Memory:</span>
+                                        <span class="text-slate-900 font-medium">
                                             @if(isset($systemInfo['total-memory']))
                                                 {{ number_format($systemInfo['total-memory'] / 1024 / 1024, 1) }} MB
                                             @else
@@ -302,15 +302,15 @@
                         </div>
 
                         <!-- Interface Status -->
-                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                            <div class="px-4 py-3 border-b border-gray-200">
+                        <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-slate-200">
                                 <div class="flex items-center">
                                     <div class="pe-2 text-purple-600 rounded">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-gray-800 ml-2">Interfaces</h3>
+                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Interfaces</h3>
                                 </div>
                             </div>
                             <div class="p-4">
@@ -334,24 +334,24 @@
                                         }
                                     @endphp
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Ethernet:</span>
-                                        <span class="text-gray-900 font-medium">{{ $ethernetCount ?: '-' }}</span>
+                                        <span class="text-slate-600">Ethernet:</span>
+                                        <span class="text-slate-900 font-medium">{{ $ethernetCount ?: '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Wireless:</span>
-                                        <span class="text-gray-900 font-medium">{{ $wirelessCount ?: '-' }}</span>
+                                        <span class="text-slate-600">Wireless:</span>
+                                        <span class="text-slate-900 font-medium">{{ $wirelessCount ?: '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Bridge:</span>
-                                        <span class="text-gray-900 font-medium">{{ $bridgeCount ?: '-' }}</span>
+                                        <span class="text-slate-600">Bridge:</span>
+                                        <span class="text-slate-900 font-medium">{{ $bridgeCount ?: '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">VLAN:</span>
-                                        <span class="text-gray-900 font-medium">{{ $vlanCount ?: '-' }}</span>
+                                        <span class="text-slate-600">VLAN:</span>
+                                        <span class="text-slate-900 font-medium">{{ $vlanCount ?: '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">PPPoE:</span>
-                                        <span class="text-gray-900 font-medium">{{ $pppoeCount ?: '-' }}</span>
+                                        <span class="text-slate-600">PPPoE:</span>
+                                        <span class="text-slate-900 font-medium">{{ $pppoeCount ?: '-' }}</span>
                                     </div>
                                 </div>
                                 <button id="load-interfaces-btn" class="w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white font-medium py-1.5 px-3 py-2 rounded text-sm transition duration-200">
@@ -361,26 +361,26 @@
                         </div>
 
                         <!-- Resources -->
-                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                            <div class="px-4 py-3 border-b border-gray-200">
+                        <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-slate-200">
                                 <div class="flex items-center">
                                     <div class="pe-2 text-indigo-600 rounded">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-gray-800 ml-2">Resources</h3>
+                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Resources</h3>
                                 </div>
                             </div>
                             <div class="p-4">
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">CPU Usage:</span>
-                                        <span class="text-gray-900 font-medium">{{ isset($systemInfo['cpu-load']) ? $systemInfo['cpu-load'] . '%' : '-' }}</span>
+                                        <span class="text-slate-600">CPU Usage:</span>
+                                        <span class="text-slate-900 font-medium">{{ isset($systemInfo['cpu-load']) ? $systemInfo['cpu-load'] . '%' : '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">RAM Usage:</span>
-                                        <span class="text-gray-900 font-medium">
+                                        <span class="text-slate-600">RAM Usage:</span>
+                                        <span class="text-slate-900 font-medium">
                                             @if(isset($systemInfo['total-memory']) && isset($systemInfo['free-memory']))
                                                 @php
                                                     $usedMemory = $systemInfo['total-memory'] - $systemInfo['free-memory'];
@@ -393,8 +393,8 @@
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Disk Usage:</span>
-                                        <span class="text-gray-900 font-medium">
+                                        <span class="text-slate-600">Disk Usage:</span>
+                                        <span class="text-slate-900 font-medium">
                                             @if(isset($systemInfo['total-hdd-space']) && isset($systemInfo['free-hdd-space']))
                                                 @php
                                                     $usedDisk = $systemInfo['total-hdd-space'] - $systemInfo['free-hdd-space'];
@@ -407,12 +407,12 @@
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Uptime:</span>
-                                        <span class="text-gray-900 font-medium">{{ $systemInfo['uptime'] ?? '-' }}</span>
+                                        <span class="text-slate-600">Uptime:</span>
+                                        <span class="text-slate-900 font-medium">{{ $systemInfo['uptime'] ?? '-' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Board Name:</span>
-                                        <span class="text-gray-900 font-medium">{{ $systemInfo['board-name'] ?? '-' }}</span>
+                                        <span class="text-slate-600">Board Name:</span>
+                                        <span class="text-slate-900 font-medium">{{ $systemInfo['board-name'] ?? '-' }}</span>
                                     </div>
                                 </div>
                                 <button class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-3 py-2 rounded text-sm transition duration-200">
@@ -426,30 +426,30 @@
                     <!-- Diagnostic Cards -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                         <!-- Hotspot Status Card -->
-                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                            <div class="px-4 py-3 border-b border-gray-200">
+                        <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-slate-200">
                                 <div class="flex items-center">
                                     <div class="pe-2 text-orange-600 rounded">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-gray-800 ml-2">Hotspot Status</h3>
+                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Hotspot Status</h3>
                                 </div>
                             </div>
                             <div class="p-4">
                                 <div class="space-y-2 text-sm" id="hotspot-status">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Service:</span>
-                                        <span class="text-gray-900 font-medium" id="hotspot-enabled">Loading...</span>
+                                        <span class="text-slate-600">Service:</span>
+                                        <span class="text-slate-900 font-medium" id="hotspot-enabled">Loading...</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Interface:</span>
-                                        <span class="text-gray-900 font-medium" id="hotspot-interface">-</span>
+                                        <span class="text-slate-600">Interface:</span>
+                                        <span class="text-slate-900 font-medium" id="hotspot-interface">-</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Server IP:</span>
-                                        <span class="text-gray-900 font-medium" id="hotspot-server-ip">-</span>
+                                        <span class="text-slate-600">Server IP:</span>
+                                        <span class="text-slate-900 font-medium" id="hotspot-server-ip">-</span>
                                     </div>
                                 </div>
                                 <div class="mt-3 text-right">
@@ -461,30 +461,30 @@
                         </div>
 
                         <!-- Walled Garden Card -->
-                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                            <div class="px-4 py-3 border-b border-gray-200">
+                        <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
+                            <div class="px-4 py-3 border-b border-slate-200">
                                 <div class="flex items-center">
                                     <div class="pe-2 text-pink-600 rounded">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-gray-800 ml-2">Walled Garden</h3>
+                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Walled Garden</h3>
                                 </div>
                             </div>
                             <div class="p-4">
                                 <div class="space-y-2 text-sm" id="walled-garden">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Status:</span>
-                                        <span class="text-gray-900 font-medium" id="walled-garden-status">Loading...</span>
+                                        <span class="text-slate-600">Status:</span>
+                                        <span class="text-slate-900 font-medium" id="walled-garden-status">Loading...</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Domains:</span>
-                                        <span class="text-gray-900 font-medium" id="walled-garden-domains">-</span>
+                                        <span class="text-slate-600">Domains:</span>
+                                        <span class="text-slate-900 font-medium" id="walled-garden-domains">-</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">IPs:</span>
-                                        <span class="text-gray-900 font-medium" id="walled-garden-ips">-</span>
+                                        <span class="text-slate-600">IPs:</span>
+                                        <span class="text-slate-900 font-medium" id="walled-garden-ips">-</span>
                                     </div>
                                 </div>
                                 <button id="apply-walled-garden-btn" class="w-full mt-3 bg-pink-600 hover:bg-pink-700 text-white font-medium py-1.5 px-3 py-2 rounded text-sm transition duration-200">
@@ -495,8 +495,8 @@
                     </div>
 
                     <!-- Recent Activity -->
-                    <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                        <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
+                        <div class="px-6 py-4 border-b border-slate-200">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">
                                     <div class="pe-2 text-indigo-600 rounded-lg">
@@ -504,7 +504,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-lg font-semibold text-gray-800 ml-3">Recent Activity</h3>
+                                    <h3 class="text-lg font-semibold text-slate-800 ml-3">Recent Activity</h3>
                                 </div>
                                 <a href="{{ route('log', ['param' => $router]) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                                     View All Logs →
@@ -512,8 +512,8 @@
                             </div>
                         </div>
                         <div class="p-6">
-                            <div class="text-center text-gray-500 py-8">
-                                <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="text-center text-slate-500 py-8">
+                                <svg class="w-12 h-12 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                                 </svg>
                                 <p class="text-lg font-medium">No recent activity</p>
@@ -524,24 +524,24 @@
 
                     <!-- Packages Information -->
                     @if($router->packages && $router->packages->count() > 0)
-                    <div class="mt-8 bg-white rounded-lg border border-gray-200 shadow-sm">
-                        <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="mt-8 bg-white rounded-lg border border-slate-200 shadow-sm">
+                        <div class="px-6 py-4 border-b border-slate-200">
                             <div class="flex items-center">
                                 <div class="pe-2 text-teal-600 rounded-lg">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-semibold text-gray-800 ml-3">Associated Packages</h3>
+                                <h3 class="text-lg font-semibold text-slate-800 ml-3">Associated Packages</h3>
                             </div>
                         </div>
                         <div class="p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach($router->packages as $package)
-                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200">
-                                    <h4 class="font-semibold text-gray-800">{{ $package->name }}</h4>
-                                    <p class="text-sm text-gray-600 mt-1">{{ $package->description ?? 'No description' }}</p>
-                                    <div class="mt-2 text-xs text-gray-500">
+                                <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition duration-200">
+                                    <h4 class="font-semibold text-slate-800">{{ $package->name }}</h4>
+                                    <p class="text-sm text-slate-600 mt-1">{{ $package->description ?? 'No description' }}</p>
+                                    <div class="mt-2 text-xs text-slate-500">
                                         Added: {{ $package->created_at->format('M d, Y') }}
                                     </div>
                                 </div>
@@ -568,7 +568,7 @@
                 btn.disabled = true;
                 btn.textContent = 'Checking...';
                 btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                btn.classList.add('bg-gray-400');
+                btn.classList.add('bg-slate-400');
                 
                 fetch(`{{ url('/') }}/router/${routerId}/test-connection`, {
                     method: 'POST',
@@ -581,14 +581,14 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        btn.classList.remove('bg-gray-400');
+                        btn.classList.remove('bg-slate-400');
                         btn.classList.add('bg-green-600', 'hover:bg-green-700');
                         
                         // Update connection status
                         updateConnectionStatus('online', 'Connected');
                         showNotification('Router is online and accessible!', 'success');
                     } else {
-                        btn.classList.remove('bg-gray-400');
+                        btn.classList.remove('bg-slate-400');
                         btn.classList.add('bg-red-600', 'hover:bg-red-700');
                         
                         // Update connection status
@@ -598,7 +598,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    btn.classList.remove('bg-gray-400');
+                    btn.classList.remove('bg-slate-400');
                     btn.classList.add('bg-red-600', 'hover:bg-red-700');
                     
                     updateConnectionStatus('offline', 'Connection error');
@@ -674,7 +674,7 @@
                 btn.disabled = true;
                 btn.textContent = 'Applying...';
                 btn.classList.remove('bg-pink-600', 'hover:bg-pink-700');
-                btn.classList.add('bg-gray-400');
+                btn.classList.add('bg-slate-400');
                 
                 fetch(`{{ url('/') }}/router/${routerId}/apply-walled-garden`, {
                     method: 'POST',
@@ -702,7 +702,7 @@
                 .finally(() => {
                     btn.disabled = false;
                     btn.textContent = originalText;
-                    btn.classList.remove('bg-gray-400');
+                    btn.classList.remove('bg-slate-400');
                     btn.classList.add('bg-pink-600', 'hover:bg-pink-700');
                 });
             });
@@ -741,7 +741,7 @@
                 const progressText = document.getElementById('checklist-progress-text');
 
                 if (!checklist.steps || checklist.steps.length === 0) {
-                    body.innerHTML = '<div class="text-center text-gray-400 py-4 text-sm">No steps available</div>';
+                    body.innerHTML = '<div class="text-center text-slate-400 py-4 text-sm">No steps available</div>';
                     return;
                 }
 
@@ -754,20 +754,20 @@
 
                     const statusIcon = isDone
                         ? '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
-                        : '<svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7zm-1-4a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"></path></svg>';
+                        : '<svg class="w-5 h-5 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7zm-1-4a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"></path></svg>';
 
                     const actionButton = isDone
                         ? '<button type="button" class="redo-step-btn text-xs text-teal-600 hover:text-teal-800 font-medium" data-route="' + step.action_route + '" data-index="' + index + '">Redo</button>'
                         : '<button type="button" class="do-step-btn text-xs text-white bg-teal-600 hover:bg-teal-700 px-2 py-1 rounded font-medium" data-route="' + step.action_route + '" data-index="' + index + '">Do</button>';
 
-                    const doneClass = isDone ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100';
+                    const doneClass = isDone ? 'bg-green-50 border-green-100' : 'bg-slate-50 border-slate-100';
 
                     return '<div class="step-item flex items-start justify-between p-3 rounded-lg border ' + doneClass + '" data-step-index="' + index + '">' +
                         '<div class="flex items-start">' +
                             '<div class="flex-shrink-0 mt-0.5">' + statusIcon + '</div>' +
                             '<div class="ml-3">' +
-                                '<p class="text-sm font-medium text-gray-900">' + (index + 1) + '. ' + escapeHtml(step.label) + '</p>' +
-                                '<p class="text-xs text-gray-500">' + escapeHtml(step.description) + '</p>' +
+                                '<p class="text-sm font-medium text-slate-900">' + (index + 1) + '. ' + escapeHtml(step.label) + '</p>' +
+                                '<p class="text-xs text-slate-500">' + escapeHtml(step.description) + '</p>' +
                                 '<p class="step-status text-xs mt-1 ' + (isDone ? 'text-green-600' : 'text-amber-600') + '">' + (isDone ? 'Done' : 'Pending') + '</p>' +
                             '</div>' +
                         '</div>' +
@@ -843,7 +843,7 @@
                 btn.disabled = true;
                 btn.textContent = 'Rebooting...';
                 btn.classList.remove('text-yellow-600');
-                btn.classList.add('text-gray-400');
+                btn.classList.add('text-slate-400');
                 
                 fetch(`{{ url('/') }}/router/${routerId}/reboot`, {
                     method: 'POST',
@@ -868,7 +868,7 @@
                 .finally(() => {
                     btn.disabled = false;
                     btn.textContent = originalText;
-                    btn.classList.remove('text-gray-400');
+                    btn.classList.remove('text-slate-400');
                     btn.classList.add('text-yellow-600');
                 });
             });
@@ -881,7 +881,7 @@
                 btn.disabled = true;
                 btn.textContent = 'Backing up...';
                 btn.classList.remove('text-red-600');
-                btn.classList.add('text-gray-400');
+                btn.classList.add('text-slate-400');
                 
                 fetch(`{{ url('/') }}/router/${routerId}/backup`, {
                     method: 'POST',
@@ -906,7 +906,7 @@
                 .finally(() => {
                     btn.disabled = false;
                     btn.textContent = originalText;
-                    btn.classList.remove('text-gray-400');
+                    btn.classList.remove('text-slate-400');
                     btn.classList.add('text-red-600');
                 });
             });
@@ -919,7 +919,7 @@
                 btn.disabled = true;
                 btn.textContent = 'Loading...';
                 btn.classList.remove('text-blue-600');
-                btn.classList.add('text-gray-400');
+                btn.classList.add('text-slate-400');
                 
                 fetch(`{{ url('/') }}/router/${routerId}/config`)
                 .then(response => response.json())
@@ -941,7 +941,7 @@
                 .finally(() => {
                     btn.disabled = false;
                     btn.textContent = originalText;
-                    btn.classList.remove('text-gray-400');
+                    btn.classList.remove('text-slate-400');
                     btn.classList.add('text-blue-600');
                 });
             });
@@ -1004,9 +1004,9 @@
                 Object.keys(fields).forEach(key => {
                     const elements = document.querySelectorAll('#system-info .flex.justify-between');
                     elements.forEach(element => {
-                        const label = element.querySelector('.text-gray-600');
+                        const label = element.querySelector('.text-slate-600');
                         if (label && label.textContent.includes(key)) {
-                            const value = element.querySelector('.text-gray-900.font-medium');
+                            const value = element.querySelector('.text-slate-900.font-medium');
                             if (value) {
                                 value.textContent = fields[key];
                             }
@@ -1043,9 +1043,9 @@
                 Object.keys(interfaceFields).forEach(key => {
                     const elements = document.querySelectorAll('.space-y-2 .flex.justify-between');
                     elements.forEach(element => {
-                        const label = element.querySelector('.text-gray-600');
+                        const label = element.querySelector('.text-slate-600');
                         if (label && label.textContent.includes(key)) {
-                            const value = element.querySelector('.text-gray-900.font-medium');
+                            const value = element.querySelector('.text-slate-900.font-medium');
                             if (value) {
                                 value.textContent = interfaceFields[key];
                             }

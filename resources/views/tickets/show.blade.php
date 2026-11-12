@@ -1,10 +1,10 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 text-slate-900">
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                             {{ __('Ticket ID #') . $ticket->number }}
                         </h2>
 
@@ -36,7 +36,7 @@
                         {{ $ticket->message }}
                     </div>
 
-                    <div class="my-6 border border-gray-100"></div>
+                    <div class="my-6 border border-slate-100"></div>
 
                     <div>
                         @foreach($comments as $comment)
@@ -54,7 +54,7 @@
                                 @csrf
                                 <div>
                                     <x-input-label for="comment" :value="__('Add comment')" class="mt-4"></x-input-label>
-                                    <textarea name="comment" class="px-3 py-3 mt-1 rounded-lg border-gray-300 md:text-sm block w-full" rows="5"></textarea>
+                                    <textarea name="comment" class="px-3 py-3 mt-1 rounded-lg border-slate-300 md:text-sm block w-full" rows="5"></textarea>
                                     <x-input-error class="mt-2" :messages="$errors->get('comment')"></x-input-error>
                                 </div>
                                 <x-text-input name="ticket_id" type="hidden" value="{{ $ticket->id }}"></x-text-input>

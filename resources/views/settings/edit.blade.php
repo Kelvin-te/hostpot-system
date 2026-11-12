@@ -6,50 +6,50 @@
 </style>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="flex">
                     <!-- Side Navigation -->
-                    <div class="w-64 bg-gray-50 border-r border-gray-200 flex-shrink-0 hidden lg:block">
+                    <div class="w-64 bg-slate-50 border-r border-slate-200 flex-shrink-0 hidden lg:block">
                         <div class="p-6 sticky top-6">
-                            <h2 class="font-semibold text-lg text-gray-800 mb-4">{{ __('Settings') }}</h2>
+                            <h2 class="font-semibold text-lg text-slate-800 mb-4">{{ __('Settings') }}</h2>
                             <nav class="space-y-1">
-                                <a href="#section-isp" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-isp" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('ISP Information') }}
                                 </a>
-                                <a href="#section-app" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-app" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Application Settings') }}
                                 </a>
-                                <a href="#section-walled-garden" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-walled-garden" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Walled Garden') }}
                                 </a>
-                                <a href="#section-billing" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-billing" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Billing Settings') }}
                                 </a>
-                                <a href="#section-sms" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-sms" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('SMS Settings') }}
                                 </a>
-                                <a href="#section-payment" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-payment" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Payment Gateway') }}
                                 </a>
-                                <a href="#section-email" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-email" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Email Settings') }}
                                 </a>
-                                <a href="#section-security" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-security" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Security Settings') }}
                                 </a>
-                                <a href="#section-support" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-support" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Support/Contact') }}
                                 </a>
-                                <a href="#section-free-package" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-free-package" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Free Package') }}
                                 </a>
-                                <a href="#section-invoice" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-invoice" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Invoice Settings') }}
                                 </a>
-                                <a href="#section-branding" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-branding" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Branding') }}
                                 </a>
-                                <a href="#section-backup" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                <a href="#section-backup" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('Backup Settings') }}
                                 </a>
                             </nav>
@@ -59,7 +59,7 @@
                     <!-- Main Content -->
                     <div class="flex-1 p-4 sm:p-8">
                         @if(session('success'))
-                            <div class="alert alert-success text-gray-400 mb-4">
+                            <div class="alert alert-success text-slate-400 mb-4">
                                 {{ session('success') }}
                             </div>
                         @endif
@@ -70,7 +70,7 @@
                             </div>
                         @endif
 
-                        <h2 class="font-semibold text-xl text-gray-800 leading-tight border-b-2 border-slate-100 pb-4 mb-6">
+                        <h2 class="font-semibold text-xl text-slate-800 leading-tight border-b-2 border-slate-100 pb-4 mb-6">
                             {{ __('Application Settings') }}
                         </h2>
 
@@ -81,8 +81,8 @@
                         <!-- Company Information Section -->
                         <div id="section-isp" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('ISP Information') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Update your company information.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('ISP Information') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Update your company information.") }}</p>
                             </div>
 
                             <div>
@@ -117,8 +117,8 @@
                         <!-- Application Settings Section -->
                         <div id="section-app" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Application Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure global application settings.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Application Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure global application settings.") }}</p>
                             </div>
 
                             <div>
@@ -147,14 +147,14 @@
                         <!-- Walled Garden Settings Section -->
                         <div id="section-walled-garden" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Walled Garden Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure walled garden for captive portal.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Walled Garden Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure walled garden for captive portal.") }}</p>
                             </div>
 
                             <div>
                                 <div>
                                     <x-input-label for="walled_garden_enabled" value="{{ __('Enable Walled Garden') }}" class="mt-4"></x-input-label>
-                                    <select id="walled_garden_enabled" name="walled_garden_enabled" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <select id="walled_garden_enabled" name="walled_garden_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('walled_garden_enabled', $settings->walled_garden_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('walled_garden_enabled', $settings->walled_garden_enabled ?? true) ? 'selected' : '' }}>No</option>
                                     </select>
@@ -180,8 +180,8 @@
                         <!-- Billing Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Billing Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure billing and disconnection schedules.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Billing Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure billing and disconnection schedules.") }}</p>
                             </div>
 
                             <div>
@@ -208,15 +208,15 @@
                         <!-- SMS/Notification Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('SMS/Notification Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure SMS and notification preferences.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('SMS/Notification Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure SMS and notification preferences.") }}</p>
                             </div>
 
                             <div>
                                 <div>
                                     <x-input-label for="sms_api_key" value="{{ __('SMS API Key (Email|BearerToken)') }}" class="mt-4"></x-input-label>
                                     <x-text-input id="sms_api_key" name="sms_api_key" type="text" class="mt-1 block w-full" value="{{ old('sms_api_key', $settings->sms_api_key ?? '') }}" placeholder="your@email.com|your_bearer_token"></x-text-input>
-                                    <p class="mt-1 text-xs text-gray-500">{{ __('Format: email|bearer_token (separated by pipe |)') }}</p>
+                                    <p class="mt-1 text-xs text-slate-500">{{ __('Format: email|bearer_token (separated by pipe |)') }}</p>
                                     <x-input-error class="mt-2" :messages="$errors->get('sms_api_key')"></x-input-error>
                                 </div>
 
@@ -228,7 +228,7 @@
 
                                 <div>
                                     <x-input-label for="billing_alerts_enabled" value="{{ __('Enable Billing Alerts') }}" class="mt-4"></x-input-label>
-                                    <select id="billing_alerts_enabled" name="billing_alerts_enabled" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <select id="billing_alerts_enabled" name="billing_alerts_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('billing_alerts_enabled', $settings->billing_alerts_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('billing_alerts_enabled', $settings->billing_alerts_enabled ?? true) ? 'selected' : '' }}>No</option>
                                     </select>
@@ -237,15 +237,15 @@
 
                                 <div>
                                     <x-input-label for="expiry_warnings_enabled" value="{{ __('Enable Expiry Warnings') }}" class="mt-4"></x-input-label>
-                                    <select id="expiry_warnings_enabled" name="expiry_warnings_enabled" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <select id="expiry_warnings_enabled" name="expiry_warnings_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('expiry_warnings_enabled', $settings->expiry_warnings_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('expiry_warnings_enabled', $settings->expiry_warnings_enabled ?? true) ? 'selected' : '' }}>No</option>
                                     </select>
                                     <x-input-error class="mt-2" :messages="$errors->get('expiry_warnings_enabled')"></x-input-error>
                                 </div>
 
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <a href="{{ route('settings.test-sms') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-medium text-sm text-gray-700 hover:bg-gray-200">
+                                <div class="mt-4 pt-4 border-t border-slate-200">
+                                    <a href="{{ route('settings.test-sms') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-sm text-slate-700 hover:bg-slate-200">
                                         {{ __('Test SMS Configuration') }}
                                     </a>
                                 </div>
@@ -257,8 +257,8 @@
                         <!-- Payment Gateway Settings Section -->
                         <div id="section-payment" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Payment Gateway Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure payment gateway credentials.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Payment Gateway Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure payment gateway credentials.") }}</p>
                             </div>
 
                             <div>
@@ -288,7 +288,7 @@
 
                                 <div>
                                     <x-input-label for="mpesa_type" value="{{ __('M-Pesa Type') }}" class="mt-4"></x-input-label>
-                                    <select id="mpesa_type" name="mpesa_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <select id="mpesa_type" name="mpesa_type" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                         <option value="paybill" {{ old('mpesa_type', $settings->mpesa_type ?? 'paybill') === 'paybill' ? 'selected' : '' }}>Paybill</option>
                                         <option value="buygoods" {{ old('mpesa_type', $settings->mpesa_type ?? 'paybill') === 'buygoods' ? 'selected' : '' }}>Buy Goods Till Number</option>
                                     </select>
@@ -298,7 +298,7 @@
                                 <div>
                                     <x-input-label for="mpesa_till_number" value="{{ __('M-Pesa Till Number (Buy Goods only)') }}" class="mt-4"></x-input-label>
                                     <x-text-input id="mpesa_till_number" name="mpesa_till_number" type="text" class="mt-1 block w-full" value="{{ old('mpesa_till_number', $settings->mpesa_till_number ?? '') }}" placeholder="Required for Buy Goods Till Numbers"></x-text-input>
-                                    <p class="mt-1 text-xs text-gray-500">The Till Number associated with your Buy Goods account. Required only when using Buy Goods Till Number.</p>
+                                    <p class="mt-1 text-xs text-slate-500">The Till Number associated with your Buy Goods account. Required only when using Buy Goods Till Number.</p>
                                     <x-input-error class="mt-2" :messages="$errors->get('mpesa_till_number')"></x-input-error>
                                 </div>
 
@@ -308,8 +308,8 @@
                                     <x-input-error class="mt-2" :messages="$errors->get('payment_timeout_minutes')"></x-input-error>
                                 </div>
 
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <a href="{{ route('settings.test-mpesa') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-medium text-sm text-gray-700 hover:bg-gray-200">
+                                <div class="mt-4 pt-4 border-t border-slate-200">
+                                    <a href="{{ route('settings.test-mpesa') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-sm text-slate-700 hover:bg-slate-200">
                                         {{ __('Test M-Pesa Configuration') }}
                                     </a>
                                 </div>
@@ -321,8 +321,8 @@
                         <!-- Email Settings Section -->
                         <div id="section-email" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Email Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure SMTP email settings.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Email Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure SMTP email settings.") }}</p>
                             </div>
 
                             <div>
@@ -356,8 +356,8 @@
                                     <x-input-error class="mt-2" :messages="$errors->get('email_from_address')"></x-input-error>
                                 </div>
 
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <a href="{{ route('settings.test-email') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-medium text-sm text-gray-700 hover:bg-gray-200">
+                                <div class="mt-4 pt-4 border-t border-slate-200">
+                                    <a href="{{ route('settings.test-email') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-sm text-slate-700 hover:bg-slate-200">
                                         {{ __('Test Email Configuration') }}
                                     </a>
                                 </div>
@@ -369,8 +369,8 @@
                         <!-- Security Settings Section -->
                         <div id="section-security" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Security Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure security and password policies.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Security Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure security and password policies.") }}</p>
                             </div>
 
                             <div>
@@ -382,7 +382,7 @@
 
                                 <div>
                                     <x-input-label for="password_require_uppercase" value="{{ __('Require Uppercase') }}" class="mt-4"></x-input-label>
-                                    <select id="password_require_uppercase" name="password_require_uppercase" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <select id="password_require_uppercase" name="password_require_uppercase" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('password_require_uppercase', $settings->password_require_uppercase ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('password_require_uppercase', $settings->password_require_uppercase ?? true) ? 'selected' : '' }}>No</option>
                                     </select>
@@ -391,7 +391,7 @@
 
                                 <div>
                                     <x-input-label for="password_require_number" value="{{ __('Require Number') }}" class="mt-4"></x-input-label>
-                                    <select id="password_require_number" name="password_require_number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <select id="password_require_number" name="password_require_number" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('password_require_number', $settings->password_require_number ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('password_require_number', $settings->password_require_number ?? true) ? 'selected' : '' }}>No</option>
                                     </select>
@@ -411,8 +411,8 @@
                         <!-- Support/Contact Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Support/Contact Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure support contact information.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Support/Contact Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure support contact information.") }}</p>
                             </div>
 
                             <div>
@@ -447,8 +447,8 @@
                         <!-- Free Package Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Free Package Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure free package limits and anti-abuse.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Free Package Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure free package limits and anti-abuse.") }}</p>
                             </div>
 
                             <div>
@@ -466,7 +466,7 @@
 
                                 <div>
                                     <x-input-label for="anti_abuse_enabled" value="{{ __('Enable Anti-Abuse Protection') }}" class="mt-4"></x-input-label>
-                                    <select id="anti_abuse_enabled" name="anti_abuse_enabled" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <select id="anti_abuse_enabled" name="anti_abuse_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('anti_abuse_enabled', $settings->anti_abuse_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('anti_abuse_enabled', $settings->anti_abuse_enabled ?? true) ? 'selected' : '' }}>No</option>
                                     </select>
@@ -480,8 +480,8 @@
                         <!-- Invoice Settings Section -->
                         <div id="section-invoice" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Invoice Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure invoice generation and formatting.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Invoice Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure invoice generation and formatting.") }}</p>
                             </div>
 
                             <div>
@@ -499,7 +499,7 @@
 
                                 <div>
                                     <x-input-label for="invoice_footer" value="{{ __('Invoice Footer') }}" class="mt-4"></x-input-label>
-                                    <textarea id="invoice_footer" name="invoice_footer" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" rows="3">{{ old('invoice_footer', $settings->invoice_footer ?? '') }}</textarea>
+                                    <textarea id="invoice_footer" name="invoice_footer" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm" rows="3">{{ old('invoice_footer', $settings->invoice_footer ?? '') }}</textarea>
                                     <x-input-error class="mt-2" :messages="$errors->get('invoice_footer')"></x-input-error>
                                 </div>
                             </div>
@@ -510,8 +510,8 @@
                         <!-- Branding Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Branding Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Customize application branding and appearance.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Branding Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Customize application branding and appearance.") }}</p>
                             </div>
 
                             <div>
@@ -529,7 +529,7 @@
 
                                 <div>
                                     <x-input-label for="custom_css" value="{{ __('Custom CSS') }}" class="mt-4"></x-input-label>
-                                    <textarea id="custom_css" name="custom_css" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" rows="5">{{ old('custom_css', $settings->custom_css ?? '') }}</textarea>
+                                    <textarea id="custom_css" name="custom_css" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm" rows="5">{{ old('custom_css', $settings->custom_css ?? '') }}</textarea>
                                     <x-input-error class="mt-2" :messages="$errors->get('custom_css')"></x-input-error>
                                 </div>
                             </div>
@@ -540,14 +540,14 @@
                         <!-- Backup Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900">{{ __('Backup Settings') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600">{{ __("Configure database backup schedule.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900">{{ __('Backup Settings') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure database backup schedule.") }}</p>
                             </div>
 
                             <div>
                                 <div>
                                     <x-input-label for="backup_schedule" value="{{ __('Backup Schedule') }}" class="mt-4"></x-input-label>
-                                    <select id="backup_schedule" name="backup_schedule" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <select id="backup_schedule" name="backup_schedule" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="daily" {{ old('backup_schedule', $settings->backup_schedule ?? 'daily') === 'daily' ? 'selected' : '' }}>Daily</option>
                                         <option value="weekly" {{ old('backup_schedule', $settings->backup_schedule ?? 'daily') === 'weekly' ? 'selected' : '' }}>Weekly</option>
                                         <option value="monthly" {{ old('backup_schedule', $settings->backup_schedule ?? 'daily') === 'monthly' ? 'selected' : '' }}>Monthly</option>

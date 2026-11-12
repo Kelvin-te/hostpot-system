@@ -25,6 +25,6 @@ $isEdit = isset($router) && $router;
 <div>
     <x-input-label for="api_port" :value="__('API Port')" class="mt-4"></x-input-label>
     <x-text-input id="api_port" name="api_port" type="number" class="mt-1 block w-full" :value="old('api_port', $isEdit ? ($router->api_port ?? 8728) : 8728)" required></x-text-input>
-    <p class="mt-1 text-xs text-gray-500">{{ __('Default plain API port is 8728, API-SSL is 8729') }}</p>
+    <p class="mt-1 text-xs text-slate-500">{{ __('Default plain API port is 8728, API-SSL is 8729') }}</p>
     <x-input-error class="mt-2" :messages="$errors->get('api_port')"></x-input-error>
 </div>

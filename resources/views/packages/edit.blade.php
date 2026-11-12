@@ -1,30 +1,30 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
             {{ __('Edit Package') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             @if(session('error'))
                 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                    ✗ {{ session('error') }}
+                    {{ session('error') }}
                 </div>
             @endif
 
             @if(session('success'))
                 <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                    ✓ {{ session('success') }}
+                    {{ session('success') }}
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <div class="p-6 border-b border-gray-200">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-200">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Edit Package: {{ $package->name }}</h3>
-                        <p class="text-sm text-gray-600 mt-1">Update package settings and pricing</p>
+                        <h3 class="text-lg font-semibold text-slate-900">Edit Package: {{ $package->name }}</h3>
+                        <p class="text-sm text-slate-600 mt-1">Update package settings and pricing</p>
                     </div>
                 </div>
                 <div class="p-6">
@@ -36,11 +36,11 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="router_name" :value="__('Router Name')"></x-input-label>
-                                <x-text-input id="router_name" name="router_name" type="text" class="mt-1 block w-full bg-gray-100" value="{{ $package->router->name }}" disabled></x-text-input>
+                                <x-text-input id="router_name" name="router_name" type="text" class="mt-1 block w-full bg-slate-100" value="{{ $package->router->name }}" disabled></x-text-input>
                             </div>
                             <div>
                                 <x-input-label for="package_name" :value="__('Package Name')" class="mt-0"></x-input-label>
-                                <x-text-input id="package_name" name="package_name" type="text" class="mt-1 block w-full bg-gray-100" value="{{ $package->name }}" disabled></x-text-input>
+                                <x-text-input id="package_name" name="package_name" type="text" class="mt-1 block w-full bg-slate-100" value="{{ $package->name }}" disabled></x-text-input>
                             </div>
                         </div>
 
@@ -60,25 +60,25 @@
 
                         @include('packages._form', ['package' => $package, 'currentDurationValue' => $currentDurationValue, 'currentDurationUnit' => $currentDurationUnit])
 
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-gray-200">
-                            <a href="{{ route('packages.index') }}" class="text-gray-600 hover:text-gray-800">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-slate-200">
+                            <a href="{{ route('packages.index') }}" class="text-slate-600 hover:text-slate-800">
                                 ← Back to Packages
                             </a>
-                            <x-primary-button>{{ __('✓ Update Package') }}</x-primary-button>
+                            <x-primary-button>{{ __('Update Package') }}</x-primary-button>
                         </div>
                     </form>
                 </div>
             </div>
             <!-- Danger Zone: Delete Package -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg border-2 border-red-200 m-6">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden border-2 border-red-200 m-6">
                 <div class="p-6 border-b border-red-200 bg-red-50">
-                    <h3 class="text-lg font-semibold text-red-900">🗑️ Danger Zone</h3>
+                    <h3 class="text-lg font-semibold text-red-900">Danger Zone</h3>
                 </div>
                 <div class="p-6">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
-                            <h4 class="font-semibold text-gray-900">Delete Package</h4>
-                            <p class="text-sm text-gray-600 mt-1">
+                            <h4 class="font-semibold text-slate-900">Delete Package</h4>
+                            <p class="text-sm text-slate-600 mt-1">
                                 Permanently delete this package from database and MikroTik router <strong>{{ $package->router->name }}</strong>. This action cannot be undone.
                             </p>
                         </div>

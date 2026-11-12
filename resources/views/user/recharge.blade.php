@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
             {{ __('Buy Data') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             <!-- Info Banner -->
@@ -24,17 +24,17 @@
             </div>
 
             <!-- Available Packages -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Available Packages</h3>
-                    <p class="text-sm text-gray-600 mt-1">Choose the best package for your needs</p>
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900">Available Packages</h3>
+                    <p class="text-sm text-slate-600 mt-1">Choose the best package for your needs</p>
                 </div>
                 
                 <div class="p-6">
                     @if($packages->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($packages as $package)
-                                <div class="border-2 border-gray-200 rounded-lg p-6 hover:border-indigo-500 transition group relative overflow-hidden">
+                                <div class="border-2 border-slate-200 rounded-lg p-6 hover:border-indigo-500 transition group relative overflow-hidden">
                                     <!-- Popular Badge -->
                                     @if($loop->index === 1)
                                         <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
@@ -44,7 +44,7 @@
 
                                     <div class="text-center">
                                         <!-- Package Name -->
-                                        <h4 class="text-xl font-bold text-gray-900 mb-2">{{ $package->name }}</h4>
+                                        <h4 class="text-xl font-bold text-slate-900 mb-2">{{ $package->name }}</h4>
                                         
                                         <!-- Price -->
                                         <div class="mb-4">
@@ -53,19 +53,19 @@
 
                                         <!-- Features -->
                                         <div class="space-y-3 mb-6">
-                                            <div class="flex items-center justify-center text-sm text-gray-600">
+                                            <div class="flex items-center justify-center text-sm text-slate-600">
                                                 <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                 </svg>
                                                 <span class="font-semibold">{{ $package->data_cap }}</span>
                                             </div>
-                                            <div class="flex items-center justify-center text-sm text-gray-600">
+                                            <div class="flex items-center justify-center text-sm text-slate-600">
                                                 <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                 </svg>
                                                 <span>Speed: {{ $package->bandwidth_download }}/{{ $package->bandwidth_upload }} Mbps</span>
                                             </div>
-                                            <div class="flex items-center justify-center text-sm text-gray-600">
+                                            <div class="flex items-center justify-center text-sm text-slate-600">
                                                 <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                 </svg>
@@ -87,19 +87,19 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center py-12">
-                            <div class="text-6xl mb-4">📦</div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No packages available</h3>
-                            <p class="text-gray-600">Please check back later.</p>
+                        <div class="text-center py-8">
+                            <div class="text-6xl mb-4"></div>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-2">No packages available</h3>
+                            <p class="text-slate-600">Please check back later.</p>
                         </div>
                     @endif
                 </div>
             </div>
 
             <!-- How to Use -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">How to Purchase</h3>
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900">How to Purchase</h3>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -107,56 +107,56 @@
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3">
                                 <span class="text-xl font-bold">1</span>
                             </div>
-                            <h4 class="font-semibold text-gray-900 mb-2">Choose Package</h4>
-                            <p class="text-sm text-gray-600">Select the data package that suits your needs</p>
+                            <h4 class="font-semibold text-slate-900 mb-2">Choose Package</h4>
+                            <p class="text-sm text-slate-600">Select the data package that suits your needs</p>
                         </div>
                         <div class="text-center">
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3">
                                 <span class="text-xl font-bold">2</span>
                             </div>
-                            <h4 class="font-semibold text-gray-900 mb-2">Enter Phone Number</h4>
-                            <p class="text-sm text-gray-600">Provide your M-Pesa phone number for payment</p>
+                            <h4 class="font-semibold text-slate-900 mb-2">Enter Phone Number</h4>
+                            <p class="text-sm text-slate-600">Provide your M-Pesa phone number for payment</p>
                         </div>
                         <div class="text-center">
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3">
                                 <span class="text-xl font-bold">3</span>
                             </div>
-                            <h4 class="font-semibold text-gray-900 mb-2">Complete Payment</h4>
-                            <p class="text-sm text-gray-600">Enter M-Pesa PIN to complete the transaction</p>
+                            <h4 class="font-semibold text-slate-900 mb-2">Complete Payment</h4>
+                            <p class="text-sm text-slate-600">Enter M-Pesa PIN to complete the transaction</p>
                         </div>
                         <div class="text-center">
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3">
                                 <span class="text-xl font-bold">4</span>
                             </div>
-                            <h4 class="font-semibold text-gray-900 mb-2">Get Connected</h4>
-                            <p class="text-sm text-gray-600">Instant internet access upon successful payment</p>
+                            <h4 class="font-semibold text-slate-900 mb-2">Get Connected</h4>
+                            <p class="text-sm text-slate-600">Instant internet access upon successful payment</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- FAQ -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Frequently Asked Questions</h3>
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900">Frequently Asked Questions</h3>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-1">How long does activation take?</h4>
-                            <p class="text-sm text-gray-600">Your internet access is activated instantly once payment is confirmed (usually within 30 seconds).</p>
+                            <h4 class="font-semibold text-slate-900 mb-1">How long does activation take?</h4>
+                            <p class="text-sm text-slate-600">Your internet access is activated instantly once payment is confirmed (usually within 30 seconds).</p>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-1">Can I use the data on multiple devices?</h4>
-                            <p class="text-sm text-gray-600">Each package is tied to your registered phone number and can be used on one device at a time.</p>
+                            <h4 class="font-semibold text-slate-900 mb-1">Can I use the data on multiple devices?</h4>
+                            <p class="text-sm text-slate-600">Each package is tied to your registered phone number and can be used on one device at a time.</p>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-1">What happens if payment fails?</h4>
-                            <p class="text-sm text-gray-600">If payment fails, no charges will be applied. You can try again or contact support for assistance.</p>
+                            <h4 class="font-semibold text-slate-900 mb-1">What happens if payment fails?</h4>
+                            <p class="text-sm text-slate-600">If payment fails, no charges will be applied. You can try again or contact support for assistance.</p>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-1">Do unused data roll over?</h4>
-                            <p class="text-sm text-gray-600">Data expires based on the package validity period. Unused data does not roll over to the next purchase.</p>
+                            <h4 class="font-semibold text-slate-900 mb-1">Do unused data roll over?</h4>
+                            <p class="text-sm text-slate-600">Data expires based on the package validity period. Unused data does not roll over to the next purchase.</p>
                         </div>
                     </div>
                 </div>

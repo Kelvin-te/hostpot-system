@@ -1,10 +1,10 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+            <div class="bg-white dark:bg-slate-800 shadow sm:rounded-lg">
                 <div class="p-4 sm:p-8">
                     <x-slot name="header">
-                        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight">
                             {{ $user->name }}
                         </h2>
                     </x-slot>
@@ -14,7 +14,7 @@
                         </div>
                     @endif
 
-                    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight border-b-2 border-slate-100 pb-4">
+                    <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight border-b-2 border-slate-100 pb-4">
                         {{ __('Edit user') }}
                     </h2>
 
@@ -24,22 +24,22 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ __('Account') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __("Phone is the hotspot login identity and cannot be changed here.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100">{{ __('Account') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ __("Phone is the hotspot login identity and cannot be changed here.") }}</p>
                             </div>
 
                             <div>
                                 <div>
                                     <x-input-label for="phone" :value="__('Phone number')" class="mt-4"></x-input-label>
-                                    <x-text-input id="phone" type="text" class="mt-1 block w-full bg-gray-100" value="{{ $user->detail->phone }}" disabled></x-text-input>
+                                    <x-text-input id="phone" type="text" class="mt-1 block w-full bg-slate-100" value="{{ $user->detail->phone }}" disabled></x-text-input>
                                 </div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ __('Subscription') }}</h2>
-                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ __("Change the active package for this user.") }}</p>
+                                <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100">{{ __('Subscription') }}</h2>
+                                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ __("Change the active package for this user.") }}</p>
                             </div>
 
                             <div>

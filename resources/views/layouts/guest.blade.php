@@ -14,13 +14,13 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
+    <body class="font-sans text-slate-900 antialiased">
         <div class="flex min-h-screen">
             <!-- Left side - decorative (hidden on mobile) -->
-            <div class="hidden lg:flex lg:w-1/2 bg-gray-100 items-center justify-center">
+            <div class="hidden lg:flex lg:w-1/2 bg-slate-100 items-center justify-center">
                 <div class="text-center p-8">
-                    <h1 class="text-4xl font-bold text-gray-800 mb-4">Welcome Back</h1>
-                    <p class="text-gray-600 text-lg">Sign in to access your dashboard</p>
+                    <h1 class="text-4xl font-bold text-slate-800 mb-4">Welcome Back</h1>
+                    <p class="text-slate-600 text-lg">Sign in to access your dashboard</p>
                 </div>
             </div>
 

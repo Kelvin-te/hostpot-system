@@ -1,18 +1,18 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white dark:bg-slate-800 shadow sm:rounded-lg">
+                <div class="p-6 text-slate-900 dark:text-slate-100">
                     @if(session('success'))
                         <div class="alert alert-success text-green-600">{{ session('success') }}</div>
                     @endif
 
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight">
                             {{ __('Network Incidents') }}
                         </h2>
                         <form method="get" class="flex gap-2">
-                            <select name="status" class="rounded-md border-gray-300 dark:bg-gray-900 dark:text-gray-100" onchange="this.form.submit()">
+                            <select name="status" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" onchange="this.form.submit()">
                                 <option value="">{{ __('All') }}</option>
                                 @foreach(['open', 'acknowledged', 'resolved'] as $s)
                                     <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
@@ -21,7 +21,7 @@
                         </form>
                     </div>
 
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                         <thead>
                             <tr>
                                 <th class="px-4 py-2 text-left">{{ __('Opened') }}</th>
@@ -33,13 +33,13 @@
                                 <th class="px-4 py-2"></th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                             @forelse($incidents as $incident)
                                 <tr>
                                     <td class="px-4 py-2 whitespace-nowrap">{{ $incident->opened_at->diffForHumans() }}</td>
                                     <td class="px-4 py-2">
                                         <div class="font-medium">{{ $incident->title }}</div>
-                                        <div class="text-xs text-gray-500">{{ $incident->description }}</div>
+                                        <div class="text-xs text-slate-500">{{ $incident->description }}</div>
                                     </td>
                                     <td class="px-4 py-2">{{ $incident->router?->name ?? '—' }}</td>
                                     <td class="px-4 py-2">{{ $incident->affected_subscribers }} {{ __('sessions') }}</td>
@@ -65,7 +65,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="7" class="px-4 py-6 text-center text-gray-500">{{ __('No incidents recorded.') }}</td></tr>
+                                <tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">{{ __('No incidents recorded.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>

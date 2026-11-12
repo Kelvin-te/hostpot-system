@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="py-6">
         <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6 text-slate-900">
                     @if(session('error'))
                         <div class="alert alert-danger text-red-600">
                             {{ session('error') }}
@@ -10,7 +10,7 @@
                     @endif
 
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                             {{ __('Generate monthly bill') }}
                         </h2>
 
@@ -19,7 +19,7 @@
                         <form method="post" action="{{ route('billing.store') }}" class="mt-6 space-y-6">
                             @csrf
                             <table class="border-separate border border-spacing-2 border-slate-400 w-full">
-                                <thead class="bg-gray-100">
+                                <thead class="bg-slate-100">
                                 <tr>
                                     <th class="border border-slate-300 text-left">{{ __('Check') }}</th>
                                     <th class="border border-slate-300 text-left">{{ __('User') }}</th>
