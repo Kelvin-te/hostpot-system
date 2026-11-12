@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('wallet:check-auto-renewals')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('packages:sync-profiles')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('users:prune-orphans')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('routers:health-check')->everyFiveMinutes()->withoutOverlapping(10)->onOneServer();
     }
 
     /**
