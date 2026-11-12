@@ -27,9 +27,31 @@ $passwordLabel = $isEdit ? __('New Password') : __('Password');
         @php $selectedRole = old('role', $isEdit ? $staff->role : 'staff'); @endphp
         <option value="staff" {{ $selectedRole === 'staff' ? 'selected' : '' }}>{{ __('Staff') }}</option>
         <option value="admin" {{ $selectedRole === 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
+        <option value="reseller" {{ $selectedRole === 'reseller' ? 'selected' : '' }}>{{ __('Reseller') }}</option>
     </select>
     <x-input-error :messages="$errors->get('role')" class="mt-2" />
 </div>
+
+<div id="reseller-field" style="display: none;">
+    <x-input-label for="reseller_id" :value="__('Reseller account')" />
+    <select id="reseller_id" name="reseller_id" class="mt-1 block w-full rounded-md border border-gray-300">
+        <option value="">{{ __('Select reseller') }}</option>
+        @foreach($resellers ?? [] as $reseller)
+            <option value="{{ $reseller->id }}" {{ old('reseller_id', $isEdit ? $staff->reseller_id : '') == $reseller->id ? 'selected' : '' }}>{{ $reseller->business_name }}</option>
+        @endforeach
+    </select>
+    <x-input-error :messages="$errors->get('reseller_id')" class="mt-2" />
+</div>
+
+<script>
+(function () {
+    var role = document.getElementById('role');
+    var field = document.getElementById('reseller-field');
+    function toggle() { field.style.display = role.value === 'reseller' ? '' : 'none'; }
+    role.addEventListener('change', toggle);
+    toggle();
+})();
+</script>
 
 @if($isEdit)
     <div class="bg-gray-50 p-4 rounded-lg">

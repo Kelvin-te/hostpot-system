@@ -59,6 +59,10 @@ class UserController extends Controller
                 $user->email = null;
                 $user->password = Hash::make(Str::random(32));
                 $user->phone = $request->phone;
+                $staff = auth('staff')->user();
+                if ($staff && $staff->isReseller()) {
+                    $user->reseller_id = $staff->reseller_id;
+                }
                 $user->save();
 
                 $details = new Detail();

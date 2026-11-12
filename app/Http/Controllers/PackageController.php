@@ -71,6 +71,10 @@ class PackageController extends Controller
 
         $package = new Package();
         $package->fill($validated);
+        $staff = auth('staff')->user();
+        if ($staff && $staff->isReseller()) {
+            $package->reseller_id = $staff->reseller_id;
+        }
         $package->save();
 
         $syncMessage = $this->pushPackageToRouter($package);

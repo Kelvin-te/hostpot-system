@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Reseller;
 use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,7 +18,7 @@ class StaffController extends Controller
 
     public function create()
     {
-        return view('staff.create');
+        return view('staff.create', ['resellers' => Reseller::active()->orderBy('business_name')->get()]);
     }
 
     public function store(Request $request)
@@ -26,7 +27,8 @@ class StaffController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('staff', 'email')],
             'phone' => ['required', 'string', 'max:20', Rule::unique('staff', 'phone')],
-            'role' => ['required', 'in:admin,staff'],
+            'role' => ['required', 'in:admin,staff,reseller'],
+            'reseller_id' => ['nullable', 'exists:resellers,id', Rule::requiredIf(fn () => $request->role === 'reseller')],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -35,6 +37,7 @@ class StaffController extends Controller
             'email' => $data['email'],
             'phone' => $data['phone'],
             'role' => $data['role'],
+            'reseller_id' => $data['role'] === 'reseller' ? $data['reseller_id'] : null,
             'password' => $data['password'],
             'is_active' => true,
         ]);
@@ -44,7 +47,10 @@ class StaffController extends Controller
 
     public function edit(Staff $staff)
     {
-        return view('staff.edit', compact('staff'));
+        return view('staff.edit', [
+            'staff' => $staff,
+            'resellers' => Reseller::active()->orderBy('business_name')->get(),
+        ]);
     }
 
     public function update(Request $request, Staff $staff)
@@ -53,7 +59,8 @@ class StaffController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('staff', 'email')->ignore($staff->id)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('staff', 'phone')->ignore($staff->id)],
-            'role' => ['required', 'in:admin,staff'],
+            'role' => ['required', 'in:admin,staff,reseller'],
+            'reseller_id' => ['nullable', 'exists:resellers,id', Rule::requiredIf(fn () => $request->role === 'reseller')],
             'is_active' => ['boolean'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
@@ -63,6 +70,7 @@ class StaffController extends Controller
             'email' => $data['email'],
             'phone' => $data['phone'],
             'role' => $data['role'],
+            'reseller_id' => $data['role'] === 'reseller' ? $data['reseller_id'] : null,
             'is_active' => $request->boolean('is_active', false),
         ]);
 
