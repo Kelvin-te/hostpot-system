@@ -14,12 +14,12 @@
 
                         <div>
                             <x-input-label for="router_id" :value="__('Router')" />
-                            <select id="router_id" name="router_id" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" required>
+                            <x-select id="router_id" name="router_id" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" required>
                                 <option value="">{{ __('Select router') }}</option>
                                 @foreach($routers as $router)
                                     <option value="{{ $router->id }}" {{ old('router_id') == $router->id ? 'selected' : '' }}>{{ $router->name }}</option>
                                 @endforeach
-                            </select>
+                            </x-select>
                             <x-input-error :messages="$errors->get('router_id')" />
                         </div>
 
@@ -39,32 +39,32 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="user_id" :value="__('Subscriber (optional)')" />
-                                <select id="user_id" name="user_id" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
+                                <x-select id="user_id" name="user_id" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
                                     <option value="">{{ __('—') }}</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->phone }})</option>
                                     @endforeach
-                                </select>
+                                </x-select>
                             </div>
                             <div>
                                 <x-input-label for="package_id" :value="__('Package (optional)')" />
-                                <select id="package_id" name="package_id" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
+                                <x-select id="package_id" name="package_id" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
                                     <option value="">{{ __('—') }}</option>
                                     @foreach($packages as $package)
                                         <option value="{{ $package->id }}" {{ old('package_id') == $package->id ? 'selected' : '' }}>{{ $package->name }}</option>
                                     @endforeach
-                                </select>
+                                </x-select>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="status" :value="__('Status')" />
-                                <select id="status" name="status" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" required>
+                                <x-select id="status" name="status" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" required>
                                     @foreach(['free', 'assigned', 'reserved'] as $s)
                                         <option value="{{ $s }}" {{ old('status', 'free') === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
                                     @endforeach
-                                </select>
+                                </x-select>
                             </div>
                             <div>
                                 <x-input-label for="comment" :value="__('Comment')" />

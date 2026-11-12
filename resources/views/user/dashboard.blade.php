@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+        <h2 class="text-xl font-semibold text-slate-900">
             {{ __('My Dashboard') }}
         </h2>
     </x-slot>
@@ -28,7 +28,7 @@
                             <div class="text-3xl font-bold text-green-600">KES {{ number_format($totalSpent, 0) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
-                        <div class="text-4xl text-green-500 opacity-50"></div>
+                        
                     </div>
                 </div>
 
@@ -39,7 +39,7 @@
                             <div class="text-3xl font-bold text-blue-600">{{ number_format($totalSessions) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
-                        <div class="text-4xl text-blue-500 opacity-50"></div>
+                        
                     </div>
                 </div>
 
@@ -50,7 +50,7 @@
                             <div class="text-3xl font-bold text-purple-600">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
-                        <div class="text-4xl text-purple-500 opacity-50"></div>
+                        
                     </div>
                 </div>
 
@@ -61,7 +61,7 @@
                             <div class="text-3xl font-bold text-indigo-600">KES {{ number_format($walletBalance, 0) }}</div>
                             <a href="{{ route('user.wallet') }}" class="text-xs text-indigo-500 hover:text-indigo-700 mt-1">Top up →</a>
                         </div>
-                        <div class="text-4xl text-indigo-500 opacity-50"></div>
+                        
                     </div>
                 </div>
             </div>
@@ -126,7 +126,7 @@
             </div>
             @else
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-                <div class="text-4xl mb-3"></div>
+                
                 <h4 class="font-semibold text-slate-900 mb-2">No Active Sessions</h4>
                 <p class="text-slate-600 mb-4">You don't have any active internet sessions at the moment.</p>
                 <a href="{{ route('user.recharge') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">

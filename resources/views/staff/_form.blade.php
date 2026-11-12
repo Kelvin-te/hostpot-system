@@ -23,23 +23,23 @@ $passwordLabel = $isEdit ? __('New Password') : __('Password');
 
 <div>
     <x-input-label for="role" :value="__('Role')" />
-    <select id="role" name="role" class="mt-1 block w-full rounded-md border border-slate-300">
+    <x-select id="role" name="role" class="mt-1 block w-full rounded-md border border-slate-300">
         @php $selectedRole = old('role', $isEdit ? $staff->role : 'staff'); @endphp
         <option value="staff" {{ $selectedRole === 'staff' ? 'selected' : '' }}>{{ __('Staff') }}</option>
         <option value="admin" {{ $selectedRole === 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
         <option value="reseller" {{ $selectedRole === 'reseller' ? 'selected' : '' }}>{{ __('Reseller') }}</option>
-    </select>
+    </x-select>
     <x-input-error :messages="$errors->get('role')" class="mt-2" />
 </div>
 
 <div id="reseller-field" style="display: none;">
     <x-input-label for="reseller_id" :value="__('Reseller account')" />
-    <select id="reseller_id" name="reseller_id" class="mt-1 block w-full rounded-md border border-slate-300">
+    <x-select id="reseller_id" name="reseller_id" class="mt-1 block w-full rounded-md border border-slate-300">
         <option value="">{{ __('Select reseller') }}</option>
         @foreach($resellers ?? [] as $reseller)
             <option value="{{ $reseller->id }}" {{ old('reseller_id', $isEdit ? $staff->reseller_id : '') == $reseller->id ? 'selected' : '' }}>{{ $reseller->business_name }}</option>
         @endforeach
-    </select>
+    </x-select>
     <x-input-error :messages="$errors->get('reseller_id')" class="mt-2" />
 </div>
 

@@ -44,10 +44,10 @@
 
                         <div>
                             <x-input-label for="status" :value="__('Status')" />
-                            <select id="status" name="status" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
+                            <x-select id="status" name="status" class="mt-1 block w-full rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
                                 <option value="active" {{ old('status', $reseller->status ?? 'active') === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
                                 <option value="suspended" {{ old('status', $reseller->status) === 'suspended' ? 'selected' : '' }}>{{ __('Suspended') }}</option>
-                            </select>
+                            </x-select>
                         </div>
 
                         <div class="border-t pt-4">

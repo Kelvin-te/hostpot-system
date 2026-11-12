@@ -6,11 +6,11 @@
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
                         <h2 class="font-semibold text-xl">{{ __('Business Metrics') }}</h2>
                         <form method="get" class="flex gap-2 items-center">
-                            <select name="days" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" onchange="this.form.submit()">
+                            <x-select name="days" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" onchange="this.form.submit()">
                                 @foreach([7, 30, 90, 365] as $d)
                                     <option value="{{ $d }}" {{ $days === $d ? 'selected' : '' }}>{{ __('Last') }} {{ $d }} {{ __('days') }}</option>
                                 @endforeach
-                            </select>
+                            </x-select>
                         </form>
                     </div>
 

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">{{ __('Add Staff Member') }}</h2>
+        <h2 class="text-xl font-semibold text-slate-900">{{ __('Add Staff Member') }}</h2>
     </x-slot>
 
     <div class="py-8">

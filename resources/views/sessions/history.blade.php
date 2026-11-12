@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+            <h2 class="text-xl font-semibold text-slate-900">
                 {{ __('Session History') }}
             </h2>
             <div class="flex gap-2">
@@ -48,14 +48,14 @@
                             </div>
                             <div>
                                 <label for="package_id" class="block text-sm font-medium text-slate-700 mb-1">Package</label>
-                                <select name="package_id" id="package_id" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <x-select name="package_id" id="package_id" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">All Packages</option>
                                     @foreach($packages as $package)
                                         <option value="{{ $package->id }}" {{ request('package_id') == $package->id ? 'selected' : '' }}>
                                             {{ $package->name }}
                                         </option>
                                     @endforeach
-                                </select>
+                                </x-select>
                             </div>
                             <div>
                                 <label for="search" class="block text-sm font-medium text-slate-700 mb-1">Search</label>

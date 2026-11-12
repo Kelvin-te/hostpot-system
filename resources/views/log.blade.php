@@ -8,7 +8,7 @@
                             {{ session('error') }}
                         </div>
                     @endif
-                    <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+                    <h2 class="text-xl font-semibold text-slate-900">
                         {{ __('Mikrotik Log') }}
                     </h2>
                     <div class="mt-6">

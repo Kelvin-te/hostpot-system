@@ -8,16 +8,16 @@
                     @endif
 
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight">
+                        <h2 class="text-xl font-semibold text-slate-900">
                             {{ __('Network Incidents') }}
                         </h2>
                         <form method="get" class="flex gap-2">
-                            <select name="status" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" onchange="this.form.submit()">
+                            <x-select name="status" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" onchange="this.form.submit()">
                                 <option value="">{{ __('All') }}</option>
                                 @foreach(['open', 'acknowledged', 'resolved'] as $s)
                                     <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
                                 @endforeach
-                            </select>
+                            </x-select>
                         </form>
                     </div>
 

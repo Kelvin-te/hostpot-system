@@ -4,7 +4,7 @@
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700">
                 <div class="p-4 sm:p-8">
                     <x-slot name="header">
-                        <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight">
+                        <h2 class="text-xl font-semibold text-slate-900">
                             {{ $user->name }}
                         </h2>
                     </x-slot>
@@ -14,7 +14,7 @@
                         </div>
                     @endif
 
-                    <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight border-b-2 border-slate-100 pb-4">
+                    <h2 class="text-xl font-semibold text-slate-900 border-b-2 border-slate-100 pb-4">
                         {{ __('Edit user') }}
                     </h2>
 

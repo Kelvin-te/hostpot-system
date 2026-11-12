@@ -11,7 +11,7 @@
                     @endif
 
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-slate-800 leading-tight">Copy Packages to Router</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">Copy Packages to Router</h2>
                         <a href="{{ route('packages.index') }}" class="text-slate-600 hover:text-slate-800">Back</a>
                     </div>
 
@@ -20,12 +20,12 @@
 
                         <div>
                             <x-input-label for="dest_router_id" :value="__('Destination Router')" />
-                            <select id="dest_router_id" name="dest_router_id" class="mt-1 block w-full rounded-md border border-slate-300" required>
+                            <x-select id="dest_router_id" name="dest_router_id" class="mt-1 block w-full rounded-md border border-slate-300" required>
                                 <option value="">Select destination router</option>
                                 @foreach ($routers as $r)
                                     <option value="{{ $r->id }}">{{ $r->name }}</option>
                                 @endforeach
-                            </select>
+                            </x-select>
                             <x-input-error class="mt-2" :messages="$errors->get('dest_router_id')" />
                         </div>
 

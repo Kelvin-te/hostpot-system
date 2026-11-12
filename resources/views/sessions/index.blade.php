@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+            <h2 class="text-xl font-semibold text-slate-900">
                 {{ __('Active Hotspot Sessions') }}
             </h2>
             <div class="flex gap-2">
@@ -46,23 +46,23 @@
                     <form method="GET" action="{{ route('sessions.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="status" class="block text-sm font-medium text-slate-700 mb-1">Status</label>
-                            <select name="status" id="status" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <x-select name="status" id="status" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="active" {{ request('status', 'active') === 'active' ? 'selected' : '' }}>Active</option>
                                 <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Expired</option>
                                 <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>Blocked</option>
                                 <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All</option>
-                            </select>
+                            </x-select>
                         </div>
                         <div>
                             <label for="router_id" class="block text-sm font-medium text-slate-700 mb-1">Router</label>
-                            <select name="router_id" id="router_id" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <x-select name="router_id" id="router_id" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="">All Routers</option>
                                 @foreach($routers as $router)
                                     <option value="{{ $router->id }}" {{ request('router_id') == $router->id ? 'selected' : '' }}>
                                         {{ $router->name }}
                                     </option>
                                 @endforeach
-                            </select>
+                            </x-select>
                         </div>
                         <div>
                             <label for="search" class="block text-sm font-medium text-slate-700 mb-1">Search</label>

@@ -9,7 +9,7 @@
                         </div>
                     @endif
 
-                        <h2 class="font-semibold text-xl text-slate-800 leading-tight border-b-2 border-slate-100 pb-4">
+                        <h2 class="text-xl font-semibold text-slate-900 border-b-2 border-slate-100 pb-4">
                             {{ __('Create Ticket') }}
                         </h2>
 
@@ -36,11 +36,11 @@
 
                                 <div>
                                     <x-input-label for="priority" :value="__('Priority')" class="mt-4"></x-input-label>
-                                    <select name="priority" id="priority" class="mt-1 block w-full rounded-md border border-slate-300">
+                                    <x-select name="priority" id="priority" class="mt-1 block w-full rounded-md border border-slate-300">
                                         <option value="High">{{ __('High') }}</option>
                                         <option value="Normal">{{ __('Normal') }}</option>
                                         <option value="Low">{{ __('Low') }}</option>
-                                    </select>
+                                    </x-select>
                                 </div>
 
                                 <div class="flex items-center gap-4 mt-4">

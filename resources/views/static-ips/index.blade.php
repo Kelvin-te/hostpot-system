@@ -11,7 +11,7 @@
                     @endif
 
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-200 leading-tight">
+                        <h2 class="text-xl font-semibold text-slate-900">
                             {{ __('Static IPs') }}
                         </h2>
                         <a href="{{ route('static-ips.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -27,18 +27,18 @@
                     </div>
 
                     <form method="get" class="flex gap-4 mb-4">
-                        <select name="router_id" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
+                        <x-select name="router_id" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
                             <option value="">{{ __('All routers') }}</option>
                             @foreach($routers as $router)
                                 <option value="{{ $router->id }}" {{ request('router_id') == $router->id ? 'selected' : '' }}>{{ $router->name }}</option>
                             @endforeach
-                        </select>
-                        <select name="status" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
+                        </x-select>
+                        <x-select name="status" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
                             <option value="">{{ __('All statuses') }}</option>
                             @foreach(['free', 'assigned', 'reserved'] as $s)
                                 <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
                             @endforeach
-                        </select>
+                        </x-select>
                         <button type="submit" class="px-4 py-2 bg-slate-600 text-white rounded">{{ __('Filter') }}</button>
                     </form>
 

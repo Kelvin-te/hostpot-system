@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+        <h2 class="text-xl font-semibold text-slate-900">
             {{ __('Account Settings') }}
         </h2>
     </x-slot>
@@ -47,7 +47,7 @@
                             </div>
 
                             <div class="border-t border-slate-200 pt-6">
-                                <h4 class="text-md font-semibold text-slate-900 mb-4">Change Password</h4>
+                                <h4 class="text-base font-semibold text-slate-900 mb-4">Change Password</h4>
                                 
                                 <!-- Current Password -->
                                 <div class="mb-4">

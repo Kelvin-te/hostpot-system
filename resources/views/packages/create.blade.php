@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+        <h2 class="text-xl font-semibold text-slate-900">
             {{ __('Create Package') }}
         </h2>
     </x-slot>
@@ -29,12 +29,12 @@
                         <!-- Router Selection -->
                         <div>
                             <x-input-label for="router_id" :value="__('Select Router')" class="mt-4"></x-input-label>
-                            <select name="router_id" id="router_id" class="mt-1 block w-full rounded-md border border-slate-300">
+                            <x-select name="router_id" id="router_id" class="mt-1 block w-full rounded-md border border-slate-300">
                                 <option value="">{{ __('Select Mikrotik router') }}</option>
                                 @foreach ($routers as $router)
                                     <option value="{{ $router->id }}">{{ $router->name }}</option>
                                 @endforeach
-                            </select>
+                            </x-select>
                         </div>
 
                         <!-- Package Name -->

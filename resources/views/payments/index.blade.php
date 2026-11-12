@@ -16,7 +16,7 @@
                     @endif
 
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+                        <h2 class="text-xl font-semibold text-slate-900">
                             {{ __('Payments') }}
                         </h2>
                         <div class="flex items-center">

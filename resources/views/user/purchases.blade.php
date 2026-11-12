@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+        <h2 class="text-xl font-semibold text-slate-900">
             {{ __('My Purchases') }}
         </h2>
     </x-slot>
@@ -96,7 +96,7 @@
                         </div>
                     @else
                         <div class="text-center py-8">
-                            <div class="text-6xl mb-4"></div>
+                            
                             <h3 class="text-lg font-semibold text-slate-900 mb-2">No purchases yet</h3>
                             <p class="text-slate-600 mb-4">You haven't made any purchases yet.</p>
                             <a href="{{ route('user.recharge') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">

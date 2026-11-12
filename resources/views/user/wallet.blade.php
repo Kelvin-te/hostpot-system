@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+        <h2 class="text-xl font-semibold text-slate-900">
             {{ __('My Wallet') }}
         </h2>
     </x-slot>
@@ -14,7 +14,7 @@
                         <div class="text-sm text-indigo-100">Current Balance</div>
                         <div class="text-4xl font-bold mt-2">KES {{ number_format($walletBalance, 2) }}</div>
                     </div>
-                    <div class="text-6xl opacity-50"></div>
+                    
                 </div>
                 <div class="mt-6">
                     <a href="{{ route('user.recharge') }}" class="inline-flex items-center px-6 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition">

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">{{ __('Edit Staff Member') }}</h2>
+        <h2 class="text-xl font-semibold text-slate-900">{{ __('Edit Staff Member') }}</h2>
     </x-slot>
 
     <div class="py-8">
@@ -22,9 +22,16 @@
             </div>
 
             <div class="flex items-center justify-between pt-4 border-t border-slate-200">
-                <a href="{{ route('staff.index') }}" class="text-slate-600 hover:text-slate-900">
-                    {{ __('Cancel') }}
-                </a>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('staff.index') }}" class="text-slate-600 hover:text-slate-900">
+                        {{ __('Cancel') }}
+                    </a>
+                    <form method="POST" action="{{ route('staff.destroy', $staff) }}" onsubmit="return confirm('{{ __('Delete this staff member?') }}')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-800">{{ __('Delete') }}</button>
+                    </form>
+                </div>
                 <x-primary-button>{{ __('Update Staff') }}</x-primary-button>
             </div>
         </form>

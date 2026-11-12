@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+        <h2 class="text-xl font-semibold text-slate-900">
             {{ __('Buy Data') }}
         </h2>
     </x-slot>
@@ -88,7 +88,7 @@
                         </div>
                     @else
                         <div class="text-center py-8">
-                            <div class="text-6xl mb-4"></div>
+                            
                             <h3 class="text-lg font-semibold text-slate-900 mb-2">No packages available</h3>
                             <p class="text-slate-600">Please check back later.</p>
                         </div>

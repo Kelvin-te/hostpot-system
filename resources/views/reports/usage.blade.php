@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+            <h2 class="text-xl font-semibold text-slate-900">
                 {{ __('Data Usage Statistics') }}
             </h2>
             <div class="flex gap-2">

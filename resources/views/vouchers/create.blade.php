@@ -4,7 +4,7 @@
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6 text-slate-900">
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-slate-800 leading-tight">Create Vouchers</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">Create Vouchers</h2>
                         <a href="{{ route('vouchers.index') }}" class="inline-flex items-center px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">Back</a>
                     </div>
 
@@ -22,11 +22,11 @@
                         @csrf
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Package</label>
-                            <select name="package_id" class="mt-1 block w-full rounded border-slate-300">
+                            <x-select name="package_id" class="mt-1 block w-full rounded border-slate-300">
                                 @foreach($packages as $pkg)
                                     <option value="{{ $pkg->id }}">{{ $pkg->name }} ({{ config('app.currency') }} {{ number_format($pkg->price,0) }}) — {{ $pkg->router?->name ?? 'No router' }}</option>
                                 @endforeach
-                            </select>
+                            </x-select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Quantity</label>

@@ -70,7 +70,7 @@
                             </div>
                         @endif
 
-                        <h2 class="font-semibold text-xl text-slate-800 leading-tight border-b-2 border-slate-100 pb-4 mb-6">
+                        <h2 class="text-xl font-semibold text-slate-900 border-b-2 border-slate-100 pb-4 mb-6">
                             {{ __('Application Settings') }}
                         </h2>
 
@@ -154,10 +154,10 @@
                             <div>
                                 <div>
                                     <x-input-label for="walled_garden_enabled" value="{{ __('Enable Walled Garden') }}" class="mt-4"></x-input-label>
-                                    <select id="walled_garden_enabled" name="walled_garden_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
+                                    <x-select id="walled_garden_enabled" name="walled_garden_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('walled_garden_enabled', $settings->walled_garden_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('walled_garden_enabled', $settings->walled_garden_enabled ?? true) ? 'selected' : '' }}>No</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('walled_garden_enabled')"></x-input-error>
                                 </div>
 
@@ -228,19 +228,19 @@
 
                                 <div>
                                     <x-input-label for="billing_alerts_enabled" value="{{ __('Enable Billing Alerts') }}" class="mt-4"></x-input-label>
-                                    <select id="billing_alerts_enabled" name="billing_alerts_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
+                                    <x-select id="billing_alerts_enabled" name="billing_alerts_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('billing_alerts_enabled', $settings->billing_alerts_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('billing_alerts_enabled', $settings->billing_alerts_enabled ?? true) ? 'selected' : '' }}>No</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('billing_alerts_enabled')"></x-input-error>
                                 </div>
 
                                 <div>
                                     <x-input-label for="expiry_warnings_enabled" value="{{ __('Enable Expiry Warnings') }}" class="mt-4"></x-input-label>
-                                    <select id="expiry_warnings_enabled" name="expiry_warnings_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
+                                    <x-select id="expiry_warnings_enabled" name="expiry_warnings_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('expiry_warnings_enabled', $settings->expiry_warnings_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('expiry_warnings_enabled', $settings->expiry_warnings_enabled ?? true) ? 'selected' : '' }}>No</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('expiry_warnings_enabled')"></x-input-error>
                                 </div>
 
@@ -288,10 +288,10 @@
 
                                 <div>
                                     <x-input-label for="mpesa_type" value="{{ __('M-Pesa Type') }}" class="mt-4"></x-input-label>
-                                    <select id="mpesa_type" name="mpesa_type" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <x-select id="mpesa_type" name="mpesa_type" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                         <option value="paybill" {{ old('mpesa_type', $settings->mpesa_type ?? 'paybill') === 'paybill' ? 'selected' : '' }}>Paybill</option>
                                         <option value="buygoods" {{ old('mpesa_type', $settings->mpesa_type ?? 'paybill') === 'buygoods' ? 'selected' : '' }}>Buy Goods Till Number</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('mpesa_type')"></x-input-error>
                                 </div>
 
@@ -382,19 +382,19 @@
 
                                 <div>
                                     <x-input-label for="password_require_uppercase" value="{{ __('Require Uppercase') }}" class="mt-4"></x-input-label>
-                                    <select id="password_require_uppercase" name="password_require_uppercase" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
+                                    <x-select id="password_require_uppercase" name="password_require_uppercase" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('password_require_uppercase', $settings->password_require_uppercase ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('password_require_uppercase', $settings->password_require_uppercase ?? true) ? 'selected' : '' }}>No</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('password_require_uppercase')"></x-input-error>
                                 </div>
 
                                 <div>
                                     <x-input-label for="password_require_number" value="{{ __('Require Number') }}" class="mt-4"></x-input-label>
-                                    <select id="password_require_number" name="password_require_number" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
+                                    <x-select id="password_require_number" name="password_require_number" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('password_require_number', $settings->password_require_number ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('password_require_number', $settings->password_require_number ?? true) ? 'selected' : '' }}>No</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('password_require_number')"></x-input-error>
                                 </div>
 
@@ -466,10 +466,10 @@
 
                                 <div>
                                     <x-input-label for="anti_abuse_enabled" value="{{ __('Enable Anti-Abuse Protection') }}" class="mt-4"></x-input-label>
-                                    <select id="anti_abuse_enabled" name="anti_abuse_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
+                                    <x-select id="anti_abuse_enabled" name="anti_abuse_enabled" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="1" {{ old('anti_abuse_enabled', $settings->anti_abuse_enabled ?? true) ? 'selected' : '' }}>Yes</option>
                                         <option value="0" {{ !old('anti_abuse_enabled', $settings->anti_abuse_enabled ?? true) ? 'selected' : '' }}>No</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('anti_abuse_enabled')"></x-input-error>
                                 </div>
                             </div>
@@ -547,11 +547,11 @@
                             <div>
                                 <div>
                                     <x-input-label for="backup_schedule" value="{{ __('Backup Schedule') }}" class="mt-4"></x-input-label>
-                                    <select id="backup_schedule" name="backup_schedule" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
+                                    <x-select id="backup_schedule" name="backup_schedule" class="mt-1 block w-full border-slate-300 rounded-md shadow-sm">
                                         <option value="daily" {{ old('backup_schedule', $settings->backup_schedule ?? 'daily') === 'daily' ? 'selected' : '' }}>Daily</option>
                                         <option value="weekly" {{ old('backup_schedule', $settings->backup_schedule ?? 'daily') === 'weekly' ? 'selected' : '' }}>Weekly</option>
                                         <option value="monthly" {{ old('backup_schedule', $settings->backup_schedule ?? 'daily') === 'monthly' ? 'selected' : '' }}>Monthly</option>
-                                    </select>
+                                    </x-select>
                                     <x-input-error class="mt-2" :messages="$errors->get('backup_schedule')"></x-input-error>
                                 </div>
 

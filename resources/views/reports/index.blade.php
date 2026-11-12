@@ -1,17 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+            <h2 class="text-xl font-semibold text-slate-900">
                 {{ __('Analytics Dashboard') }}
             </h2>
             <div class="flex gap-2">
-                <select id="period-selector" class="rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                <x-select id="period-selector" class="rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                     <option value="today" {{ $period === 'today' ? 'selected' : '' }}>Today</option>
                     <option value="7days" {{ $period === '7days' ? 'selected' : '' }}>Last 7 Days</option>
                     <option value="30days" {{ $period === '30days' ? 'selected' : '' }}>Last 30 Days</option>
                     <option value="90days" {{ $period === '90days' ? 'selected' : '' }}>Last 90 Days</option>
                     <option value="year" {{ $period === 'year' ? 'selected' : '' }}>This Year</option>
-                </select>
+                </x-select>
             </div>
         </div>
     </x-slot>
@@ -29,7 +29,7 @@
                             <div class="text-3xl font-bold">KES {{ number_format($totalRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">All time</div>
                         </div>
-                        <div class="text-4xl opacity-50"></div>
+                        
                     </div>
                 </div>
 
@@ -41,7 +41,7 @@
                             <div class="text-3xl font-bold">KES {{ number_format($periodRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">Selected period</div>
                         </div>
-                        <div class="text-4xl opacity-50"></div>
+                        
                     </div>
                 </div>
 
@@ -53,7 +53,7 @@
                             <div class="text-3xl font-bold">KES {{ number_format($todayRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">{{ now()->format('M d, Y') }}</div>
                         </div>
-                        <div class="text-4xl opacity-50"></div>
+                        
                     </div>
                 </div>
 
@@ -65,7 +65,7 @@
                             <div class="text-3xl font-bold">{{ $activeSessions }}</div>
                             <div class="text-xs opacity-75 mt-2">Currently online</div>
                         </div>
-                        <div class="text-4xl opacity-50"></div>
+                        
                     </div>
                 </div>
             </div>

@@ -31,12 +31,12 @@
 
                                 <div>
                                     <x-input-label for="package_name" :value="__('Package name')" class="mt-4"></x-input-label>
-                                    <select name="package_name" id="package_name" class="mt-1 block w-full rounded-md border border-slate-300">
+                                    <x-select name="package_name" id="package_name" class="mt-1 block w-full rounded-md border border-slate-300">
                                         <option value="">{{ data_get($user, 'detail.package_name', __('Select package')) }}</option>
                                         @foreach($packages as $package)
                                             <option value="{{ $package->id }}">{{ $package->name }}</option>
                                         @endforeach
-                                    </select>
+                                    </x-select>
                                 </div>
 
                                 <div class="flex items-center gap-4 mt-4">

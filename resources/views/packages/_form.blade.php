@@ -14,7 +14,7 @@ $durationUnit = old('duration_unit', $isEdit ? ($currentDurationUnit ?? 'days') 
 
 <!-- Bandwidth Settings -->
 <div class="bg-slate-50 p-4 rounded-lg">
-    <h3 class="text-md font-semibold text-slate-900 mb-3">Bandwidth Settings</h3>
+    <h3 class="text-base font-semibold text-slate-900 mb-3">Bandwidth Settings</h3>
     <p class="text-xs text-slate-500 mb-3">{{ __('Speed limits applied to each user. Enter whole numbers only (e.g., 5, 10, 50). Leave blank for unlimited.') }}</p>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -34,7 +34,7 @@ $durationUnit = old('duration_unit', $isEdit ? ($currentDurationUnit ?? 'days') 
 
 <!-- Time Limits -->
 <div class="bg-blue-50 p-4 rounded-lg">
-    <h3 class="text-md font-semibold text-slate-900 mb-3">⏰ Time Limits</h3>
+    <h3 class="text-base font-semibold text-slate-900 mb-3">⏰ Time Limits</h3>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="grid grid-cols-2 gap-2">
             <div>
@@ -44,11 +44,11 @@ $durationUnit = old('duration_unit', $isEdit ? ($currentDurationUnit ?? 'days') 
             </div>
             <div>
                 <x-input-label for="duration_unit" :value="__('Unit')" class="mt-2"></x-input-label>
-                <select id="duration_unit" name="duration_unit" class="mt-1 block w-full rounded-md border border-slate-300">
+                <x-select id="duration_unit" name="duration_unit" class="mt-1 block w-full rounded-md border border-slate-300">
                     <option value="minutes" {{ $durationUnit === 'minutes' ? 'selected' : '' }}>{{ __('Minutes') }}</option>
                     <option value="hours" {{ $durationUnit === 'hours' ? 'selected' : '' }}>{{ __('Hours') }}</option>
                     <option value="days" {{ $durationUnit === 'days' ? 'selected' : '' }}>{{ __('Days') }}</option>
-                </select>
+                </x-select>
                 <x-input-error class="mt-2" :messages="$errors->get('duration_unit')"></x-input-error>
             </div>
             <p class="col-span-2 text-xs text-slate-500 mt-1">{{ __('How long the package stays active. Users are automatically disconnected when the package expires. Ranges from 1 minute up to 90 days.') }}</p>
@@ -58,7 +58,7 @@ $durationUnit = old('duration_unit', $isEdit ? ($currentDurationUnit ?? 'days') 
 
 <!-- Advanced Settings -->
 <div class="bg-green-50 p-4 rounded-lg">
-    <h3 class="text-md font-semibold text-slate-900 mb-3">Advanced Settings</h3>
+    <h3 class="text-base font-semibold text-slate-900 mb-3">Advanced Settings</h3>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <x-input-label for="shared_users" :value="__('Shared Users')" class="mt-2"></x-input-label>

@@ -14,7 +14,7 @@
                         </div>
                     @endif
                     <div class="border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+                        <h2 class="text-xl font-semibold text-slate-900">
                             {{ __('Administration') }}
                         </h2>
                     </div>

@@ -1,68 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-slate-800 leading-tight">{{ __('Staff Members') }}</h2>
-            <a href="{{ route('staff.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <h2 class="text-xl font-semibold text-slate-900">{{ __('Staff Members') }}</h2>
+            <a href="{{ route('staff.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700">
                 {{ __('Add Staff') }}
             </a>
         </div>
     </x-slot>
 
     <div class="py-8">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
+            @endif
 
-    @if (session('success'))
-        <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded">
-            {{ session('success') }}
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div class="p-6">
+                    <livewire:staff-table />
+                </div>
+            </div>
         </div>
-    @endif
-
-    <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <table class="min-w-full divide-y divide-slate-200">
-            <thead class="bg-slate-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Name') }}</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Email') }}</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Phone') }}</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Role') }}</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Status') }}</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Actions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-slate-200">
-                @forelse ($staff as $member)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{{ $member->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ $member->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ $member->phone }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ ucfirst($member->role) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $member->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $member->is_active ? __('Active') : __('Inactive') }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                            <a href="{{ route('staff.edit', $member) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('Edit') }}</a>
-                            <form method="POST" action="{{ route('staff.destroy', $member) }}" class="inline" onsubmit="return confirm('{{ __('Delete this staff member?') }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-sm text-slate-500">{{ __('No staff members found.') }}</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="mt-4">
-        {{ $staff->links() }}
-    </div>
-
-    </div>
     </div>
 </x-app-layout>
