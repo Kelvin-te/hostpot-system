@@ -16,7 +16,19 @@ class DashboardController extends Controller
     {
         if (auth()->user()->isUser()) {
             $user = User::with('detail')->where('id', auth()->id())->firstOrFail();
-            return view('dashboard2', compact('user'));
+
+            $sessions = \App\Models\HotspotSession::where('user_id', $user->id);
+
+            return view('user.dashboard', [
+                'user' => $user,
+                'totalSpent' => PaymentTransaction::where('user_id', $user->id)->where('status', 'completed')->sum('amount'),
+                'walletBalance' => $user->wallet_balance ?? 0,
+                'activeSessions' => (clone $sessions)->active()->count(),
+                'totalSessions' => (clone $sessions)->count(),
+                'totalDataUsed' => (clone $sessions)->sum('bytes_total'),
+                'recentSessions' => (clone $sessions)->latest()->take(5)->get(),
+                'recentTransactions' => PaymentTransaction::where('user_id', $user->id)->latest()->take(5)->get(),
+            ]);
         }
 
         $totalPackages = Package::count();

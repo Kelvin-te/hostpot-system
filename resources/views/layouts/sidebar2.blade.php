@@ -1,11 +1,10 @@
-<aside class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 flex flex-col">
-
+<aside class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col">
     {{-- Brand --}}
-    <div class="flex h-16 items-center gap-3 border-b border-white/10 px-5">
+    <div class="flex h-16 items-center gap-3 border-b border-slate-100 px-5">
         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600">
             <x-app-icon name="globe" class="w-5 h-5 text-white" />
         </div>
-        <span class="text-lg font-semibold text-white">{{ config('app.name') }}</span>
+        <span class="text-lg font-semibold text-slate-900">{{ config('app.name') }}</span>
     </div>
 
     {{-- Nav --}}
@@ -14,7 +13,7 @@
             {{ __('Dashboard') }}
         </x-sidebar-item>
 
-        <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ __('Main') }}</div>
+        <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ __('Main') }}</div>
         <x-sidebar-item :href="route('packages.index')" icon="package" :active="request()->routeIs('packages.*')">
             {{ __('Packages') }}
         </x-sidebar-item>
@@ -29,7 +28,7 @@
         </x-sidebar-item>
 
         @if(!auth()->user()->isAdmin())
-            <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ __('My Account') }}</div>
+            <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ __('My Account') }}</div>
             <x-sidebar-item :href="route('user.dashboard')" icon="home" :active="request()->routeIs('user.dashboard')">
                 {{ __('My Dashboard') }}
             </x-sidebar-item>
@@ -51,7 +50,7 @@
         @endif
 
         @if(auth()->user()->isAdmin())
-            <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ __('Management') }}</div>
+            <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ __('Management') }}</div>
             <x-sidebar-item :href="route('customers.index')" icon="users" :active="request()->routeIs('customers.*')">
                 {{ __('Customers') }}
             </x-sidebar-item>
@@ -72,7 +71,7 @@
             </x-sidebar-item>
         @endif
 
-        <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ __('Financial') }}</div>
+        <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ __('Financial') }}</div>
         <x-sidebar-item :href="route('billing.index')" icon="receipt" :active="request()->routeIs('billing.*')">
             {{ __('Billing') }}
         </x-sidebar-item>
@@ -80,13 +79,13 @@
             {{ __('Payment') }}
         </x-sidebar-item>
 
-        <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ __('Support') }}</div>
+        <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ __('Support') }}</div>
         <x-sidebar-item :href="route('ticket.index')" icon="ticket" :active="request()->routeIs('ticket.*')">
             {{ __('Tickets') }}
         </x-sidebar-item>
 
         @if(auth()->user()->isAdmin())
-            <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ __('System') }}</div>
+            <div class="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ __('System') }}</div>
             <x-sidebar-item :href="route('settings.edit')" icon="settings" :active="request()->routeIs('settings.*')">
                 {{ __('Settings') }}
             </x-sidebar-item>
@@ -94,13 +93,13 @@
     </nav>
 
     {{-- User footer --}}
-    <div class="border-t border-white/10 p-4">
+    <div class="border-t border-slate-100 p-4">
         <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-semibold text-indigo-300">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
             </div>
             <div class="min-w-0 flex-1">
-                <div class="truncate text-sm font-medium text-white">{{ auth()->user()->name }}</div>
+                <div class="truncate text-sm font-medium text-slate-900">{{ auth()->user()->name }}</div>
                 <div class="truncate text-xs text-slate-400">{{ auth()->user()->isAdmin() ? __('Administrator') : __('Staff') }}</div>
             </div>
         </div>
