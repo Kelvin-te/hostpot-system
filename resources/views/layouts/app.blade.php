@@ -5,38 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'MatuNet') }}</title>
+    <title>{{ config('app.name', 'NetBill') }}</title>
 
-    <!-- Favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @rappasoftTableStyles
     @rappasoftTableThirdPartyStyles
 </head>
-<body class="font-sans antialiased">
-<div class="min-h-screen bg-slate-50">
-    <div class="flex flex-col sm:flex-row w-full">
-    @include('layouts.sidebar2')
-        <main class="flex-1 flex flex-col overflow-hidden bg-indigo-50 md:ml-55">
-            @include('layouts.navigation')
-            <div class="overflow-y-scroll max-h-[calc(100vh-70px)]">
-                @isset($header)
-                    <header class="bg-white shadow">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endisset
-                {{ $slot }}
-            </div>
+<body class="font-sans antialiased bg-slate-100" x-data="{ sidebarOpen: false }">
+<div class="min-h-screen">
+    {{-- Sidebar: fixed on desktop, off-canvas on mobile --}}
+    <div class="hidden lg:block">
+        @include('layouts.sidebar2')
+    </div>
+    <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 lg:hidden" x-transition.opacity>
+        <div class="absolute inset-0 bg-black/50" @click="sidebarOpen = false"></div>
+        <div class="absolute inset-y-0 left-0 w-64" @click="sidebarOpen = false">
+            @include('layouts.sidebar2')
+        </div>
+    </div>
+
+    <div class="lg:pl-64">
+        @include('layouts.navigation')
+        <main class="min-h-[calc(100vh-4rem)]">
+            @isset($header)
+                <header class="border-b border-slate-200 bg-white">
+                    <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
+            {{ $slot }}
         </main>
     </div>
 </div>

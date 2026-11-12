@@ -1,19 +1,14 @@
-@props(['iconSvg' => null, 'icon' => null, 'active' => false])
+@props(['icon' => null, 'active' => false])
 
 @php
     $classes = ($active ?? false)
-                ? 'w-full flex justify-between items-center py-3 px-6 cursor-pointer bg-green-50 text-green-900 focus:outline-none border-r-4 border-green-900'
-                : 'w-full flex justify-between items-center py-3 px-6 text-gray-700 cursor-pointer hover:bg-gray-50 hover:text-gray-800 focus:outline-none hover:border-r-4 hover:border-gray-50';
+        ? 'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-indigo-50 text-indigo-700'
+        : 'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-slate-100 transition-colors';
 @endphp
 
 <a {{ $attributes->merge(['class' => $classes]) }}>
-    <span class="flex items-center gap-2">
-        @isset($icon)
-            <span class="w-5 h-5 text-current">{!! $icon !!}</span>
-        @elseif($iconSvg)
-            <span class="w-5 h-5 text-current">{!! $iconSvg !!}</span>
-        @endisset
-        <span class="mx-2 font-sm">{{ $slot }}</span>
-    </span>
-    
+    @isset($icon)
+        <x-icon :name="$icon" class="w-5 h-5 shrink-0 {{ ($active ?? false) ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-300' }}" />
+    @endisset
+    <span>{{ $slot }}</span>
 </a>
