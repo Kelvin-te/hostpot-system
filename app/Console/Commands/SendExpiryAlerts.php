@@ -35,7 +35,7 @@ class SendExpiryAlerts extends Command
 
                 $packageName = $session->package?->name ?? 'your package';
 
-                $result = $sms->sendExpiryAlertSms($phone, $packageName, $minutes, $portalUrl);
+                $result = $sms->sendExpiryAlertSms($phone, $packageName, $minutes, $portalUrl, queue: true);
 
                 if ($result['success'] ?? false) {
                     $alertsSent++;

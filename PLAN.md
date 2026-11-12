@@ -49,29 +49,31 @@ Universal ISP management platform: hotspot, PPPoE, and static-IP subscribers und
 
 ## 3. Roadmap
 
+Status legend: ✅ done · 🔶 partial · ⬜ not started
+
 ### Phase 0 — Stop the bleeding (before any paying customer)
 
-1. Rotate `APP_KEY`; delete `.env.bak` from git + history; gitignore `.env*`.
-2. M-Pesa callback: Safaricom IP allowlist at web server + `stkpushquery` cross-check before completing; delete the duplicate unverified path in `PaymentService`.
-3. Per-router API auth on `/api/hotspot/*`: Sanctum token or HMAC-signed requests (timestamp + nonce) embedded in captive portal pages; map token → router, drop `platformID`/IP resolution.
-4. Identity fix: STK push returns a one-time poll token required by `payment-status`; voucher redeem issues a one-time token; stop trusting client MAC for entitlement decisions; strict per-endpoint throttles + lockout.
-5. `encrypted` casts on `Router.password`, `Setting.mpesa_*`, `smtp_password`, `sms_api_key`.
-6. Remove dead code: Stripe/Cashier paths, `due_amount()`, `app/Classes/RouterOS.php`; finish Paystack (route + `x-paystack-signature` verify) or drop it.
-7. Staff RBAC: enforce `Staff.role` via middleware/policies; 2FA for staff.
+1. 🔶 Rotate `APP_KEY`; delete `.env.bak` from git + history; gitignore `.env*`. — `.env.bak` untracked from index; **still needs history purge (`git filter-repo`) + key rotation (manual)**.
+2. 🔶 M-Pesa callback: Safaricom IP allowlist (`VerifyMpesaCallbackSource`, `MPESA_CALLBACK_IPS`) ✅; amount validation + idempotent handling ✅; duplicate `PaymentService` path deleted ✅. — **`stkpushquery` cross-check still TODO** (defense-in-depth; IP allowlist + amount check cover the main forgery path).
+3. ✅ Per-router API auth on `/api/hotspot/*`: `hotspot_api_token` per router (auto-generated, embedded in portal files via `{ApiToken}`), `AuthenticateHotspotRouter` middleware; `platformID`/host resolution removed. Chose token over Sanctum/HMAC — simpler, no extra round-trips from captive pages.
+4. 🔶 Identity fix: throttles added (`stkpush`/`activate-free` 5/min, `verify-voucher`/`lookup-code` 10/min) ✅; token auth stops cross-router abuse ✅. — **TODO**: one-time STK poll token for `payment-status`, voucher redeem token, server-side device binding (stop trusting client MAC for entitlement).
+5. ✅ `encrypted` casts on `Router.password`, `Router.api_password`, `Setting.mpesa_*`/`smtp`/`sms`/`card` secrets + migration encrypting existing values + TEXT column widening.
+6. ✅ Dead code removed: Stripe/Cashier (composer deps too), `PaymentService`, `PaystackService`, `app/Classes/RouterOS.php`, `due_amount()` fixed.
+7. 🔶 Staff RBAC: `staff.role` middleware on admin-only routes (staff mgmt, settings, router delete/reboot/backup) ✅; deactivated staff rejected at login ✅. — **TODO**: 2FA (TOTP) for staff.
 
 ### Phase 1 — Harden the platform
 
-8. Redis queue + queue workers; move STK/SMS/session-sync/expiry into jobs.
-9. Scheduler hardening: `withoutOverlapping()`, `onOneServer()`, cached router connections.
-10. MikroTik transport: API-SSL (8729) with cert verification; maintained client behind `RouterOsClientInterface`; per-router least-privilege API users.
-11. Deployment: `.env.production` (`APP_DEBUG=false`), queue worker + cron as services, DB + `storage/` backups, health endpoint, artifact cleanup (`netbill.zip`).
+8. 🔶 Queues: `SyncRouterSessionsJob` (per-router, `sessions:sync` dispatches; `--inline` fallback), `SendSmsJob`, `queueSms()`/`$queue` flag on all `VintexSmsService` helpers (scheduled expiry/renewal commands queue SMS). — **TODO**: Redis/`database` queue driver in prod + `queue:work` service; queue STK push dispatch itself (kept sync deliberately — portal polls `payment-status` immediately); queue `packages:sync-profiles`.
+9. ✅ Scheduler: `withoutOverlapping()` + `onOneServer()` on all 6 scheduled commands. — **TODO**: cached router connections (per-run client reuse).
+10. 🔶 MikroTik transport: least-privilege API user (`netbill-api`, group `read,write,api,test`) auto-provisioned on `setupHotspot`, creds stored encrypted, `connectToRouter` prefers them ✅. — **DEFERRED (needs dedicated session)**: API-SSL 8729 requires replacing `evilfreelancer/routeros-api-php` (no SSL support) behind `RouterOsClientInterface` — ~40 `MikroTikService` call sites; do with router hardware or mocked-client tests.
+11. 🔶 Deployment: `/health` endpoint ✅, `INSTALL.md` ✅, `.env.example` queue notes ✅. — **TODO**: `.env.production` template, DB+storage backup script/cron, `netbill.zip` artifact cleanup.
 
 ### Phase 2a — Universal subscriber core
 
-12. Subscriber unification: `connection_type` on subscribers; one `sessions` table (`connection_type` column) shared by hotspot/PPPoE/static.
-13. PPPoE provisioning: `/ppp/secret` CRUD, ppp profile ↔ package rate limits, `/ppp/active` sync into session pipeline, expiry disconnect (`/ppp/active/remove`), renewal reconnect.
-14. Static IP management: DHCP static leases + firewall address-lists, IPAM-lite (free/assigned/reserved), plan mapping per IP.
-15. Provisioning drift detection: desired-state vs router-state diff → auto-heal or alert (replace fragile 15-min blind sync).
+12. ⬜ Subscriber unification: `connection_type` on subscribers; one `sessions` table (`connection_type` column) shared by hotspot/PPPoE/static.
+13. ⬜ PPPoE provisioning: `/ppp/secret` CRUD, ppp profile ↔ package rate limits, `/ppp/active` sync into session pipeline, expiry disconnect (`/ppp/active/remove`), renewal reconnect.
+14. ⬜ Static IP management: DHCP static leases + firewall address-lists, IPAM-lite (free/assigned/reserved), plan mapping per IP.
+15. ⬜ Provisioning drift detection: desired-state vs router-state diff → auto-heal or alert (replace fragile 15-min blind sync).
 
 ### Phase 2b — Network operations
 

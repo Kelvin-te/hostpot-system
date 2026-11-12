@@ -219,10 +219,13 @@ class MikroTikService
     {
         try {
             $host = !empty($router->ip_address) ? $router->ip_address : $router->ip;
+            // Prefer the least-privilege API user when provisioned; fall back to admin creds
+            $apiUser = !empty($router->api_username) ? $router->api_username : $router->username;
+            $apiPass = !empty($router->api_username) ? ($router->api_password ?? '') : ($router->password ?? '');
             $client = new Client([
                 'host' => $host,
-                'user' => $router->username,
-                'pass' => $router->password ?? '',
+                'user' => $apiUser,
+                'pass' => $apiPass,
                 'port' => (int) ($router->api_port ?? 8728),
                 'timeout' => 5,
                 'attempts' => 1,
@@ -257,6 +260,76 @@ class MikroTikService
         }
     }
 
+
+    /**
+     * Create (or reset) a least-privilege RouterOS API user for this router and
+     * store its credentials on the router record. The stored admin credentials
+     * are then only needed for this one-time provisioning step.
+     *
+     * Policy 'read,write,api,test' covers everything MikroTikService does
+     * (hotspot users/profiles, sessions, backups) without sensitive/full access.
+     */
+    public function ensureApiUser(Router $router): array
+    {
+        try {
+            $host = !empty($router->ip_address) ? $router->ip_address : $router->ip;
+
+            // Always connect with the admin credentials for provisioning
+            $client = new Client([
+                'host' => $host,
+                'user' => $router->username,
+                'pass' => $router->password ?? '',
+                'port' => (int) ($router->api_port ?? 8728),
+                'timeout' => 5,
+                'attempts' => 1,
+                'delay' => 0,
+            ]);
+            $client->query(new Query('/system/identity/print'))->read();
+
+            $username = 'netbill-api';
+            $password = \Illuminate\Support\Str::random(24);
+            $group = 'read,write,api,test';
+
+            $existing = $client->query((new Query('/user/print'))->where('name', $username))->read();
+
+            if (!empty($existing)) {
+                $setQuery = new Query('/user/set');
+                $setQuery->equal('.id', $existing[0]['.id']);
+                $setQuery->equal('password', $password);
+                $setQuery->equal('group', $group);
+                $setQuery->equal('disabled', 'no');
+                $client->query($setQuery)->read();
+                $action = 'reset';
+            } else {
+                $addQuery = new Query('/user/add');
+                $addQuery->equal('name', $username);
+                $addQuery->equal('password', $password);
+                $addQuery->equal('group', $group);
+                $addQuery->equal('disabled', 'no');
+                $client->query($addQuery)->read();
+                $action = 'created';
+            }
+
+            $router->update([
+                'api_username' => $username,
+                'api_password' => $password,
+            ]);
+
+            Log::info('RouterOS API user provisioned', [
+                'router_id' => $router->id,
+                'action' => $action,
+            ]);
+
+            return ['success' => true, 'message' => "API user {$action} on router"];
+        } catch (Exception $e) {
+            Log::error('Failed to provision RouterOS API user', [
+                'router_id' => $router->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['success' => false, 'message' => 'API user provisioning failed: ' . $e->getMessage()];
+        }
+    }
 
     /**
      * Test connection to router with detailed diagnostics
@@ -1639,6 +1712,15 @@ class MikroTikService
                     'success' => false,
                     'message' => 'Hotspot server created, but local portal config failed: ' . ($portalResult['message'] ?? 'unknown error'),
                 ];
+            }
+
+            // Best-effort: provision least-privilege API user for future connections
+            $apiUserResult = $this->ensureApiUser($router);
+            if (!$apiUserResult['success']) {
+                Log::warning('API user provisioning skipped during hotspot setup', [
+                    'router_id' => $router->id,
+                    'message' => $apiUserResult['message'],
+                ]);
             }
 
             return [

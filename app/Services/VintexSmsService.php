@@ -129,6 +129,22 @@ class VintexSmsService
     }
 
     /**
+     * Queue an SMS for background delivery via SendSmsJob.
+     * Returns immediately; actual send happens in the queue worker.
+     */
+    public function queueSms(string $phone, string $message): array
+    {
+        \App\Jobs\SendSmsJob::dispatch($phone, $message);
+
+        return [
+            'success' => true,
+            'queued' => true,
+            'message' => 'SMS queued for delivery',
+            'data' => null,
+        ];
+    }
+
+    /**
      * Append company signature to SMS message when no custom sender name is configured.
      * When a custom sender name exists, the senderID field conveys identity.
      */
@@ -151,87 +167,87 @@ class VintexSmsService
     /**
      * Send OTP SMS
      */
-    public function sendOtp(string $phone, string $otp): array
+    public function sendOtp(string $phone, string $otp, bool $queue = false): array
     {
         $message = "Your verification code is: {$otp}. This code will expire in 10 minutes. Do not share this code with anyone.";
         
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send welcome SMS for new signup
      */
-    public function sendWelcomeSms(string $phone, string $name): array
+    public function sendWelcomeSms(string $phone, string $name, bool $queue = false): array
     {
         $message = "Hello {$name},\nWelcome to {$this->companyName}! You now have 500MB of free internet access. Enjoy browsing!";
         
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send package activation SMS
      */
-    public function sendPackageActivationSms(string $phone, string $packageName, string $validity): array
+    public function sendPackageActivationSms(string $phone, string $packageName, string $validity, bool $queue = false): array
     {
         $message = "Your {$packageName} package has been activated successfully. Valid for {$validity}. Enjoy your internet access!";
         
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send payment confirmation SMS
      */
-    public function sendPaymentConfirmationSms(string $phone, string $amount, string $packageName, string $mpesaCode): array
+    public function sendPaymentConfirmationSms(string $phone, string $amount, string $packageName, string $mpesaCode, bool $queue = false): array
     {
         $message = "Payment of KES {$amount} received for {$packageName}. M-Pesa Code: {$mpesaCode}. Your internet is now active!";
         
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send voucher code via SMS
      */
-    public function sendVoucherSms(string $phone, string $voucherCode, string $packageName, ?string $expiresOn = null): array
+    public function sendVoucherSms(string $phone, string $voucherCode, string $packageName, ?string $expiresOn = null, bool $queue = false): array
     {
         $expiryText = $expiresOn ? " (expires {$expiresOn})" : '';
         $message = "Your voucher for {$packageName}{$expiryText}:\n{$voucherCode}\n\nUse this code on the portal Login page under 'Voucher Code'. Do not share this code.";
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send expiry alert SMS
      */
-    public function sendExpiryAlertSms(string $phone, string $packageName, int $minutesLeft, string $portalUrl): array
+    public function sendExpiryAlertSms(string $phone, string $packageName, int $minutesLeft, string $portalUrl, bool $queue = false): array
     {
         $message = "Your {$packageName} expires in {$minutesLeft} minutes. Visit {$portalUrl} to purchase more data.";
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send auto-renewal confirmation SMS
      */
-    public function sendAutoRenewalSms(string $phone, string $packageName, string $newExpiry): array
+    public function sendAutoRenewalSms(string $phone, string $packageName, string $newExpiry, bool $queue = false): array
     {
         $message = "Your {$packageName} has been auto-renewed from your wallet balance. New expiry: {$newExpiry}.";
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send wallet low balance SMS
      */
-    public function sendWalletLowBalanceSms(string $phone, string $balance, string $packageName): array
+    public function sendWalletLowBalanceSms(string $phone, string $balance, string $packageName, bool $queue = false): array
     {
         $message = "Your wallet balance is low (KES {$balance}). Top up to auto-renew your {$packageName} and stay connected.";
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**
      * Send data limit alert SMS
      */
-    public function sendDataLimitAlertSms(string $phone, string $dataUsed, string $dataLimit): array
+    public function sendDataLimitAlertSms(string $phone, string $dataUsed, string $dataLimit, bool $queue = false): array
     {
         $message = "You have used {$dataUsed} out of {$dataLimit}. Your data is running low. Top up to continue browsing.";
-        return $this->sendSms($phone, $message);
+        return $queue ? $this->queueSms($phone, $message) : $this->sendSms($phone, $message);
     }
 
     /**

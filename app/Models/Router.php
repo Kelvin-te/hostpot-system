@@ -13,6 +13,7 @@ class Router extends Model
 
     protected $hidden = [
         'password',
+        'api_password',
         'hotspot_api_token',
     ];
 
@@ -32,6 +33,8 @@ class Router extends Model
         'ip_address',
         'username',
         'password',
+        'api_username',
+        'api_password',
         'api_port',
         'ip',
         'hotspot_enabled',
@@ -48,6 +51,7 @@ class Router extends Model
 
     protected $casts = [
         'password' => 'encrypted',
+        'api_password' => 'encrypted',
         'is_active' => 'boolean',
         'hotspot_enabled' => 'boolean',
         'last_synced_at' => 'datetime',

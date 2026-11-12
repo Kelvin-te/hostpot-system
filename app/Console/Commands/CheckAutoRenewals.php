@@ -38,14 +38,14 @@ class CheckAutoRenewals extends Command
                     $renewed++;
                     if ($user->phone) {
                         $newExpiry = now()->addMinutes($session->package->validity_minutes ?? 1440)->format('M d, H:i');
-                        $sms->sendAutoRenewalSms($user->phone, $session->package->name, $newExpiry);
+                        $sms->sendAutoRenewalSms($user->phone, $session->package->name, $newExpiry, queue: true);
                     }
                 }
             } else {
                 $alerted++;
                 if ($user->phone) {
                     $balance = number_format((float) $user->wallet_balance, 2);
-                    $sms->sendWalletLowBalanceSms($user->phone, $balance, $session->package->name);
+                    $sms->sendWalletLowBalanceSms($user->phone, $balance, $session->package->name, queue: true);
                 }
             }
         }
