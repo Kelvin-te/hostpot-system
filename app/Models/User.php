@@ -66,6 +66,11 @@ class User extends Authenticatable
         'pppoe_password' => 'encrypted',
     ];
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new \App\Scopes\ResellerScope);
+    }
+
     public function isAdmin(): bool
     {
         return false;

@@ -19,6 +19,8 @@ class Router extends Model
 
     protected static function booted()
     {
+        static::addGlobalScope(new \App\Scopes\ResellerScope);
+
         static::creating(function (Router $router) {
             if (empty($router->hotspot_api_token)) {
                 $router->hotspot_api_token = Str::random(48);

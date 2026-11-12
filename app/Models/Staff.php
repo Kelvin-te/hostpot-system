@@ -33,6 +33,11 @@ class Staff extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new \App\Scopes\ResellerScope);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

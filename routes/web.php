@@ -48,7 +48,7 @@ Route::get('/health', function () {
     ], $db === 'up' ? 200 : 503);
 });
 
-Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
+Route::middleware(['auth:staff', 'set-staff-guard', 'reseller.scope'])->group(function () {
     // Admin Dashboard now at /dashboard (keeps name 'dashboard')
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/administration', function () {return view('administration');})->name('administration');

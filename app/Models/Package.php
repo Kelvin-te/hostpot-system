@@ -43,6 +43,11 @@ class Package extends Model
         'is_active' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new \App\Scopes\ResellerScope);
+    }
+
     public function router() {
         return $this->belongsTo(Router::class);
     }
