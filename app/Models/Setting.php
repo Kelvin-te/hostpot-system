@@ -5,10 +5,6 @@ namespace App\Models;
 use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Auth;
-use App\Scopes\BelongsToCompanyScope;
-
 
 /**
  * Setting
@@ -19,18 +15,20 @@ class Setting extends Model
 {
     use HasFactory;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new BelongsToCompanyScope);
-    }
-
     protected $casts = [
         'walled_garden_domains' => 'array',
         'walled_garden_ips' => 'array',
+        'mail_password' => 'encrypted',
+        'sms_api_key' => 'encrypted',
+        'mpesa_api_key' => 'encrypted',
+        'mpesa_consumer_key' => 'encrypted',
+        'mpesa_consumer_secret' => 'encrypted',
+        'mpesa_passkey' => 'encrypted',
+        'card_payment_api_key' => 'encrypted',
+        'smtp_password' => 'encrypted',
     ];
 
     protected $fillable = [
-        'company_id',
         'mail_server',
         'mail_username',
         'mail_password',
@@ -91,23 +89,4 @@ class Setting extends Model
         'disconnect_at',
     ];
 
-    public static function loadSettings()
-    {
-        $query = self::query();
-
-        // If user is authenticated and has a company, load their company's settings
-        if (Auth::check() && Auth::user()->company_id) {
-            $query->where('company_id', Auth::user()->company_id);
-        }
-
-        $settings = $query->firstOrFail();
-
-        Config::set('app.name', $settings->app_name ? $settings->app_name : 'visp');
-        Config::set('app.timezone', $settings->timezone ? $settings->timezone : 'UTC');
-    }
-
-    public function company()
-    {
-        return $this->belongsTo(Company::class);
-    }
 }

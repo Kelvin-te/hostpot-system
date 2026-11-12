@@ -22,7 +22,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="{{ route('login') }}" class="text-gray-600 hover:text-gray-900">Login</a>
-                    <a href="{{ route('companies.create') }}" class="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-600">Get Started</a>
+                    <a href="{{ route('staff.login') }}" class="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-600">Get Started</a>
                 </div>
             </div>
         </div>
@@ -35,7 +35,7 @@
                 <h1 class="text-4xl md:text-5xl font-bold mb-6">Manage Your Hotspot Network with Ease</h1>
                 <p class="text-xl md:text-2xl mb-8 text-green-100">Complete WiFi hotspot management solution for ISPs, hotels, cafes, and businesses</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="{{ route('companies.create') }}" class="bg-white text-green-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100">Start Free Trial</a>
+                    <a href="{{ route('staff.login') }}" class="bg-white text-green-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100">Start Free Trial</a>
                     <a href="#pricing" class="border-2 border-white text-white px-8 py-3 rounded-md font-semibold hover:bg-white hover:text-green-700">View Pricing</a>
                 </div>
             </div>
@@ -145,7 +145,7 @@
                             Basic analytics
                         </li>
                     </ul>
-                    <a href="{{ route('companies.create') }}" class="block w-full text-center bg-gray-100 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-200">Get Started</a>
+                    <a href="{{ route('staff.login') }}" class="block w-full text-center bg-gray-100 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-200">Get Started</a>
                 </div>
 
                 <!-- Standard Plan -->
@@ -189,7 +189,7 @@
                             Priority support
                         </li>
                     </ul>
-                    <a href="{{ route('companies.create') }}" class="block w-full text-center bg-green-700 text-white py-3 rounded-md font-semibold hover:bg-green-600">Get Started</a>
+                    <a href="{{ route('staff.login') }}" class="block w-full text-center bg-green-700 text-white py-3 rounded-md font-semibold hover:bg-green-600">Get Started</a>
                 </div>
 
                 <!-- Premium Plan -->
@@ -238,7 +238,7 @@
                             Custom integrations
                         </li>
                     </ul>
-                    <a href="{{ route('companies.create') }}" class="block w-full text-center bg-gray-100 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-200">Get Started</a>
+                    <a href="{{ route('staff.login') }}" class="block w-full text-center bg-gray-100 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-200">Get Started</a>
                 </div>
             </div>
             <p class="text-center text-gray-600 mt-8">Need more than 50 routers? <a href="#" class="text-green-700 font-semibold">Contact us for custom pricing</a></p>
@@ -250,7 +250,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl font-bold mb-4">Ready to Get Started?</h2>
             <p class="text-xl mb-8 text-green-100">Start your 14-day free trial today. No credit card required.</p>
-            <a href="{{ route('companies.create') }}" class="bg-white text-green-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100">Start Free Trial</a>
+            <a href="{{ route('staff.login') }}" class="bg-white text-green-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100">Start Free Trial</a>
         </div>
     </section>
 

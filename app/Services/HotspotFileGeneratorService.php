@@ -83,6 +83,7 @@ class HotspotFileGeneratorService
 
         return [
             '{RouterIdentifier}' => $router->identifier,
+            '{ApiToken}' => $router->hotspot_api_token ?? '',
             '{PortalUrl}' => rtrim(config('app.url'), '/'),
             '{Company}' => $companyName,
             '{CompanyName}' => $companyName,

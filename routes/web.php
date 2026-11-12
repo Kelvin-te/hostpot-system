@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AddComment;
-use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BillingDownload;
@@ -37,9 +36,6 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/administration', function () {return view('administration');})->name('administration');
 
-    // Company management
-    Route::resource('/companies', CompanyController::class);
-
     // Package copy to router (must be before resource to avoid /packages/{package} capturing)
     Route::get('/packages/copy-to-router', [PackageController::class, 'copyToRouterForm'])->name('packages.copy.form');
     Route::post('/packages/copy-to-router', [PackageController::class, 'copyToRouter'])->name('packages.copy');
@@ -56,7 +52,7 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     Route::get('/billing/dashboard', [BillingController::class, 'dashboard'])->name('billing.dashboard');
     Route::get('/billing/{transaction}/invoice', [BillingController::class, 'invoice'])->name('billing.invoice')->where('transaction', '[0-9]+');
     Route::resource('/billing', BillingController::class)->except(['show']);
-    Route::resource('/payment', PaymentController::class)->only(['index', 'store']);
+    Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
     Route::resource('/ticket', TicketController::class);
     
     // Router routes - use explicit routes to avoid conflicts
@@ -65,7 +61,7 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     Route::post('/router', [RouterController::class, 'store'])->name('router.store');
     Route::get('/router/{router}/edit', [RouterController::class, 'edit'])->name('router.edit');
     Route::put('/router/{router}', [RouterController::class, 'update'])->name('router.update');
-    Route::delete('/router/{router}', [RouterController::class, 'destroy'])->name('router.destroy');
+    Route::delete('/router/{router}', [RouterController::class, 'destroy'])->name('router.destroy')->middleware('staff.role:admin');
     
     // Custom router routes - use specific patterns before show route
     Route::post('/router/{router}/test-connection', [RouterController::class, 'testConnection'])->name('router.test-connection')->where('router', '[0-9]+');
@@ -79,8 +75,8 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     Route::get('/router/{router}/hotspot-files', [RouterController::class, 'downloadHotspotFiles'])->name('router.hotspot-files')->where('router', '[0-9]+');
     Route::post('/router/{router}/upload-hotspot-files', [RouterController::class, 'uploadHotspotFiles'])->name('router.upload-hotspot-files')->where('router', '[0-9]+');
     Route::post('/router/{router}/apply-walled-garden', [RouterController::class, 'applyWalledGarden'])->name('router.apply-walled-garden')->where('router', '[0-9]+');
-    Route::post('/router/{router}/reboot', [RouterController::class, 'reboot'])->name('router.reboot')->where('router', '[0-9]+');
-    Route::post('/router/{router}/backup', [RouterController::class, 'backup'])->name('router.backup')->where('router', '[0-9]+');
+    Route::post('/router/{router}/reboot', [RouterController::class, 'reboot'])->name('router.reboot')->where('router', '[0-9]+')->middleware('staff.role:admin');
+    Route::post('/router/{router}/backup', [RouterController::class, 'backup'])->name('router.backup')->where('router', '[0-9]+')->middleware('staff.role:admin');
     Route::get('/router/{router}/config', [RouterController::class, 'getConfig'])->name('router.config')->where('router', '[0-9]+');
     Route::get('/router/{router}/diagnostics', [RouterController::class, 'getDiagnostics'])->name('router.diagnostics')->where('router', '[0-9]+');
     Route::get('/router/{router}/setup-checklist', [RouterController::class, 'getSetupChecklist'])->name('router.setup-checklist')->where('router', '[0-9]+');
@@ -91,14 +87,13 @@ Route::middleware(['auth:staff', 'set-staff-guard'])->group(function () {
     // Show route must be last to avoid conflicts with specific routes
     Route::get('/router/{router}', [RouterController::class, 'show'])->name('router.show')->where('router', '[0-9]+');
 
-    Route::get('/payment/create/{param}', [PaymentController::class, 'create'])->name('payment.create');
-    Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
-
-    Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
-    Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
-    Route::get('/settings/test-sms', [SettingsController::class, 'testSms'])->name('settings.test-sms');
-    Route::get('/settings/test-mpesa', [SettingsController::class, 'testMpesa'])->name('settings.test-mpesa');
-    Route::get('/settings/test-email', [SettingsController::class, 'testEmail'])->name('settings.test-email');
+    Route::middleware('staff.role:admin')->group(function () {
+        Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+        Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::get('/settings/test-sms', [SettingsController::class, 'testSms'])->name('settings.test-sms');
+        Route::get('/settings/test-mpesa', [SettingsController::class, 'testMpesa'])->name('settings.test-mpesa');
+        Route::get('/settings/test-email', [SettingsController::class, 'testEmail'])->name('settings.test-email');
+    });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -179,7 +174,7 @@ Route::post('/staff/reset-password', [\App\Http\Controllers\Staff\ResetPasswordC
     ->middleware('guest:staff')
     ->name('staff.password.update');
 
-Route::middleware(['auth:staff', 'set-staff-guard'])->prefix('staff')->name('staff.')->group(function () {
+Route::middleware(['auth:staff', 'set-staff-guard', 'staff.role:admin'])->prefix('staff')->name('staff.')->group(function () {
     Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
     Route::get('/', [StaffController::class, 'index'])->name('index');
     Route::get('/create', [StaffController::class, 'create'])->name('create');

@@ -60,6 +60,7 @@
         data.append('platformID', '{RouterIdentifier}');
         data.append('mac', '$(mac)');
         data.append('ip', '$(ip)');
+        data.append('apiToken', '{ApiToken}');
         navigator.sendBeacon('{ApiBaseUrl}/api/hotspot/logout-notify', new Blob([data.toString()], { type: 'application/x-www-form-urlencoded' }));
     } catch(e) {}
 })();

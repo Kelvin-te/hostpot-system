@@ -31,24 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'stripe' => [
-        'model' => App\Models\User::class,
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
-    ],
-
     'vintex' => [
         'api_url' => env('VINTEX_API_URL', 'https://sms.vintextechnologies.com/api/sendMessage'),
         'email' => env('VINTEX_EMAIL'),
         'bearer_token' => env('VINTEX_BEARER_TOKEN'),
         'sender_id' => env('VINTEX_SENDER_ID', 'STERKE'),
-    ],
-
-    'paystack' => [
-        'secret_key' => env('PAYSTACK_SECRET_KEY'),
-        'public_key' => env('PAYSTACK_PUBLIC_KEY'),
-        'callback_url' => env('PAYSTACK_CALLBACK_URL'),
-        'base_url' => env('PAYSTACK_BASE_URL', 'https://api.paystack.co'),
     ],
 
 ];

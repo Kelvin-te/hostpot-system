@@ -321,6 +321,12 @@ class MpesaService
                 return false;
             }
 
+            // Idempotent: Safaricom retries callbacks. If already completed with
+            // the same receipt, acknowledge without reprocessing.
+            if ($transaction->isCompleted()) {
+                return true;
+            }
+
             // Only handle callbacks that belong to this hotspot platform instance.
             // The stored account_reference uses the HSP{tenant_id} prefix for all
             // platform payments so routers can identify them.
@@ -335,11 +341,13 @@ class MpesaService
 
             // Update transaction status
             if ($resultCode == 0) {
-                // Payment successful
+                // Payment successful — verify the callback amount matches what
+                // we billed before trusting it.
                 $callbackMetadata = $callbackData['Body']['stkCallback']['CallbackMetadata']['Item'] ?? [];
                 $mpesaReceiptNumber = null;
                 $transactionDate = null;
                 $phoneNumber = null;
+                $callbackAmount = null;
 
                 foreach ($callbackMetadata as $item) {
                     switch ($item['Name']) {
@@ -352,7 +360,19 @@ class MpesaService
                         case 'PhoneNumber':
                             $phoneNumber = $item['Value'];
                             break;
+                        case 'Amount':
+                            $callbackAmount = $item['Value'];
+                            break;
                     }
+                }
+
+                if ($callbackAmount !== null && (float) $callbackAmount !== (float) $transaction->amount) {
+                    Log::error('M-Pesa callback amount mismatch — rejecting', [
+                        'transaction_id' => $transaction->id,
+                        'expected' => $transaction->amount,
+                        'received' => $callbackAmount,
+                    ]);
+                    return false;
                 }
 
                 $transaction->update([

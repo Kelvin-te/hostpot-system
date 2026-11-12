@@ -19,6 +19,13 @@ return [
 
     'callback_url' => env('MPESA_CALLBACK_URL'),
 
+    /*
+    | Safaricom sends STK callbacks from a small set of known IPs. Restrict the
+    | callback endpoint to these addresses. Set MPESA_CALLBACK_IPS="*" only for
+    | local development behind a tunnel.
+    */
+    'callback_allowed_ips' => array_filter(array_map('trim', explode(',', env('MPESA_CALLBACK_IPS', '196.201.214.200,196.201.214.206')))),
+
     // Tenant identifier embedded in STK Push AccountReference for shared paybill reconciliation.
     'tenant_id' => env('TENANT_ID'),
 

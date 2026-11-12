@@ -40,13 +40,10 @@ class UserBillingTable extends DataTableComponent
                     if ($query) {
                         return __('Paid');
                     } else {
-                        $stripeUrlName = 'payment.create';
-                        $stripeUrlText = 'Pay with Stripe';
-                        $stripeParameter = $row->id;
-                        $stripeUrl = route($stripeUrlName, ['param' => $stripeParameter]);
-                        $stripeButton = "<a href='{$stripeUrl}' class='btn btn-danger'>{$stripeUrlText}</a>";
+                        $payUrl = route('user.recharge');
+                        $payButton = "<a href='{$payUrl}' class='btn btn-danger'>" . __('Pay now') . "</a>";
 
-                        return new HtmlString($stripeButton);
+                        return new HtmlString($payButton);
                     }
                 }),
         ];

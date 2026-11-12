@@ -26,6 +26,17 @@ class StaffAuthController extends Controller
             ]);
         }
 
+        $staff = Auth::guard('staff')->user();
+        if ($staff && !$staff->is_active) {
+            Auth::guard('staff')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            throw ValidationException::withMessages([
+                'email' => __('This account has been deactivated.'),
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

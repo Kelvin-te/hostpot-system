@@ -6,9 +6,7 @@ use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Cashier\Billable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Scopes\BelongsToCompanyScope;
 
 /**
  * User
@@ -17,13 +15,7 @@ use App\Scopes\BelongsToCompanyScope;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, Billable;
-
-    protected static function booted()
-    {
-        // Don't apply company scope to User model
-        // Users need to be queryable for authentication
-    }
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -31,7 +23,6 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'company_id',
         'name',
         'email',
         'phone',
@@ -79,17 +70,10 @@ class User extends Authenticatable
     }
 
     public function due_amount($id){
-        $user = self::where('id', $id)->firstOrFail();
+        $totalBilled = Billing::where('user_id', $id)->sum('package_price');
+        $totalPaid = Payment::where('user_id', $id)->sum('package_price');
 
-        $totalBilled = PaymentTransaction::where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->sum('amount');
-
-        $totalPaid = PaymentTransaction::where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->sum('amount');
-
-        return $totalBilled - $totalPaid;
+        return max(0, $totalBilled - $totalPaid);
     }
 
     public function detail() {
@@ -114,10 +98,6 @@ class User extends Authenticatable
 
     public function router() {
         return $this->belongsTo(Router::class);
-    }
-
-    public function company() {
-        return $this->belongsTo(Company::class);
     }
 
     public function walletTransactions() {

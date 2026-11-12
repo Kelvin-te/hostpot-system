@@ -5,19 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
-use App\Scopes\BelongsToCompanyScope;
 
 class PaymentTransaction extends Model
 {
     use HasFactory;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new BelongsToCompanyScope);
-    }
-
     protected $fillable = [
-        'company_id',
         'checkout_request_id',
         'merchant_request_id',
         'phone_number',
@@ -80,14 +73,6 @@ class PaymentTransaction extends Model
     public function router()
     {
         return $this->belongsTo(Router::class);
-    }
-
-    /**
-     * Get the company associated with this transaction
-     */
-    public function company()
-    {
-        return $this->belongsTo(Company::class);
     }
 
     /**

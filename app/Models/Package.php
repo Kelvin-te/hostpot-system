@@ -5,7 +5,6 @@ namespace App\Models;
 use Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Scopes\BelongsToCompanyScope;
 
 /**
  * Package
@@ -16,13 +15,7 @@ class Package extends Model
 {
     use HasFactory;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new BelongsToCompanyScope);
-    }
-
     protected $fillable = [
-        'company_id',
         'name',
         'price',
         'router_id',
@@ -49,10 +42,6 @@ class Package extends Model
 
     public function router() {
         return $this->belongsTo(Router::class);
-    }
-
-    public function company() {
-        return $this->belongsTo(Company::class);
     }
 
     public function sessions() {

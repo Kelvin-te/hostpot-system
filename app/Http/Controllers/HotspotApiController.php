@@ -41,28 +41,11 @@ class HotspotApiController extends Controller
     }
 
     /**
-     * Resolve router from platformID (router identifier) or host (IP).
+     * Resolve the router authenticated by AuthenticateHotspotRouter middleware.
      */
     protected function resolveRouter(Request $request): ?Router
     {
-        $platformID = $request->input('platformID');
-        $host = $request->input('host');
-
-        if ($platformID) {
-            $router = Router::where('identifier', $platformID)->first();
-            if ($router) {
-                return $router;
-            }
-        }
-
-        if ($host) {
-            $router = Router::where('ip_address', $host)->first();
-            if ($router) {
-                return $router;
-            }
-        }
-
-        return null;
+        return $request->attributes->get('router');
     }
 
     /**

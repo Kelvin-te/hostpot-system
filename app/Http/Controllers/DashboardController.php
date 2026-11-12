@@ -34,7 +34,6 @@ class DashboardController extends Controller
 
         // Gateway breakdown
         $mpesaRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'mpesa')->sum('amount');
-        $paystackRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'paystack')->sum('amount');
         $manualRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'manual')->sum('amount');
         $walletRevenue = PaymentTransaction::where('status', 'completed')->where('gateway', 'wallet')->sum('amount');
 
@@ -80,7 +79,6 @@ class DashboardController extends Controller
             'revenueData',
             'dailyRevenueData',
             'mpesaRevenue',
-            'paystackRevenue',
             'manualRevenue',
             'walletRevenue',
             'recentTickets'

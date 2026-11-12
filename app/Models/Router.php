@@ -5,19 +5,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Services\MikroTikService;
-use App\Scopes\BelongsToCompanyScope;
+use Illuminate\Support\Str;
 
 class Router extends Model
 {
     use HasFactory;
 
+    protected $hidden = [
+        'password',
+        'hotspot_api_token',
+    ];
+
     protected static function booted()
     {
-        static::addGlobalScope(new BelongsToCompanyScope);
+        static::creating(function (Router $router) {
+            if (empty($router->hotspot_api_token)) {
+                $router->hotspot_api_token = Str::random(48);
+            }
+        });
     }
 
     protected $fillable = [
-        'company_id',
         'name',
         'identifier',
         'location',
@@ -38,6 +46,13 @@ class Router extends Model
     // NOTE: is_online is intentionally NOT appended. Calling checkStatus() performs
     // a live network request to the router, so it must only be invoked explicitly.
 
+    protected $casts = [
+        'password' => 'encrypted',
+        'is_active' => 'boolean',
+        'hotspot_enabled' => 'boolean',
+        'last_synced_at' => 'datetime',
+    ];
+
     public function packages() {
         return $this->hasMany(Package::class);
     }
@@ -48,10 +63,6 @@ class Router extends Model
 
     public function transactions() {
         return $this->hasMany(PaymentTransaction::class);
-    }
-
-    public function company() {
-        return $this->belongsTo(Company::class);
     }
 
     /**

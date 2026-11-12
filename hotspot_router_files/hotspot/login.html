@@ -83,6 +83,7 @@
   <script>
     var API_BASE_URL = "{ApiBaseUrl}";
     var PLATFORM_ID = "{RouterIdentifier}";
+    var API_TOKEN = "{ApiToken}";
     var HASH = "";
     var ROUTER_HOST = "$(ip)";
     var MAC = "$(mac)";
@@ -257,7 +258,7 @@
       fetch(API_BASE_URL + "/api/hotspot/packages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+        body: JSON.stringify({ platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC, apiToken: API_TOKEN })
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -310,7 +311,7 @@
       fetch(API_BASE_URL + "/api/hotspot/activate-free", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packageId: pkg.id, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+        body: JSON.stringify({ packageId: pkg.id, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC, apiToken: API_TOKEN })
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -386,7 +387,7 @@
       fetch(API_BASE_URL + "/api/hotspot/stkpush", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone, packageId: selectedPlan.id, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+        body: JSON.stringify({ phone: phone, packageId: selectedPlan.id, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC, apiToken: API_TOKEN })
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -431,7 +432,7 @@
         fetch(API_BASE_URL + "/api/hotspot/payment-status", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ checkoutRequestId: checkoutRequestId, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+          body: JSON.stringify({ checkoutRequestId: checkoutRequestId, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC, apiToken: API_TOKEN })
         })
           .then(function (r) { return r.json(); })
           .then(function (data) {
@@ -499,7 +500,7 @@
       fetch(API_BASE_URL + "/api/hotspot/lookup-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: code || phone || raw, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+        body: JSON.stringify({ phone: code || phone || raw, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC, apiToken: API_TOKEN })
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -534,7 +535,7 @@
       fetch(API_BASE_URL + "/api/hotspot/verify-voucher", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: code, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC })
+        body: JSON.stringify({ code: code, platformID: PLATFORM_ID, host: ROUTER_HOST, mac: MAC, apiToken: API_TOKEN })
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {

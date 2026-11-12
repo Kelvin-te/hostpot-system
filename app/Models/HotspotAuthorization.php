@@ -6,19 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Scopes\BelongsToCompanyScope;
 
 class HotspotAuthorization extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::addGlobalScope(new BelongsToCompanyScope);
-    }
-
     protected $fillable = [
-        'company_id',
         'authorization_key',
         'router_id',
         'package_id',
@@ -66,11 +59,6 @@ class HotspotAuthorization extends Model
     public function voucher(): BelongsTo
     {
         return $this->belongsTo(Voucher::class);
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
     }
 
     public function sessions()
