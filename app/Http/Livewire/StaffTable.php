@@ -14,6 +14,7 @@ class StaffTable extends DataTableComponent
     public function configure(): void
     {
         $this->setPrimaryKey('id')
+            ->setAdditionalSelects(['staff.id as id'])
             ->setTableRowUrl(fn ($row) => route('staff.edit', $row));
     }
 
