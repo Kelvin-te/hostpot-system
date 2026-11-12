@@ -108,12 +108,12 @@ Resellers are delegated accounts *inside* one ISP's installation (not platform t
 
 ### Phase 3 — Commercial & customer experience
 
-19. Customer portal parity for all connection types: STK self-pay, usage, plan change, invoices, tickets with SLA.
-20. Billing correctness: wallet mutations only via ledger in DB transactions + row locks; idempotent payment→provision pipeline; M-Pesa reconciliation report; real refunds.
-21. Promotions: voucher campaigns, referrals, flash sales, abuse-proof free trials.
-22. Multi-gateway payments done right: M-Pesa (primary), Paystack (finished or removed), bank-transfer reconciliation.
-23. API-first: versioned Sanctum API + scopes, payment/session webhooks; optional integrations (accounting export, external monitoring).
-24. Owner-grade reporting: MRR/ARR, churn, ARPU, collection rate, revenue per router, plan mix.
+19. 🔶 Customer portal parity: PPPoE credentials + expiry in My Settings ✅; self-serve STK purchase for all connection types (`portal.purchase`) ✅; PPPoE auto-provision on payment ✅. — **TODO**: usage history per connection type, plan change, invoices, tickets with SLA.
+20. 🔶 Billing correctness: wallet row-locking ✅; M-Pesa reconciliation report ✅; real refund flow (auto wallet reversal, M-Pesa manual-B2C flag) ✅. — **TODO**: full ledger table (wallet_transactions exists but not enforced as single source), automated M-Pesa B2C refunds.
+21. ⬜ Promotions: voucher campaigns, referrals, flash sales, abuse-proof free trials.
+22. 🔶 Multi-gateway: M-Pesa verified+idempotent ✅; Paystack/Stripe removed ✅. — **TODO**: bank-transfer reconciliation, other mobile-money gateways.
+23. ⬜ API-first: Sanctum installed but unused — versioned API + scopes, payment/session webhooks not built.
+24. 🔶 Owner-grade reporting: `/reports/business` — MRR estimate, ARPU, collection rate, new/churned subscribers, revenue per router, plan mix ✅; existing revenue/usage/packages/reconciliation reports ✅. — **TODO**: true MRR (recurring vs one-off), ARR projection, cohort retention.
 
 ### Phase 4 — Engineering maturity
 
