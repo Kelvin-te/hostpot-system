@@ -18,7 +18,7 @@ class WalletService
     public function creditWallet(User $user, float $amount, string $description, ?string $reference = null): WalletTransaction
     {
         return DB::transaction(function () use ($user, $amount, $description, $reference) {
-            $user->refresh();
+            $user = User::where('id', $user->id)->lockForUpdate()->firstOrFail();
             $newBalance = (float) $user->wallet_balance + $amount;
             $user->update(['wallet_balance' => $newBalance]);
 
@@ -38,12 +38,13 @@ class WalletService
      */
     public function debitWallet(User $user, float $amount, string $description): WalletTransaction
     {
-        if (!$this->hasSufficientBalance($user, $amount)) {
-            throw new \RuntimeException('Insufficient wallet balance');
-        }
-
         return DB::transaction(function () use ($user, $amount, $description) {
-            $user->refresh();
+            $user = User::where('id', $user->id)->lockForUpdate()->firstOrFail();
+
+            if ((float) $user->wallet_balance < $amount) {
+                throw new \RuntimeException('Insufficient wallet balance');
+            }
+
             $newBalance = (float) $user->wallet_balance - $amount;
             $user->update(['wallet_balance' => $newBalance]);
 
