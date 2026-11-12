@@ -177,6 +177,7 @@ Route::middleware(['auth:staff', 'set-staff-guard', 'reseller.scope'])->group(fu
     Route::get('/reports/usage', [ReportController::class, 'usage'])->name('reports.usage');
     Route::get('/reports/packages', [ReportController::class, 'packages'])->name('reports.packages');
     Route::get('/reports/reconciliation', [ReportController::class, 'reconciliation'])->name('reports.reconciliation');
+    Route::get('/reports/business', [ReportController::class, 'business'])->name('reports.business');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 
 }); // end staff admin routes

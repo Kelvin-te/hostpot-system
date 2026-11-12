@@ -301,6 +301,59 @@ class ReportController extends Controller
      * Export report to CSV
      */
     /**
+     * Owner-grade business metrics: MRR proxy, subscriber growth/churn,
+     * ARPU, collection rate, revenue per router.
+     */
+    public function business(Request $request)
+    {
+        $days = (int) $request->get('days', 30);
+        $since = now()->subDays($days);
+
+        $activeSubscribers = \App\Models\User::where('status', 'active')->count();
+        $newSubscribers = \App\Models\User::where('created_at', '>=', $since)->count();
+        $churnedSubscribers = \App\Models\User::where('status', '!=', 'active')
+            ->where('updated_at', '>=', $since)->count();
+
+        // MRR proxy: sum of current package prices for active subscribers
+        $mrr = \App\Models\User::where('status', 'active')
+            ->whereNotNull('package_id')
+            ->join('packages', 'users.package_id', '=', 'packages.id')
+            ->sum('packages.price');
+
+        $periodRevenue = PaymentTransaction::where('status', 'completed')
+            ->where('created_at', '>=', $since)->sum('amount');
+
+        $arpu = $activeSubscribers > 0 ? $periodRevenue / $activeSubscribers : 0;
+
+        // Collection rate: completed payments vs billed amount in period
+        $billed = DB::table('billings')->where('created_at', '>=', $since)->sum('package_price');
+        $collected = PaymentTransaction::where('status', 'completed')->where('created_at', '>=', $since)->sum('amount');
+        $collectionRate = $billed > 0 ? min(100, ($collected / $billed) * 100) : null;
+
+        // Revenue per router
+        $revenueByRouter = PaymentTransaction::where('status', 'completed')
+            ->where('created_at', '>=', $since)
+            ->whereNotNull('router_id')
+            ->select('router_id', DB::raw('SUM(amount) as revenue'), DB::raw('COUNT(*) as transactions'))
+            ->groupBy('router_id')
+            ->with('router:id,name')
+            ->orderByDesc('revenue')
+            ->get();
+
+        // Plan mix
+        $planMix = Package::withCount(['sessions' => fn ($q) => $q->where('started_at', '>=', $since)])
+            ->orderByDesc('sessions_count')
+            ->limit(10)
+            ->get(['id', 'name', 'price', 'sessions_count']);
+
+        return view('reports.business', compact(
+            'activeSubscribers', 'newSubscribers', 'churnedSubscribers',
+            'mrr', 'periodRevenue', 'arpu', 'billed', 'collected', 'collectionRate',
+            'revenueByRouter', 'planMix', 'days'
+        ));
+    }
+
+    /**
      * Payment reconciliation: completed vs pending vs failed, missing M-Pesa
      * receipts, and amount mismatches — for matching against Safaricom statements.
      */
