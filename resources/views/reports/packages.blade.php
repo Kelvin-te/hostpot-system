@@ -94,7 +94,7 @@
                                                 <div class="text-xs text-slate-500">{{ $package->validity_days }}d validity</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-bold text-blue-600">{{ number_format($package->sessions_count) }}</div>
+                                                <div class="text-sm font-semibold text-blue-600">{{ number_format($package->sessions_count) }}</div>
                                                 @if($package->sessions_count > 0)
                                                     <div class="text-xs text-slate-500">Active usage</div>
                                                 @else
@@ -102,7 +102,7 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-bold text-green-600">KES {{ number_format($package->period_revenue, 0) }}</div>
+                                                <div class="text-sm font-semibold text-green-600">KES {{ number_format($package->period_revenue, 0) }}</div>
                                                 @if($package->sessions_count > 0)
                                                     <div class="text-xs text-slate-500">{{ number_format($package->period_revenue / $package->sessions_count, 0) }}/session</div>
                                                 @endif

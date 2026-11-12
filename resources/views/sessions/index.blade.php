@@ -24,19 +24,19 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="text-sm text-slate-600">Active Sessions</div>
-                    <div class="text-3xl font-bold text-green-600">{{ $stats['active'] }}</div>
+                    <div class="text-2xl font-bold text-green-600">{{ $stats['active'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="text-sm text-slate-600">Expired Sessions</div>
-                    <div class="text-3xl font-bold text-red-600">{{ $stats['expired'] }}</div>
+                    <div class="text-2xl font-bold text-red-600">{{ $stats['expired'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="text-sm text-slate-600">Sessions Today</div>
-                    <div class="text-3xl font-bold text-blue-600">{{ $stats['total_today'] }}</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ $stats['total_today'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="text-sm text-slate-600">Data Used Today</div>
-                    <div class="text-3xl font-bold text-purple-600">{{ number_format($stats['data_used_today'] / (1024 * 1024 * 1024), 2) }} GB</div>
+                    <div class="text-2xl font-bold text-purple-600">{{ number_format($stats['data_used_today'] / (1024 * 1024 * 1024), 2) }} GB</div>
                 </div>
             </div>
 

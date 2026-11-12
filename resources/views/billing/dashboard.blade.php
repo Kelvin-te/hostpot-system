@@ -4,7 +4,7 @@
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl text-slate-800">Revenue Dashboard (Last 30 Days)</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">Revenue Dashboard (Last 30 Days)</h2>
                         <a href="{{ route('billing.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">← Back to Billing</a>
                     </div>
 

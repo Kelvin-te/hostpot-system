@@ -45,7 +45,7 @@
     <!-- Features Section -->
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12">Everything You Need to Manage Hotspots</h2>
+            <h2 class="text-2xl font-bold text-center text-slate-900 mb-12">Everything You Need to Manage Hotspots</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="text-center p-6">
                     <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -108,7 +108,7 @@
     <!-- Pricing Section -->
     <section id="pricing" class="py-20 bg-slate-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Simple, Transparent Pricing</h2>
+            <h2 class="text-2xl font-bold text-center text-slate-900 mb-4">Simple, Transparent Pricing</h2>
             <p class="text-center text-slate-600 mb-12">Choose the plan that fits your business</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Basic Plan -->
@@ -248,7 +248,7 @@
     <!-- CTA Section -->
     <section class="py-20 bg-green-700 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+            <h2 class="text-2xl font-bold mb-4">Ready to Get Started?</h2>
             <p class="text-xl mb-8 text-green-100">Start your 14-day free trial today. No credit card required.</p>
             <a href="{{ route('staff.login') }}" class="bg-white text-green-700 px-8 py-3 rounded-md font-semibold hover:bg-slate-100">Start Free Trial</a>
         </div>

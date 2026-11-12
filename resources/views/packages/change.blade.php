@@ -9,7 +9,7 @@
                         </div>
                     @endif
 
-                        <h2 class="font-semibold text-xl text-slate-800 dleading-tight border-b-2 border-slate-100 pb-4">
+                        <h2 class="text-xl font-semibold text-slate-900 dleading-tight border-b-2 border-slate-100 pb-4">
                             {{ __('Change Package') }}
                         </h2>
 

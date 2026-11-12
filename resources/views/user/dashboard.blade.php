@@ -25,7 +25,7 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <div class="text-sm text-slate-600">Total Spent</div>
-                            <div class="text-3xl font-bold text-green-600">KES {{ number_format($totalSpent, 0) }}</div>
+                            <div class="text-2xl font-bold text-green-600">KES {{ number_format($totalSpent, 0) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
                         
@@ -36,7 +36,7 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <div class="text-sm text-slate-600">Total Sessions</div>
-                            <div class="text-3xl font-bold text-blue-600">{{ number_format($totalSessions) }}</div>
+                            <div class="text-2xl font-bold text-blue-600">{{ number_format($totalSessions) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
                         
@@ -47,7 +47,7 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <div class="text-sm text-slate-600">Data Used</div>
-                            <div class="text-3xl font-bold text-purple-600">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
+                            <div class="text-2xl font-bold text-purple-600">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
                         
@@ -58,7 +58,7 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <div class="text-sm text-slate-600">Wallet Balance</div>
-                            <div class="text-3xl font-bold text-indigo-600">KES {{ number_format($walletBalance, 0) }}</div>
+                            <div class="text-2xl font-bold text-indigo-600">KES {{ number_format($walletBalance, 0) }}</div>
                             <a href="{{ route('user.wallet') }}" class="text-xs text-indigo-500 hover:text-indigo-700 mt-1">Top up →</a>
                         </div>
                         

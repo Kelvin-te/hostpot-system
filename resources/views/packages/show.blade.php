@@ -137,17 +137,17 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-blue-50 p-4 rounded-lg">
                             <div class="text-sm text-slate-600">Total Sessions</div>
-                            <div class="text-3xl font-bold text-blue-600">{{ number_format($totalSessions) }}</div>
+                            <div class="text-2xl font-bold text-blue-600">{{ number_format($totalSessions) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
                         <div class="bg-green-50 p-4 rounded-lg">
                             <div class="text-sm text-slate-600">Active Sessions</div>
-                            <div class="text-3xl font-bold text-green-600">{{ number_format($activeSessions) }}</div>
+                            <div class="text-2xl font-bold text-green-600">{{ number_format($activeSessions) }}</div>
                             <div class="text-xs text-slate-500 mt-1">Currently online</div>
                         </div>
                         <div class="bg-purple-50 p-4 rounded-lg">
                             <div class="text-sm text-slate-600">Total Revenue</div>
-                            <div class="text-3xl font-bold text-purple-600">KES {{ number_format($totalRevenue, 0) }}</div>
+                            <div class="text-2xl font-bold text-purple-600">KES {{ number_format($totalRevenue, 0) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
                     </div>

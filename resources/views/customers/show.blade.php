@@ -12,7 +12,7 @@
                 <div class="p-6">
                     <div class="flex justify-between items-start mb-6">
                         <div>
-                            <h2 class="font-semibold text-xl text-slate-800">{{ $customer->name ?: $customer->phone }}</h2>
+                            <h2 class="text-xl font-semibold text-slate-900">{{ $customer->name ?: $customer->phone }}</h2>
                             <p class="text-slate-500 text-sm mt-1">
                                 {{ $customer->phone ?? 'No phone' }} &middot;
                                 Member since {{ $customer->created_at->format('M Y') }}

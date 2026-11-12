@@ -4,7 +4,7 @@
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:bg-slate-800 dark:border-slate-700">
                 <div class="p-6 text-slate-900 dark:text-slate-100">
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl">{{ __('Business Metrics') }}</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">{{ __('Business Metrics') }}</h2>
                         <form method="get" class="flex gap-2 items-center">
                             <x-select name="days" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100" onchange="this.form.submit()">
                                 @foreach([7, 30, 90, 365] as $d)

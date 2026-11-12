@@ -52,25 +52,25 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Total Data Used</div>
-                    <div class="text-3xl font-bold">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
+                    <div class="text-2xl font-bold">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
                     <div class="text-xs opacity-75 mt-2">All sessions</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Downloaded</div>
-                    <div class="text-3xl font-bold">{{ number_format($totalDownloaded / (1024 * 1024 * 1024), 2) }} GB</div>
+                    <div class="text-2xl font-bold">{{ number_format($totalDownloaded / (1024 * 1024 * 1024), 2) }} GB</div>
                     <div class="text-xs opacity-75 mt-2">↓ Incoming traffic</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-purple-500 to-purple-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Uploaded</div>
-                    <div class="text-3xl font-bold">{{ number_format($totalUploaded / (1024 * 1024 * 1024), 2) }} GB</div>
+                    <div class="text-2xl font-bold">{{ number_format($totalUploaded / (1024 * 1024 * 1024), 2) }} GB</div>
                     <div class="text-xs opacity-75 mt-2">↑ Outgoing traffic</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-orange-500 to-orange-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Avg per Session</div>
-                    <div class="text-3xl font-bold">{{ number_format($averagePerSession / (1024 * 1024), 0) }} MB</div>
+                    <div class="text-2xl font-bold">{{ number_format($averagePerSession / (1024 * 1024), 0) }} MB</div>
                     <div class="text-xs opacity-75 mt-2">{{ number_format($sessionCount) }} sessions</div>
                 </div>
             </div>
@@ -167,7 +167,7 @@
                                         <div class="flex justify-between items-center mb-1">
                                             <span class="text-sm font-medium text-slate-700">{{ str_pad($hour->hour, 2, '0', STR_PAD_LEFT) }}:00 - {{ str_pad($hour->hour + 1, 2, '0', STR_PAD_LEFT) }}:00</span>
                                             <div class="text-right">
-                                                <div class="text-sm font-bold text-slate-900">{{ $hour->session_count }} sessions</div>
+                                                <div class="text-sm font-semibold text-slate-900">{{ $hour->session_count }} sessions</div>
                                                 <div class="text-xs text-slate-500">{{ number_format($dataMB, 0) }} MB</div>
                                             </div>
                                         </div>
@@ -209,7 +209,7 @@
                                             $avgMB = $user->total_data / $user->session_count / (1024 * 1024);
                                         @endphp
                                         <tr class="hover:bg-slate-50">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
                                                 {{ $index + 1 }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">

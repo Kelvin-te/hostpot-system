@@ -26,7 +26,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="text-sm opacity-90 mb-1">Total Revenue</div>
-                            <div class="text-3xl font-bold">KES {{ number_format($totalRevenue, 0) }}</div>
+                            <div class="text-2xl font-bold">KES {{ number_format($totalRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">All time</div>
                         </div>
                         
@@ -38,7 +38,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="text-sm opacity-90 mb-1">Period Revenue</div>
-                            <div class="text-3xl font-bold">KES {{ number_format($periodRevenue, 0) }}</div>
+                            <div class="text-2xl font-bold">KES {{ number_format($periodRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">Selected period</div>
                         </div>
                         
@@ -50,7 +50,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="text-sm opacity-90 mb-1">Today's Revenue</div>
-                            <div class="text-3xl font-bold">KES {{ number_format($todayRevenue, 0) }}</div>
+                            <div class="text-2xl font-bold">KES {{ number_format($todayRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">{{ now()->format('M d, Y') }}</div>
                         </div>
                         
@@ -62,7 +62,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="text-sm opacity-90 mb-1">Active Sessions</div>
-                            <div class="text-3xl font-bold">{{ $activeSessions }}</div>
+                            <div class="text-2xl font-bold">{{ $activeSessions }}</div>
                             <div class="text-xs opacity-75 mt-2">Currently online</div>
                         </div>
                         
@@ -128,7 +128,7 @@
                                     <div>
                                         <div class="flex justify-between items-center mb-1">
                                             <span class="text-sm font-medium text-slate-700">{{ $package->name }}</span>
-                                            <span class="text-sm font-bold text-slate-900">{{ $package->sessions_count }} sessions</span>
+                                            <span class="text-sm font-semibold text-slate-900">{{ $package->sessions_count }} sessions</span>
                                         </div>
                                         @php
                                             $maxSessions = $topPackages->first()->sessions_count;
@@ -165,7 +165,7 @@
                                             <div class="text-xs text-slate-500">{{ $item->transaction_count }} transactions</div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-sm font-bold text-green-600">KES {{ number_format($item->total_revenue, 0) }}</div>
+                                            <div class="text-sm font-semibold text-green-600">KES {{ number_format($item->total_revenue, 0) }}</div>
                                         </div>
                                     </div>
                                 @endforeach

@@ -11,7 +11,7 @@
                     @endif
 
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-                        <h2 class="font-semibold text-xl">{{ __('Resellers / Landlords') }}</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">{{ __('Resellers / Landlords') }}</h2>
                         <a href="{{ route('resellers.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{{ __('Add Reseller') }}</a>
                     </div>
 

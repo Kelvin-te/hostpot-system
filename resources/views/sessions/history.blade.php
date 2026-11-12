@@ -21,15 +21,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="text-sm text-slate-600">Total Sessions</div>
-                    <div class="text-3xl font-bold text-blue-600">{{ number_format($stats['total_sessions']) }}</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ number_format($stats['total_sessions']) }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="text-sm text-slate-600">Total Data Used</div>
-                    <div class="text-3xl font-bold text-purple-600">{{ number_format($stats['total_data_used'] / (1024 * 1024 * 1024), 2) }} GB</div>
+                    <div class="text-2xl font-bold text-purple-600">{{ number_format($stats['total_data_used'] / (1024 * 1024 * 1024), 2) }} GB</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="text-sm text-slate-600">Average Duration</div>
-                    <div class="text-3xl font-bold text-green-600">{{ $stats['average_duration'] }}</div>
+                    <div class="text-2xl font-bold text-green-600">{{ $stats['average_duration'] }}</div>
                 </div>
             </div>
 

@@ -52,25 +52,25 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Total Revenue</div>
-                    <div class="text-3xl font-bold">KES {{ number_format($totalRevenue, 2) }}</div>
+                    <div class="text-2xl font-bold">KES {{ number_format($totalRevenue, 2) }}</div>
                     <div class="text-xs opacity-75 mt-2">{{ \Carbon\Carbon::parse($fromDate)->format('M d') }} - {{ \Carbon\Carbon::parse($toDate)->format('M d, Y') }}</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Transactions</div>
-                    <div class="text-3xl font-bold">{{ number_format($transactionCount) }}</div>
+                    <div class="text-2xl font-bold">{{ number_format($transactionCount) }}</div>
                     <div class="text-xs opacity-75 mt-2">Completed payments</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-purple-500 to-purple-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Average Transaction</div>
-                    <div class="text-3xl font-bold">KES {{ number_format($averageTransaction, 0) }}</div>
+                    <div class="text-2xl font-bold">KES {{ number_format($averageTransaction, 0) }}</div>
                     <div class="text-xs opacity-75 mt-2">Per sale</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-red-500 to-red-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="text-sm opacity-90 mb-1">Failed Transactions</div>
-                    <div class="text-3xl font-bold">{{ $failedTransactions }}</div>
+                    <div class="text-2xl font-bold">{{ $failedTransactions }}</div>
                     <div class="text-xs opacity-75 mt-2">Unsuccessful attempts</div>
                 </div>
             </div>
