@@ -25,7 +25,9 @@ return new class extends Migration
         foreach ($tablesWithCompanyId as $table) {
             if (Schema::hasTable($table) && Schema::hasColumn($table, 'company_id')) {
                 Schema::table($table, function (Blueprint $blueprint) {
-                    $blueprint->dropColumn('company_id');
+                    // Drop the FK constraint first — company_id was added with
+                    // ->constrained(), so a bare dropColumn fails on MySQL.
+                    $blueprint->dropConstrainedForeignId('company_id');
                 });
             }
         }

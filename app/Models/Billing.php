@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Billing extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasResellerScope;
 
     protected $fillable = [
         'invoice',

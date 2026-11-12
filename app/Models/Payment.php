@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Payment extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasResellerScope;
 
     protected $fillable = ['billing_id', 'user_id', 'invoice', 'payment_method', 'package_price '];
 

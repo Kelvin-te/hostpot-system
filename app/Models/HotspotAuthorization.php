@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HotspotAuthorization extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\HasResellerScope;
 
     protected $fillable = [
         'authorization_key',

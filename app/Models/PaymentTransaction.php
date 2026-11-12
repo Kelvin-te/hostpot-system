@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class PaymentTransaction extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasResellerScope;
 
     protected $fillable = [
         'checkout_request_id',

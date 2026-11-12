@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WalletTransaction extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasResellerScope;
 
     protected $fillable = [
         'user_id',

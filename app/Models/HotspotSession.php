@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class HotspotSession extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasResellerScope;
 
     protected $fillable = [
         'mac_address',

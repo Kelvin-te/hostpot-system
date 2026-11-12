@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ticket extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\HasResellerScope;
 
     protected $fillable = ['subject', 'message', 'status', 'priority', 'user_id', 'number'];
 
