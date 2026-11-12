@@ -3,7 +3,7 @@
     {{-- Brand --}}
     <div class="flex h-16 items-center gap-3 border-b border-white/10 px-5">
         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600">
-            <x-icon name="globe" class="w-5 h-5 text-white" />
+            <x-app-icon name="globe" class="w-5 h-5 text-white" />
         </div>
         <span class="text-lg font-semibold text-white">{{ config('app.name') }}</span>
     </div>

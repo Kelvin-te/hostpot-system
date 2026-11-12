@@ -35,7 +35,7 @@
                                 <div class="mt-1 text-2xl font-bold text-slate-900">KES {{ number_format($todayRevenue, 0) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('Last 24 hours') }}</div>
                             </div>
-                            <div class="rounded-lg bg-green-50 p-3"><x-icon name="card" class="h-6 w-6 text-green-600" /></div>
+                            <div class="rounded-lg bg-green-50 p-3"><x-app-icon name="card" class="h-6 w-6 text-green-600" /></div>
                         </div>
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -45,7 +45,7 @@
                                 <div class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($activeSessions) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('Currently online') }}</div>
                             </div>
-                            <div class="rounded-lg bg-blue-50 p-3"><x-icon name="globe" class="h-6 w-6 text-blue-600" /></div>
+                            <div class="rounded-lg bg-blue-50 p-3"><x-app-icon name="globe" class="h-6 w-6 text-blue-600" /></div>
                         </div>
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -55,7 +55,7 @@
                                 <div class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($totalUsers) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('Registered subscribers') }}</div>
                             </div>
-                            <div class="rounded-lg bg-violet-50 p-3"><x-icon name="users" class="h-6 w-6 text-violet-600" /></div>
+                            <div class="rounded-lg bg-violet-50 p-3"><x-app-icon name="users" class="h-6 w-6 text-violet-600" /></div>
                         </div>
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -65,7 +65,7 @@
                                 <div class="mt-1 text-2xl font-bold text-slate-900">KES {{ number_format($totalRevenue, 0) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('All time') }}</div>
                             </div>
-                            <div class="rounded-lg bg-indigo-50 p-3"><x-icon name="chart" class="h-6 w-6 text-indigo-600" /></div>
+                            <div class="rounded-lg bg-indigo-50 p-3"><x-app-icon name="chart" class="h-6 w-6 text-indigo-600" /></div>
                         </div>
                     </div>
                 </div>
@@ -94,7 +94,7 @@
                             </div>
                         @else
                             <div class="py-8 text-center">
-                                <x-icon name="router" class="mx-auto mb-3 h-10 w-10 text-slate-300" />
+                                <x-app-icon name="router" class="mx-auto mb-3 h-10 w-10 text-slate-300" />
                                 <p class="mb-4 text-slate-500">{{ __('No routers configured') }}</p>
                                 <a href="{{ route('router.create') }}" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">{{ __('Add Router') }}</a>
                             </div>
@@ -150,7 +150,7 @@
                             ['users.index', 'users', 'Manage Users', 'bg-indigo-50 text-indigo-600'],
                         ] as [$route, $icon, $label, $colors])
                             <a href="{{ route($route) }}" class="flex flex-col items-center gap-2 rounded-lg border border-slate-100 p-4 transition hover:border-indigo-200 hover:bg-slate-50">
-                                <span class="rounded-lg p-2 {{ $colors }}"><x-icon :name="$icon" class="h-6 w-6" /></span>
+                                <span class="rounded-lg p-2 {{ $colors }}"><x-app-icon :name="$icon" class="h-6 w-6" /></span>
                                 <span class="text-sm font-medium text-slate-700">{{ __($label) }}</span>
                             </a>
                         @endforeach

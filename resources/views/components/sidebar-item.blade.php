@@ -8,7 +8,7 @@
 
 <a {{ $attributes->merge(['class' => $classes]) }}>
     @isset($icon)
-        <x-icon :name="$icon" class="w-5 h-5 shrink-0 {{ ($active ?? false) ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-300' }}" />
+        <x-app-icon :name="$icon" class="w-5 h-5 shrink-0 {{ ($active ?? false) ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-300' }}" />
     @endisset
     <span>{{ $slot }}</span>
 </a>
