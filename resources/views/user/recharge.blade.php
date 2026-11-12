@@ -74,10 +74,14 @@
                                         </div>
 
                                         <!-- Buy Button -->
-                                        <a href="{{ route('portal.purchase', $package->id) }}" 
-                                           class="block w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition group-hover:scale-105 transform">
-                                            Buy Now
-                                        </a>
+                                        <form method="post" action="{{ route('portal.purchase.store') }}">
+                                            @csrf
+                                            <input type="hidden" name="package_id" value="{{ $package->id }}">
+                                            <button type="submit"
+                                               class="block w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition group-hover:scale-105 transform">
+                                                Buy Now
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             @endforeach

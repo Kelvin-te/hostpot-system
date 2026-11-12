@@ -176,6 +176,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-sessions', [UserDashboardController::class, 'sessions'])->name('user.sessions');
     Route::get('/my-purchases', [UserDashboardController::class, 'purchases'])->name('user.purchases');
     Route::get('/my-recharge', [UserDashboardController::class, 'recharge'])->name('user.recharge');
+    Route::post('/portal/purchase', [\App\Http\Controllers\PortalPurchaseController::class, 'store'])->name('portal.purchase.store');
+    Route::get('/portal/purchase/{checkoutRequestId}', [\App\Http\Controllers\PortalPurchaseController::class, 'status'])->name('portal.purchase.status');
     Route::get('/my-settings', [UserDashboardController::class, 'settings'])->name('user.settings');
     Route::post('/my-settings', [UserDashboardController::class, 'updateSettings'])->name('user.settings.update');
     Route::get('/my-wallet', [UserDashboardController::class, 'walletTopup'])->name('user.wallet');
