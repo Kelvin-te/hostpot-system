@@ -120,6 +120,36 @@
                 </div>
             </div>
 
+            <!-- PPPoE Credentials -->
+            @if($user->connection_type === 'pppoe' && $user->pppoe_username)
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">PPPoE Connection</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-gray-600 mb-3">Enter these credentials in your router's PPPoE client settings.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded p-3">
+                                <div class="text-xs text-gray-500">Username</div>
+                                <div class="font-mono font-semibold">{{ $user->pppoe_username }}</div>
+                            </div>
+                            <div class="bg-gray-50 rounded p-3">
+                                <div class="text-xs text-gray-500">Password</div>
+                                <div class="font-mono font-semibold">{{ $user->pppoe_password }}</div>
+                            </div>
+                        </div>
+                        @if($user->package)
+                            <div class="mt-3 text-sm text-gray-600">
+                                {{ __('Package') }}: {{ $user->package->name }}
+                                @if($user->detail?->package_start && $user->package->validity_minutes)
+                                    — {{ __('renews/expires') }} {{ $user->detail->package_start->copy()->addMinutes($user->package->validity_minutes)->format('M d, Y H:i') }}
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <!-- Danger Zone -->
             <div class="bg-white overflow-hidden shadow-sm rounded-lg border-2 border-red-200">
                 <div class="p-6 border-b border-red-200 bg-red-50">
