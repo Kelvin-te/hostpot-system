@@ -112,7 +112,7 @@
                                 </thead>
                                 <tbody class="bg-white divide-y divide-slate-200" id="sessions-table-body">
                                     @foreach($sessions as $session)
-                                        <tr class="hover:bg-slate-50">
+                                        <tr class="{{ $loop->even ? 'bg-white' : 'bg-slate-50' }} hover:bg-slate-100">
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-medium text-slate-900">{{ $session->username ?? 'Guest' }}</div>
                                                 <div class="text-xs text-slate-500">{{ $session->session_id }}</div>

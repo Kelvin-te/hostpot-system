@@ -21,41 +21,41 @@
                         </form>
                     </div>
 
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                        <thead>
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-4 py-2 text-left">{{ __('Opened') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Incident') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Router') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Affected') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Status') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Duration') }}</th>
-                                <th class="px-4 py-2"></th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Opened') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Incident') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Router') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Affected') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Status') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Duration') }}</th>
+                                <th class="px-6 py-3"></th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tbody class="bg-white divide-y divide-slate-200">
                             @forelse($incidents as $incident)
-                                <tr>
-                                    <td class="px-4 py-2 whitespace-nowrap">{{ $incident->opened_at->diffForHumans() }}</td>
-                                    <td class="px-4 py-2">
+                                <tr class="{{ $loop->even ? 'bg-white' : 'bg-slate-50' }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $incident->opened_at->diffForHumans() }}</td>
+                                    <td class="px-6 py-3">
                                         <div class="font-medium">{{ $incident->title }}</div>
                                         <div class="text-xs text-slate-500">{{ $incident->description }}</div>
                                     </td>
-                                    <td class="px-4 py-2">{{ $incident->router?->name ?? '—' }}</td>
-                                    <td class="px-4 py-2">{{ $incident->affected_subscribers }} {{ __('sessions') }}</td>
-                                    <td class="px-4 py-2">
+                                    <td class="px-6 py-3">{{ $incident->router?->name ?? '—' }}</td>
+                                    <td class="px-6 py-3">{{ $incident->affected_subscribers }} {{ __('sessions') }}</td>
+                                    <td class="px-6 py-3">
                                         <span class="px-2 py-1 rounded text-xs {{ $incident->status === 'resolved' ? 'bg-green-100 text-green-800' : ($incident->status === 'acknowledged' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') }}">
                                             {{ ucfirst($incident->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-2 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @if($incident->resolved_at)
                                             {{ $incident->opened_at->diffForHumans($incident->resolved_at, true) }}
                                         @else
                                             {{ $incident->opened_at->diffForHumans() }} →
                                         @endif
                                     </td>
-                                    <td class="px-4 py-2 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @if($incident->status === 'open')
                                             <form method="post" action="{{ route('incidents.acknowledge', $incident) }}" class="inline">@csrf<button class="text-blue-600 hover:underline text-sm">{{ __('Ack') }}</button></form>
                                         @endif
@@ -65,7 +65,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">{{ __('No incidents recorded.') }}</td></tr>
+                                <tr><td colspan="7" class="px-6 py-6 text-center text-slate-500">{{ __('No incidents recorded.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>

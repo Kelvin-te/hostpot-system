@@ -19,31 +19,31 @@
                     @endif
 
                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm border">
+                        <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
                                 <tr>
-                                    <th class="px-3 py-2 text-left">Code</th>
-                                    <th class="px-3 py-2 text-left">Package</th>
-                                    <th class="px-3 py-2 text-left">Status</th>
-                                    <th class="px-3 py-2 text-left">Expires</th>
-                                    <th class="px-3 py-2 text-left">Used At</th>
-                                    <th class="px-3 py-2 text-left">Created</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Code</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Package</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Expires</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Used At</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Created</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="bg-white divide-y divide-slate-200">
                                 @forelse($vouchers as $v)
-                                    <tr class="border-b">
-                                        <td class="px-3 py-2 font-mono">{{ $v->code }}</td>
-                                        <td class="px-3 py-2">{{ optional($v->package)->name }}</td>
-                                        <td class="px-3 py-2">
+                                    <tr class="{{ $loop->even ? 'bg-white' : 'bg-slate-50' }}">
+                                        <td class="px-6 py-4 text-sm font-mono">{{ $v->code }}</td>
+                                        <td class="px-6 py-4 text-sm">{{ optional($v->package)->name }}</td>
+                                        <td class="px-6 py-4 text-sm">
                                             <span class="px-2 py-1 rounded text-white {{ $v->status === 'active' ? 'bg-green-600' : ($v->status === 'used' ? 'bg-slate-600' : 'bg-red-600') }}">{{ ucfirst($v->status) }}</span>
                                         </td>
-                                        <td class="px-3 py-2">{{ optional($v->expires_at)->format('Y-m-d H:i') ?: '-' }}</td>
-                                        <td class="px-3 py-2">{{ optional($v->used_at)->format('Y-m-d H:i') ?: '-' }}</td>
-                                        <td class="px-3 py-2">{{ optional($v->created_at)->format('Y-m-d H:i') }}</td>
+                                        <td class="px-6 py-4 text-sm">{{ optional($v->expires_at)->format('Y-m-d H:i') ?: '-' }}</td>
+                                        <td class="px-6 py-4 text-sm">{{ optional($v->used_at)->format('Y-m-d H:i') ?: '-' }}</td>
+                                        <td class="px-6 py-4 text-sm">{{ optional($v->created_at)->format('Y-m-d H:i') }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="px-3 py-6 text-center text-slate-500">No vouchers found.</td></tr>
+                                    <tr><td colspan="6" class="px-6 py-6 text-center text-slate-500">No vouchers found.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

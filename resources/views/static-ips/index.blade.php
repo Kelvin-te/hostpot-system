@@ -42,34 +42,34 @@
                         <button type="submit" class="px-4 py-2 bg-slate-600 text-white rounded">{{ __('Filter') }}</button>
                     </form>
 
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                        <thead>
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-4 py-2 text-left">{{ __('IP') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('MAC') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Router') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Subscriber') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Package') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Status') }}</th>
-                                <th class="px-4 py-2 text-left">{{ __('Router sync') }}</th>
-                                <th class="px-4 py-2"></th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('IP') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('MAC') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Router') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Subscriber') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Package') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Status') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{{ __('Router sync') }}</th>
+                                <th class="px-6 py-3"></th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tbody class="bg-white divide-y divide-slate-200">
                             @forelse($staticIps as $ip)
-                                <tr>
-                                    <td class="px-4 py-2 font-mono">{{ $ip->ip_address }}</td>
-                                    <td class="px-4 py-2 font-mono">{{ $ip->mac_address ?? '—' }}</td>
-                                    <td class="px-4 py-2">{{ $ip->router?->name }}</td>
-                                    <td class="px-4 py-2">{{ $ip->user?->name ?? $ip->user?->phone ?? '—' }}</td>
-                                    <td class="px-4 py-2">{{ $ip->package?->name ?? '—' }}</td>
-                                    <td class="px-4 py-2">
+                                <tr class="{{ $loop->even ? 'bg-white' : 'bg-slate-50' }}">
+                                    <td class="px-6 py-4 text-sm font-mono">{{ $ip->ip_address }}</td>
+                                    <td class="px-6 py-4 text-sm font-mono">{{ $ip->mac_address ?? '—' }}</td>
+                                    <td class="px-6 py-3">{{ $ip->router?->name }}</td>
+                                    <td class="px-6 py-3">{{ $ip->user?->name ?? $ip->user?->phone ?? '—' }}</td>
+                                    <td class="px-6 py-3">{{ $ip->package?->name ?? '—' }}</td>
+                                    <td class="px-6 py-3">
                                         <span class="px-2 py-1 rounded text-xs {{ $ip->status === 'assigned' ? 'bg-blue-100 text-blue-800' : ($ip->status === 'reserved' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
                                             {{ ucfirst($ip->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-2">{{ $ip->synced_to_router ? __('Yes') : __('No') }}</td>
-                                    <td class="px-4 py-2 whitespace-nowrap">
+                                    <td class="px-6 py-3">{{ $ip->synced_to_router ? __('Yes') : __('No') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @if(!$ip->synced_to_router && $ip->status !== 'free' && $ip->mac_address)
                                             <form method="post" action="{{ route('static-ips.sync', $ip) }}" class="inline">@csrf<button class="text-blue-600 hover:underline text-sm">{{ __('Sync') }}</button></form>
                                         @endif
@@ -77,7 +77,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">{{ __('No static IPs yet.') }}</td></tr>
+                                <tr><td colspan="8" class="px-6 py-6 text-center text-slate-500">{{ __('No static IPs yet.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
