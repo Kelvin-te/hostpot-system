@@ -11,7 +11,7 @@
                     <!-- Side Navigation -->
                     <div class="w-64 bg-slate-50 border-r border-slate-200 flex-shrink-0 hidden lg:block">
                         <div class="p-6 sticky top-6">
-                            <h2 class="font-semibold text-lg text-slate-800 mb-4">{{ __('Settings') }}</h2>
+                            <h2 class="text-lg font-semibold text-slate-800 mb-4">{{ __('Settings') }}</h2>
                             <nav class="space-y-1">
                                 <a href="#section-isp" class="nav-link block px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">
                                     {{ __('ISP Information') }}
@@ -81,7 +81,7 @@
                         <!-- Company Information Section -->
                         <div id="section-isp" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('ISP Information') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('ISP Information') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Update your company information.") }}</p>
                             </div>
 
@@ -117,7 +117,7 @@
                         <!-- Application Settings Section -->
                         <div id="section-app" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Application Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Application Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure global application settings.") }}</p>
                             </div>
 
@@ -147,7 +147,7 @@
                         <!-- Walled Garden Settings Section -->
                         <div id="section-walled-garden" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Walled Garden Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Walled Garden Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure walled garden for captive portal.") }}</p>
                             </div>
 
@@ -180,7 +180,7 @@
                         <!-- Billing Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Billing Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Billing Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure billing and disconnection schedules.") }}</p>
                             </div>
 
@@ -208,7 +208,7 @@
                         <!-- SMS/Notification Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('SMS/Notification Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('SMS/Notification Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure SMS and notification preferences.") }}</p>
                             </div>
 
@@ -257,7 +257,7 @@
                         <!-- Payment Gateway Settings Section -->
                         <div id="section-payment" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Payment Gateway Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Payment Gateway Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure payment gateway credentials.") }}</p>
                             </div>
 
@@ -321,7 +321,7 @@
                         <!-- Email Settings Section -->
                         <div id="section-email" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Email Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Email Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure SMTP email settings.") }}</p>
                             </div>
 
@@ -369,7 +369,7 @@
                         <!-- Security Settings Section -->
                         <div id="section-security" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Security Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Security Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure security and password policies.") }}</p>
                             </div>
 
@@ -411,7 +411,7 @@
                         <!-- Support/Contact Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Support/Contact Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Support/Contact Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure support contact information.") }}</p>
                             </div>
 
@@ -447,7 +447,7 @@
                         <!-- Free Package Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Free Package Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Free Package Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure free package limits and anti-abuse.") }}</p>
                             </div>
 
@@ -480,7 +480,7 @@
                         <!-- Invoice Settings Section -->
                         <div id="section-invoice" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Invoice Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Invoice Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure invoice generation and formatting.") }}</p>
                             </div>
 
@@ -510,7 +510,7 @@
                         <!-- Branding Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Branding Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Branding Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Customize application branding and appearance.") }}</p>
                             </div>
 
@@ -540,7 +540,7 @@
                         <!-- Backup Settings Section -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Backup Settings') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Backup Settings') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Configure database backup schedule.") }}</p>
                             </div>
 

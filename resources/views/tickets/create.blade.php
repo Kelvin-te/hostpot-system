@@ -18,7 +18,7 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <h2 class="text-lg font-medium text-slate-900">{{ __('Ticket') }}</h2>
+                                <h2 class="text-base font-semibold text-slate-900">{{ __('Ticket') }}</h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ __("Create a new ticket") }}</p>
                             </div>
 

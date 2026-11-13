@@ -68,7 +68,7 @@
             @if($activeSession)
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                     <div class="p-6">
-                        <h3 class="font-semibold text-lg text-slate-800 mb-4">Active Session</h3>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">Active Session</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <div class="text-xs text-slate-500 uppercase">Package</div>
@@ -93,7 +93,7 @@
 
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6">
-                    <h3 class="font-semibold text-lg text-slate-800 mb-4">Payment History</h3>
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Payment History</h3>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>
@@ -131,7 +131,7 @@
 
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6">
-                    <h3 class="font-semibold text-lg text-slate-800 mb-4">Session History</h3>
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Session History</h3>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>
@@ -162,7 +162,7 @@
 
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6">
-                    <h3 class="font-semibold text-lg text-slate-800 mb-4">Send SMS</h3>
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Send SMS</h3>
                     <form action="{{ route('customers.sms', $customer) }}" method="POST">
                         @csrf
                         <div class="flex gap-2">

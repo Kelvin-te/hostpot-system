@@ -9,31 +9,31 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-slate-900 antialiased">
-        <div class="flex min-h-screen">
-            <!-- Left side - decorative (hidden on mobile) -->
-            <div class="hidden lg:flex lg:w-1/2 bg-slate-100 items-center justify-center">
-                <div class="text-center p-8">
-                    <h1 class="text-4xl font-bold text-slate-800 mb-4">Welcome Back</h1>
-                    <p class="text-slate-600 text-lg">Sign in to access your dashboard</p>
-                </div>
-            </div>
+        <div class="relative flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-10 sm:px-6">
+            <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-50 via-slate-50 to-slate-100"></div>
 
-            <!-- Right side - login form -->
-            <div class="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8">
-                <div class="w-full max-w-md">
-                    <div class="flex justify-center mb-8">
-                        <a href="{{ route('dashboard') }}">
-                            <x-application-logo class="w-full max-w-[190px] h-auto" />
-                        </a>
-                    </div>
+            <div class="relative w-full max-w-md">
+                <div class="mb-6 flex flex-col items-center">
+                    <a href="{{ route('dashboard') }}" class="mb-4">
+                        <x-application-logo class="h-10 w-auto" />
+                    </a>
+                    <h1 class="text-xl font-semibold text-slate-900">{{ config('app.name', 'MatuNet') }}</h1>
+                    <p class="mt-1 text-sm text-slate-500">{{ __('Sign in to your account') }}</p>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                     {{ $slot }}
                 </div>
+
+                <p class="mt-6 text-center text-xs text-slate-400">
+                    &copy; {{ date('Y') }} {{ config('app.name', 'MatuNet') }}. {{ __('All rights reserved.') }}
+                </p>
             </div>
         </div>
     </body>
