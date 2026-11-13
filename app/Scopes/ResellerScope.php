@@ -59,7 +59,17 @@ class ResellerScope implements Scope
 
     protected static function currentResellerId(): ?int
     {
+        // Console/queue workers have no session auth — use the static
+        // override set by middleware/commands.
+        $inConsole = app()->runningInConsole();
+
         if (static::$resolving) {
+            // Nested resolution (the staff-auth query itself) must never
+            // be reseller-scoped in HTTP context, or login breaks.
+            return $inConsole ? static::$resellerId : null;
+        }
+
+        if ($inConsole) {
             return static::$resellerId;
         }
 
@@ -71,11 +81,11 @@ class ResellerScope implements Scope
                 return $staff->isReseller() ? $staff->reseller_id : null;
             }
         } catch (\Throwable) {
-            // Auth not available (console, early boot) — use override.
+            // Auth not available — treat as unscoped.
         } finally {
             static::$resolving = false;
         }
 
-        return static::$resellerId;
+        return null;
     }
 }
