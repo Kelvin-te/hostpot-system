@@ -12,7 +12,7 @@
 
     {{-- User menu --}}
     <div class="relative" x-data="{ open: false }">
-        <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+        <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 hover:bg-slate-100">
             <span class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
             </span>
