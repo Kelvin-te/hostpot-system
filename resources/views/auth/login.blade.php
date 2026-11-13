@@ -39,7 +39,7 @@
 
         <div class="mt-6">
 
-            <button type="submit" class="block w-full rounded-md text-white px-4 py-3 bg-green-700 hover:bg-green-600">
+            <button type="submit" class="block w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white shadow-sm transition hover:bg-indigo-700">
                 {{ __('Log in') }}
             </button>
 

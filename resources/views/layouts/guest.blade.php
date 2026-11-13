@@ -21,7 +21,7 @@
             <div class="relative w-full max-w-md">
                 <div class="mb-6 flex flex-col items-center">
                     <a href="{{ route('dashboard') }}" class="mb-4">
-                        <x-application-logo class="h-10 w-auto" />
+                        <x-application-logo class="h-9 w-auto" />
                     </a>
                     <h1 class="text-xl font-semibold text-slate-900">{{ config('app.name', 'MatuNet') }}</h1>
                     <p class="mt-1 text-slate-500">{{ __('Sign in to your account') }}</p>
