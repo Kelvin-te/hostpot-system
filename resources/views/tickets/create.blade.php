@@ -19,7 +19,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Ticket') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Create a new ticket") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Create a new ticket") }}</p>
                             </div>
 
                             <div>
@@ -30,7 +30,7 @@
                                 </div>
                                 <div>
                                     <x-input-label for="message" :value="__('Message')" class="mt-4"></x-input-label>
-                                    <textarea name="message" class="px-3 py-3 mt-1 rounded-lg border-slate-300 md:text-sm block w-full" rows="5"></textarea>
+                                    <textarea name="message" class="px-3 py-3 mt-1 rounded-lg border-slate-300 md: block w-full" rows="5"></textarea>
                                     <x-input-error class="mt-2" :messages="$errors->get('message')"></x-input-error>
                                 </div>
 

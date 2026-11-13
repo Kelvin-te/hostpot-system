@@ -23,24 +23,24 @@
                 <div class="p-6">
                     <form method="GET" action="{{ route('reports.packages') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="from_date" class="block text-sm font-medium text-slate-700 mb-1">From Date</label>
-                            <input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="from_date" class="block font-medium text-slate-700 mb-1">From Date</label>
+                            <x-text-input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" />
                         </div>
                         <div>
-                            <label for="to_date" class="block text-sm font-medium text-slate-700 mb-1">To Date</label>
-                            <input type="date" name="to_date" id="to_date" value="{{ $toDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="to_date" class="block font-medium text-slate-700 mb-1">To Date</label>
+                            <x-text-input type="date" name="to_date" id="to_date" value="{{ $toDate }}" />
                         </div>
                         <div class="flex items-end col-span-2 gap-2">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
                                 Apply Filter
                             </button>
-                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 Today
                             </button>
-                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Week
                             </button>
-                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Month
                             </button>
                         </div>
@@ -52,7 +52,7 @@
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-slate-200">
                     <h3 class="text-lg font-semibold text-slate-900">All Packages Performance</h3>
-                    <p class="text-sm text-slate-600 mt-1">Comprehensive overview of all package metrics</p>
+                    <p class="text-slate-600 mt-1">Comprehensive overview of all package metrics</p>
                 </div>
                 <div class="p-6">
                     @if($packages->count() > 0)
@@ -78,7 +78,7 @@
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center">
                                                     <div>
-                                                        <div class="text-sm font-medium text-slate-900">{{ $package->name }} -
+                                                        <div class="font-medium text-slate-900">{{ $package->name }} -
                                                             @if($package->router)
                                                                 <span> {{ $package->router->name }}</span>
                                                             @endif
@@ -90,11 +90,11 @@
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-semibold text-slate-900">KES {{ number_format($package->price, 0) }}</div>
+                                                <div class="font-semibold text-slate-900">KES {{ number_format($package->price, 0) }}</div>
                                                 <div class="text-xs text-slate-500">{{ $package->validity_days }}d validity</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-semibold text-blue-600">{{ number_format($package->sessions_count) }}</div>
+                                                <div class="font-semibold text-blue-600">{{ number_format($package->sessions_count) }}</div>
                                                 @if($package->sessions_count > 0)
                                                     <div class="text-xs text-slate-500">Active usage</div>
                                                 @else
@@ -102,13 +102,13 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-semibold text-green-600">KES {{ number_format($package->period_revenue, 0) }}</div>
+                                                <div class="font-semibold text-green-600">KES {{ number_format($package->period_revenue, 0) }}</div>
                                                 @if($package->sessions_count > 0)
                                                     <div class="text-xs text-slate-500">{{ number_format($package->period_revenue / $package->sessions_count, 0) }}/session</div>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-semibold text-purple-600">{{ number_format($dataGB, 2) }} GB</div>
+                                                <div class="font-semibold text-purple-600">{{ number_format($dataGB, 2) }} GB</div>
                                                 @if($package->sessions_count > 0)
                                                     <div class="text-xs text-slate-500">{{ number_format($dataGB / $package->sessions_count, 2) }} GB/session</div>
                                                 @endif
@@ -163,21 +163,21 @@
                 <div class="bg-gradient-to-br from-green-50 to-green-100 overflow-hidden shadow-sm rounded-lg p-6 border-2 border-green-200">
                     <div class="flex items-start justify-between">
                         <div>
-                            <div class="text-sm font-medium text-green-600 mb-2">Top Revenue Generator</div>
+                            <div class="font-medium text-green-600 mb-2">Top Revenue Generator</div>
                             <div class="text-2xl font-bold text-slate-900">{{ $topPerformer->name ?? 'N/A' }}</div>
                         </div>
                         
                     </div>
                     <div class="mt-4 flex justify-between align-center w-100">
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between ">
                             <span class="text-slate-600">Revenue: </span>
                             <span class="font-semibold text-green-600">KES {{ number_format($topPerformer->period_revenue ?? 0, 0) }}</span>
                         </div>
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between ">
                             <span class="text-slate-600">Sessions: </span>
                             <span class="font-semibold">{{ number_format($topPerformer->sessions_count ?? 0) }}</span>
                         </div>
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between ">
                             <span class="text-slate-600">Price: </span>
                             <span class="font-semibold">KES {{ number_format($topPerformer->price ?? 0, 0) }}</span>
                         </div>
@@ -188,22 +188,22 @@
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden shadow-sm rounded-lg p-6 border-2 border-blue-200">
                     <div class="flex items-start justify-between">
                         <div>
-                            <div class="text-sm font-medium text-blue-600 mb-2">Most Popular Package</div>
+                            <div class="font-medium text-blue-600 mb-2">Most Popular Package</div>
                             <div class="text-2xl font-bold text-slate-900">{{ $mostPopular->name ?? 'N/A' }}</div>
                             
                         </div>
                         
                     </div>
                     <div class="mt-4 flex justify-between align-center w-100">
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between ">
                             <span class="text-slate-600">Sessions: </span>
                             <span class="font-semibold text-blue-600">{{ number_format($mostPopular->sessions_count ?? 0) }}</span>
                         </div>
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between ">
                             <span class="text-slate-600">Market Share: </span>
                             <span class="font-semibold">{{ $totalSessions > 0 ? number_format(($mostPopular->sessions_count ?? 0) / $totalSessions * 100, 1) : 0 }}%</span>
                         </div>
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between ">
                             <span class="text-slate-600">Price: </span>
                             <span class="font-semibold">KES {{ number_format($mostPopular->price ?? 0, 0) }}</span>
                         </div>

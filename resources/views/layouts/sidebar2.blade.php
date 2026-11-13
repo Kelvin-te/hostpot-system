@@ -95,11 +95,11 @@
     {{-- User footer --}}
     <div class="border-t border-slate-100 p-4">
         <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
             </div>
             <div class="min-w-0 flex-1">
-                <div class="truncate text-sm font-medium text-slate-900">{{ auth()->user()->name }}</div>
+                <div class="truncate font-medium text-slate-900">{{ auth()->user()->name }}</div>
                 <div class="truncate text-xs text-slate-400">{{ auth()->user()->isAdmin() ? __('Administrator') : __('Staff') }}</div>
             </div>
         </div>

@@ -32,7 +32,7 @@
                         <div class="bg-slate-50 p-4 rounded-md space-y-4">
                             <div class="flex items-center">
                                 <input id="clone_all" name="clone_all" type="checkbox" value="1" class="h-4 w-4 text-indigo-600 border-slate-300 rounded">
-                                <label for="clone_all" class="ml-2 block text-sm text-slate-700">Clone to all other routers</label>
+                                <label for="clone_all" class="ml-2 block text-slate-700">Clone to all other routers</label>
                             </div>
 
                             <div>
@@ -48,7 +48,7 @@
 
                             <div class="flex items-center">
                                 <input id="overwrite" name="overwrite" type="checkbox" value="1" class="h-4 w-4 text-indigo-600 border-slate-300 rounded">
-                                <label for="overwrite" class="ml-2 block text-sm text-slate-700">Overwrite existing packages on destination</label>
+                                <label for="overwrite" class="ml-2 block text-slate-700">Overwrite existing packages on destination</label>
                             </div>
                         </div>
 

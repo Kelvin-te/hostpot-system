@@ -20,9 +20,8 @@
                         <div class="space-y-6">
                             <!-- Name -->
                             <div>
-                                <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                                <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" 
-                                       class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 @error('name') border-red-500 @enderror">
+                                <label for="name" class="block font-medium text-slate-700 mb-1">Full Name</label>
+                                <x-text-input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" class="@error('name') border-red-500 @enderror" />
                                 @error('name')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -30,9 +29,8 @@
 
                             <!-- Email -->
                             <div>
-                                <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                                <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" 
-                                       class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 @error('email') border-red-500 @enderror">
+                                <label for="email" class="block font-medium text-slate-700 mb-1">Email Address</label>
+                                <x-text-input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" class="@error('email') border-red-500 @enderror" />
                                 @error('email')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -40,9 +38,8 @@
 
                             <!-- Phone Number (Read-only) -->
                             <div>
-                                <label for="phone" class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-                                <input type="text" id="phone" value="{{ $user->phone }}" readonly
-                                       class="w-full rounded-md border-slate-300 bg-slate-50 shadow-sm cursor-not-allowed">
+                                <label for="phone" class="block font-medium text-slate-700 mb-1">Phone Number</label>
+                                <x-text-input type="text" id="phone" value="{{ $user->phone }}" readonly disabled class="bg-slate-50 cursor-not-allowed" />
                                 <p class="text-xs text-slate-500 mt-1">Phone number cannot be changed</p>
                             </div>
 
@@ -51,9 +48,8 @@
                                 
                                 <!-- Current Password -->
                                 <div class="mb-4">
-                                    <label for="current_password" class="block text-sm font-medium text-slate-700 mb-1">Current Password</label>
-                                    <input type="password" name="current_password" id="current_password" 
-                                           class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 @error('current_password') border-red-500 @enderror">
+                                    <label for="current_password" class="block font-medium text-slate-700 mb-1">Current Password</label>
+                                    <x-text-input type="password" name="current_password" id="current_password" class="@error('current_password') border-red-500 @enderror" />
                                     @error('current_password')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -62,9 +58,8 @@
 
                                 <!-- New Password -->
                                 <div class="mb-4">
-                                    <label for="new_password" class="block text-sm font-medium text-slate-700 mb-1">New Password</label>
-                                    <input type="password" name="new_password" id="new_password" 
-                                           class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 @error('new_password') border-red-500 @enderror">
+                                    <label for="new_password" class="block font-medium text-slate-700 mb-1">New Password</label>
+                                    <x-text-input type="password" name="new_password" id="new_password" class="@error('new_password') border-red-500 @enderror" />
                                     @error('new_password')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -72,9 +67,8 @@
 
                                 <!-- Confirm Password -->
                                 <div>
-                                    <label for="new_password_confirmation" class="block text-sm font-medium text-slate-700 mb-1">Confirm New Password</label>
-                                    <input type="password" name="new_password_confirmation" id="new_password_confirmation" 
-                                           class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <label for="new_password_confirmation" class="block font-medium text-slate-700 mb-1">Confirm New Password</label>
+                                    <x-text-input type="password" name="new_password_confirmation" id="new_password_confirmation" />
                                 </div>
                             </div>
 
@@ -97,12 +91,12 @@
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <div class="text-sm text-slate-600">Member Since</div>
+                            <div class="text-slate-600">Member Since</div>
                             <div class="text-lg font-semibold text-slate-900">{{ $user->created_at->format('M d, Y') }}</div>
                             <div class="text-xs text-slate-500">{{ $user->created_at->diffForHumans() }}</div>
                         </div>
                         <div>
-                            <div class="text-sm text-slate-600">Last Login</div>
+                            <div class="text-slate-600">Last Login</div>
                             <div class="text-lg font-semibold text-slate-900">
                                 @if($user->last_login_at)
                                     {{ $user->last_login_at->format('M d, Y H:i') }}
@@ -127,7 +121,7 @@
                         <h3 class="text-lg font-semibold text-slate-900">PPPoE Connection</h3>
                     </div>
                     <div class="p-6">
-                        <p class="text-sm text-slate-600 mb-3">Enter these credentials in your router's PPPoE client settings.</p>
+                        <p class="text-slate-600 mb-3">Enter these credentials in your router's PPPoE client settings.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-slate-50 rounded p-3">
                                 <div class="text-xs text-slate-500">Username</div>
@@ -139,7 +133,7 @@
                             </div>
                         </div>
                         @if($user->package)
-                            <div class="mt-3 text-sm text-slate-600">
+                            <div class="mt-3 text-slate-600">
                                 {{ __('Package') }}: {{ $user->package->name }}
                                 @if($user->detail?->package_start && $user->package->validity_minutes)
                                     — {{ __('renews/expires') }} {{ $user->detail->package_start->copy()->addMinutes($user->package->validity_minutes)->format('M d, Y H:i') }}
@@ -159,7 +153,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h4 class="font-semibold text-slate-900">Delete Account</h4>
-                            <p class="text-sm text-slate-600 mt-1">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                            <p class="text-slate-600 mt-1">Permanently delete your account and all associated data. This action cannot be undone.</p>
                         </div>
                         <button type="button" onclick="alert('Please contact support to delete your account')" 
                                 class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">

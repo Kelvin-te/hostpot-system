@@ -25,7 +25,7 @@
                 <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-sm opacity-90 mb-1">Total Revenue</div>
+                            <div class="opacity-90 mb-1">Total Revenue</div>
                             <div class="text-2xl font-bold">KES {{ number_format($totalRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">All time</div>
                         </div>
@@ -37,7 +37,7 @@
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-sm opacity-90 mb-1">Period Revenue</div>
+                            <div class="opacity-90 mb-1">Period Revenue</div>
                             <div class="text-2xl font-bold">KES {{ number_format($periodRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">Selected period</div>
                         </div>
@@ -49,7 +49,7 @@
                 <div class="bg-gradient-to-br from-purple-500 to-purple-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-sm opacity-90 mb-1">Today's Revenue</div>
+                            <div class="opacity-90 mb-1">Today's Revenue</div>
                             <div class="text-2xl font-bold">KES {{ number_format($todayRevenue, 0) }}</div>
                             <div class="text-xs opacity-75 mt-2">{{ now()->format('M d, Y') }}</div>
                         </div>
@@ -61,7 +61,7 @@
                 <div class="bg-gradient-to-br from-orange-500 to-orange-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-sm opacity-90 mb-1">Active Sessions</div>
+                            <div class="opacity-90 mb-1">Active Sessions</div>
                             <div class="text-2xl font-bold">{{ $activeSessions }}</div>
                             <div class="text-xs opacity-75 mt-2">Currently online</div>
                         </div>
@@ -73,19 +73,19 @@
             <!-- Secondary Stats -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600 mb-1">Total Sessions</div>
+                    <div class="text-slate-600 mb-1">Total Sessions</div>
                     <div class="text-2xl font-bold text-slate-900">{{ number_format($totalSessions) }}</div>
                     <div class="text-xs text-green-600 mt-1">{{ number_format($periodSessions) }} this period</div>
                 </div>
 
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600 mb-1">Total Data Used</div>
+                    <div class="text-slate-600 mb-1">Total Data Used</div>
                     <div class="text-2xl font-bold text-slate-900">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
                     <div class="text-xs text-green-600 mt-1">{{ number_format($periodDataUsed / (1024 * 1024 * 1024), 2) }} GB this period</div>
                 </div>
 
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600 mb-1">Average Revenue/Day</div>
+                    <div class="text-slate-600 mb-1">Average Revenue/Day</div>
                     <div class="text-2xl font-bold text-slate-900">KES {{ number_format($periodRevenue / 30, 0) }}</div>
                     <div class="text-xs text-slate-500 mt-1">Based on 30-day average</div>
                 </div>
@@ -127,8 +127,8 @@
                                 @foreach($topPackages as $package)
                                     <div>
                                         <div class="flex justify-between items-center mb-1">
-                                            <span class="text-sm font-medium text-slate-700">{{ $package->name }}</span>
-                                            <span class="text-sm font-semibold text-slate-900">{{ $package->sessions_count }} sessions</span>
+                                            <span class="font-medium text-slate-700">{{ $package->name }}</span>
+                                            <span class="font-semibold text-slate-900">{{ $package->sessions_count }} sessions</span>
                                         </div>
                                         @php
                                             $maxSessions = $topPackages->first()->sessions_count;
@@ -161,11 +161,11 @@
                                 @foreach($revenueByPackage->take(5) as $item)
                                     <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                                         <div>
-                                            <div class="text-sm font-medium text-slate-900">{{ $item->package->name ?? 'Unknown' }}</div>
+                                            <div class="font-medium text-slate-900">{{ $item->package->name ?? 'Unknown' }}</div>
                                             <div class="text-xs text-slate-500">{{ $item->transaction_count }} transactions</div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-sm font-semibold text-green-600">KES {{ number_format($item->total_revenue, 0) }}</div>
+                                            <div class="font-semibold text-green-600">KES {{ number_format($item->total_revenue, 0) }}</div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -183,7 +183,7 @@
                     <div class="flex items-center">
                         <div class="text-3xl mr-4"></div>
                         <div>
-                            <div class="text-sm text-slate-600">Detailed</div>
+                            <div class="text-slate-600">Detailed</div>
                             <div class="font-semibold text-slate-900 group-hover:text-indigo-600">Revenue Report</div>
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                     <div class="flex items-center">
                         <div class="text-3xl mr-4"></div>
                         <div>
-                            <div class="text-sm text-slate-600">Data</div>
+                            <div class="text-slate-600">Data</div>
                             <div class="font-semibold text-slate-900 group-hover:text-indigo-600">Usage Statistics</div>
                         </div>
                     </div>
@@ -203,7 +203,7 @@
                     <div class="flex items-center">
                         <div class="text-3xl mr-4"></div>
                         <div>
-                            <div class="text-sm text-slate-600">Performance</div>
+                            <div class="text-slate-600">Performance</div>
                             <div class="font-semibold text-slate-900 group-hover:text-indigo-600">Package Analysis</div>
                         </div>
                     </div>
@@ -213,7 +213,7 @@
                     <div class="flex items-center">
                         <div class="text-3xl mr-4"></div>
                         <div>
-                            <div class="text-sm text-slate-600">Complete</div>
+                            <div class="text-slate-600">Complete</div>
                             <div class="font-semibold text-slate-900 group-hover:text-indigo-600">Session History</div>
                         </div>
                     </div>

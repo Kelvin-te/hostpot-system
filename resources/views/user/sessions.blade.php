@@ -11,15 +11,15 @@
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Active Sessions</div>
+                    <div class="text-slate-600">Active Sessions</div>
                     <div class="text-2xl font-bold text-green-600">{{ $stats['active'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Total Sessions</div>
+                    <div class="text-slate-600">Total Sessions</div>
                     <div class="text-2xl font-bold text-blue-600">{{ $stats['total'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Total Data Used</div>
+                    <div class="text-slate-600">Total Data Used</div>
                     <div class="text-2xl font-bold text-purple-600">{{ number_format($stats['data_used'] / (1024 * 1024 * 1024), 2) }} GB</div>
                 </div>
             </div>
@@ -29,15 +29,15 @@
                 <div class="p-6 border-b border-slate-200">
                     <div class="flex gap-2">
                         <a href="{{ route('user.sessions', ['status' => 'all']) }}" 
-                           class="px-4 py-2 rounded-md text-sm font-medium {{ $status === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                           class="px-4 py-2 rounded-md font-medium {{ $status === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
                             All Sessions
                         </a>
                         <a href="{{ route('user.sessions', ['status' => 'active']) }}" 
-                           class="px-4 py-2 rounded-md text-sm font-medium {{ $status === 'active' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                           class="px-4 py-2 rounded-md font-medium {{ $status === 'active' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
                             Active Only
                         </a>
                         <a href="{{ route('user.sessions', ['status' => 'expired']) }}" 
-                           class="px-4 py-2 rounded-md text-sm font-medium {{ $status === 'expired' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
+                           class="px-4 py-2 rounded-md font-medium {{ $status === 'expired' ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
                             Expired
                         </a>
                     </div>
@@ -59,7 +59,7 @@
                                                 @endif
                                             </div>
                                             
-                                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-sm">
+                                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 ">
                                                 <div>
                                                     <div class="text-slate-500 text-xs">Started</div>
                                                     <div class="text-slate-900">{{ $session->started_at->format('M d, Y') }}</div>

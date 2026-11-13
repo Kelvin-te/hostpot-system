@@ -6,11 +6,11 @@
                     <div class="flex justify-between items-start mb-8">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800">{{ config('app.name', 'MatuNet') }}</h2>
-                            <p class="text-slate-500 text-sm mt-1">Internet Service Provider</p>
+                            <p class="text-slate-500 mt-1">Internet Service Provider</p>
                         </div>
                         <div class="text-right">
                             <div class="text-lg font-semibold text-slate-800">{{ $invoiceNumber }}</div>
-                            <div class="text-sm text-slate-500">{{ $transaction->created_at->format('M d, Y') }}</div>
+                            <div class="text-slate-500">{{ $transaction->created_at->format('M d, Y') }}</div>
                         </div>
                     </div>
 
@@ -19,19 +19,19 @@
                             <div>
                                 <div class="text-xs text-slate-500 uppercase mb-1">Billed To</div>
                                 <div class="font-semibold">{{ $transaction->user?->name ?? $transaction->phone_number }}</div>
-                                <div class="text-sm text-slate-600">{{ $transaction->phone_number }}</div>
+                                <div class="text-slate-600">{{ $transaction->phone_number }}</div>
                             </div>
                             <div class="text-right">
                                 <div class="text-xs text-slate-500 uppercase mb-1">Payment Method</div>
                                 <div class="font-semibold capitalize">{{ $transaction->gateway }}</div>
                                 @if($transaction->mpesa_receipt_number)
-                                    <div class="text-sm text-slate-600">Receipt: {{ $transaction->mpesa_receipt_number }}</div>
+                                    <div class="text-slate-600">Receipt: {{ $transaction->mpesa_receipt_number }}</div>
                                 @endif
                             </div>
                         </div>
                     </div>
 
-                    <table class="w-full text-sm mb-6">
+                    <table class="w-full mb-6">
                         <thead>
                             <tr class="border-b text-left text-slate-500">
                                 <th class="py-2">Description</th>

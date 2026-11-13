@@ -17,8 +17,8 @@
                         </svg>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800">Quick Recharge</h3>
-                        <p class="mt-1 text-sm text-blue-700">Select a package below and pay via M-Pesa to get instant internet access.</p>
+                        <h3 class="font-medium text-blue-800">Quick Recharge</h3>
+                        <p class="mt-1 text-blue-700">Select a package below and pay via M-Pesa to get instant internet access.</p>
                     </div>
                 </div>
             </div>
@@ -27,7 +27,7 @@
             <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-slate-200">
                     <h3 class="text-lg font-semibold text-slate-900">Available Packages</h3>
-                    <p class="text-sm text-slate-600 mt-1">Choose the best package for your needs</p>
+                    <p class="text-slate-600 mt-1">Choose the best package for your needs</p>
                 </div>
                 
                 <div class="p-6">
@@ -53,19 +53,19 @@
 
                                         <!-- Features -->
                                         <div class="space-y-3 mb-6">
-                                            <div class="flex items-center justify-center text-sm text-slate-600">
+                                            <div class="flex items-center justify-center text-slate-600">
                                                 <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                 </svg>
                                                 <span class="font-semibold">{{ $package->data_cap }}</span>
                                             </div>
-                                            <div class="flex items-center justify-center text-sm text-slate-600">
+                                            <div class="flex items-center justify-center text-slate-600">
                                                 <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                 </svg>
                                                 <span>Speed: {{ $package->bandwidth_download }}/{{ $package->bandwidth_upload }} Mbps</span>
                                             </div>
-                                            <div class="flex items-center justify-center text-sm text-slate-600">
+                                            <div class="flex items-center justify-center text-slate-600">
                                                 <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                 </svg>
@@ -108,28 +108,28 @@
                                 <span class="text-xl font-bold">1</span>
                             </div>
                             <h4 class="font-semibold text-slate-900 mb-2">Choose Package</h4>
-                            <p class="text-sm text-slate-600">Select the data package that suits your needs</p>
+                            <p class="text-slate-600">Select the data package that suits your needs</p>
                         </div>
                         <div class="text-center">
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3">
                                 <span class="text-xl font-bold">2</span>
                             </div>
                             <h4 class="font-semibold text-slate-900 mb-2">Enter Phone Number</h4>
-                            <p class="text-sm text-slate-600">Provide your M-Pesa phone number for payment</p>
+                            <p class="text-slate-600">Provide your M-Pesa phone number for payment</p>
                         </div>
                         <div class="text-center">
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3">
                                 <span class="text-xl font-bold">3</span>
                             </div>
                             <h4 class="font-semibold text-slate-900 mb-2">Complete Payment</h4>
-                            <p class="text-sm text-slate-600">Enter M-Pesa PIN to complete the transaction</p>
+                            <p class="text-slate-600">Enter M-Pesa PIN to complete the transaction</p>
                         </div>
                         <div class="text-center">
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3">
                                 <span class="text-xl font-bold">4</span>
                             </div>
                             <h4 class="font-semibold text-slate-900 mb-2">Get Connected</h4>
-                            <p class="text-sm text-slate-600">Instant internet access upon successful payment</p>
+                            <p class="text-slate-600">Instant internet access upon successful payment</p>
                         </div>
                     </div>
                 </div>
@@ -144,19 +144,19 @@
                     <div class="space-y-4">
                         <div>
                             <h4 class="font-semibold text-slate-900 mb-1">How long does activation take?</h4>
-                            <p class="text-sm text-slate-600">Your internet access is activated instantly once payment is confirmed (usually within 30 seconds).</p>
+                            <p class="text-slate-600">Your internet access is activated instantly once payment is confirmed (usually within 30 seconds).</p>
                         </div>
                         <div>
                             <h4 class="font-semibold text-slate-900 mb-1">Can I use the data on multiple devices?</h4>
-                            <p class="text-sm text-slate-600">Each package is tied to your registered phone number and can be used on one device at a time.</p>
+                            <p class="text-slate-600">Each package is tied to your registered phone number and can be used on one device at a time.</p>
                         </div>
                         <div>
                             <h4 class="font-semibold text-slate-900 mb-1">What happens if payment fails?</h4>
-                            <p class="text-sm text-slate-600">If payment fails, no charges will be applied. You can try again or contact support for assistance.</p>
+                            <p class="text-slate-600">If payment fails, no charges will be applied. You can try again or contact support for assistance.</p>
                         </div>
                         <div>
                             <h4 class="font-semibold text-slate-900 mb-1">Do unused data roll over?</h4>
-                            <p class="text-sm text-slate-600">Data expires based on the package validity period. Unused data does not roll over to the next purchase.</p>
+                            <p class="text-slate-600">Data expires based on the package validity period. Unused data does not roll over to the next purchase.</p>
                         </div>
                     </div>
                 </div>

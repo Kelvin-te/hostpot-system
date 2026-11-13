@@ -15,7 +15,7 @@
 
             <div class="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-5 text-white shadow-sm">
                 <h3 class="text-xl font-semibold">{{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}</h3>
-                <p class="mt-1 text-sm text-indigo-100">{{ auth()->user()->isAdmin() ? __('Here is what is happening across your network today.') : __('Manage your account, sessions and purchases.') }}</p>
+                <p class="mt-1 text-indigo-100">{{ auth()->user()->isAdmin() ? __('Here is what is happening across your network today.') : __('Manage your account, sessions and purchases.') }}</p>
             </div>
 
             @if(auth()->user()->isAdmin())
@@ -31,7 +31,7 @@
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-sm font-medium text-slate-500">{{ __("Today's Revenue") }}</div>
+                                <div class="font-medium text-slate-500">{{ __("Today's Revenue") }}</div>
                                 <div class="mt-1 text-2xl font-bold text-slate-900">KES {{ number_format($todayRevenue, 0) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('Last 24 hours') }}</div>
                             </div>
@@ -41,7 +41,7 @@
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-sm font-medium text-slate-500">{{ __('Active Sessions') }}</div>
+                                <div class="font-medium text-slate-500">{{ __('Active Sessions') }}</div>
                                 <div class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($activeSessions) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('Currently online') }}</div>
                             </div>
@@ -51,7 +51,7 @@
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-sm font-medium text-slate-500">{{ __('Total Users') }}</div>
+                                <div class="font-medium text-slate-500">{{ __('Total Users') }}</div>
                                 <div class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($totalUsers) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('Registered subscribers') }}</div>
                             </div>
@@ -61,7 +61,7 @@
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-sm font-medium text-slate-500">{{ __('Total Revenue') }}</div>
+                                <div class="font-medium text-slate-500">{{ __('Total Revenue') }}</div>
                                 <div class="mt-1 text-2xl font-bold text-slate-900">KES {{ number_format($totalRevenue, 0) }}</div>
                                 <div class="mt-1 text-xs text-slate-400">{{ __('All time') }}</div>
                             </div>
@@ -74,7 +74,7 @@
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
                     <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
                         <h3 class="font-semibold text-slate-900">{{ __('Router Status') }}</h3>
-                        <a href="{{ route('router.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">{{ __('Manage') }} →</a>
+                        <a href="{{ route('router.index') }}" class="font-medium text-indigo-600 hover:text-indigo-800">{{ __('Manage') }} →</a>
                     </div>
                     <div class="p-6">
                         @if($routers->count() > 0)
@@ -96,7 +96,7 @@
                             <div class="py-8 text-center">
                                 <x-app-icon name="router" class="mx-auto mb-3 h-10 w-10 text-slate-300" />
                                 <p class="mb-4 text-slate-500">{{ __('No routers configured') }}</p>
-                                <a href="{{ route('router.create') }}" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">{{ __('Add Router') }}</a>
+                                <a href="{{ route('router.create') }}" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700">{{ __('Add Router') }}</a>
                             </div>
                         @endif
                     </div>
@@ -134,7 +134,7 @@
                             })
                             .catch(() => {
                                 const c = document.getElementById('router-status-container');
-                                if (c) c.innerHTML = '<div class="col-span-full py-4 text-center text-sm text-red-600">Failed to load router status.</div>';
+                                if (c) c.innerHTML = '<div class="col-span-full py-4 text-center text-red-600">Failed to load router status.</div>';
                             });
                     });
                 </script>
@@ -151,7 +151,7 @@
                         ] as [$route, $icon, $label, $colors])
                             <a href="{{ route($route) }}" class="flex flex-col items-center gap-2 rounded-lg border border-slate-100 p-4 transition hover:border-indigo-200 hover:bg-slate-50">
                                 <span class="rounded-lg p-2 {{ $colors }}"><x-app-icon :name="$icon" class="h-6 w-6" /></span>
-                                <span class="text-sm font-medium text-slate-700">{{ __($label) }}</span>
+                                <span class="font-medium text-slate-700">{{ __($label) }}</span>
                             </a>
                         @endforeach
                     </div>
@@ -162,46 +162,46 @@
                     <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
                         <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
                             <h3 class="font-semibold text-slate-900">{{ __('Recent Transactions') }}</h3>
-                            <a href="{{ route('payment.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">{{ __('View all') }} →</a>
+                            <a href="{{ route('payment.index') }}" class="font-medium text-indigo-600 hover:text-indigo-800">{{ __('View all') }} →</a>
                         </div>
                         <div class="p-6">
                             @php $recentTransactions = \App\Models\PaymentTransaction::latest()->take(5)->get(); @endphp
                             @forelse($recentTransactions as $t)
                                 <div class="flex items-center justify-between border-b border-slate-50 py-2.5 last:border-0">
                                     <div>
-                                        <div class="text-sm font-medium text-slate-900">{{ $t->phone_number }}</div>
+                                        <div class="font-medium text-slate-900">{{ $t->phone_number }}</div>
                                         <div class="text-xs text-slate-400">{{ $t->created_at->format('M d, H:i') }}</div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-sm font-semibold text-slate-900">KES {{ number_format($t->amount, 0) }}</div>
+                                        <div class="font-semibold text-slate-900">KES {{ number_format($t->amount, 0) }}</div>
                                         <span class="text-xs {{ $t->status === 'completed' ? 'text-green-600' : 'text-amber-600' }}">{{ $t->status === 'completed' ? 'Paid' : 'Pending' }}</span>
                                     </div>
                                 </div>
                             @empty
-                                <p class="py-4 text-center text-sm text-slate-400">{{ __('No recent transactions') }}</p>
+                                <p class="py-4 text-center text-slate-400">{{ __('No recent transactions') }}</p>
                             @endforelse
                         </div>
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
                         <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
                             <h3 class="font-semibold text-slate-900">{{ __('Active Sessions') }}</h3>
-                            <a href="{{ route('sessions.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">{{ __('View all') }} →</a>
+                            <a href="{{ route('sessions.index') }}" class="font-medium text-indigo-600 hover:text-indigo-800">{{ __('View all') }} →</a>
                         </div>
                         <div class="p-6">
                             @php $recentSessions = \App\Models\HotspotSession::active()->latest()->take(5)->get(); @endphp
                             @forelse($recentSessions as $s)
                                 <div class="flex items-center justify-between border-b border-slate-50 py-2.5 last:border-0">
                                     <div>
-                                        <div class="text-sm font-medium text-slate-900">{{ $s->package->name ?? 'Package' }}</div>
+                                        <div class="font-medium text-slate-900">{{ $s->package->name ?? 'Package' }}</div>
                                         <div class="text-xs text-slate-400">{{ $s->username }}</div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-sm text-slate-900">{{ number_format($s->bytes_total / (1024 * 1024), 0) }} MB</div>
+                                        <div class="text-slate-900">{{ number_format($s->bytes_total / (1024 * 1024), 0) }} MB</div>
                                         <span class="text-xs text-green-600">{{ __('Active') }}</span>
                                     </div>
                                 </div>
                             @empty
-                                <p class="py-4 text-center text-sm text-slate-400">{{ __('No active sessions') }}</p>
+                                <p class="py-4 text-center text-slate-400">{{ __('No active sessions') }}</p>
                             @endforelse
                         </div>
                     </div>

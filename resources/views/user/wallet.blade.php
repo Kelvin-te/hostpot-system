@@ -11,7 +11,7 @@
             <div class="bg-gradient-to-r from-indigo-500 to-purple-600 overflow-hidden shadow-lg rounded-lg p-8 text-white">
                 <div class="flex justify-between items-center">
                     <div>
-                        <div class="text-sm text-indigo-100">Current Balance</div>
+                        <div class="text-indigo-100">Current Balance</div>
                         <div class="text-4xl font-bold mt-2">KES {{ number_format($walletBalance, 2) }}</div>
                     </div>
                     
@@ -31,7 +31,7 @@
                 <div class="p-6">
                     @if($transactions->count() > 0)
                         <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm">
+                            <table class="min-w-full ">
                                 <thead>
                                     <tr class="border-b text-left text-slate-500">
                                         <th class="py-2 px-3">Date</th>

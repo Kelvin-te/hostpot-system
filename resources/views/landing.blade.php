@@ -150,7 +150,7 @@
 
                 <!-- Standard Plan -->
                 <div class="bg-white rounded-lg shadow-lg p-8 border-2 border-green-500 relative">
-                    <div class="absolute top-0 right-0 bg-green-500 text-white px-4 py-1 rounded-bl-lg text-sm font-semibold">Popular</div>
+                    <div class="absolute top-0 right-0 bg-green-500 text-white px-4 py-1 rounded-bl-lg font-semibold">Popular</div>
                     <h3 class="text-2xl font-bold text-slate-900 mb-2">Standard</h3>
                     <p class="text-slate-600 mb-4">For growing businesses</p>
                     <div class="mb-6">

@@ -57,10 +57,10 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @if($incident->status === 'open')
-                                            <form method="post" action="{{ route('incidents.acknowledge', $incident) }}" class="inline">@csrf<button class="text-blue-600 hover:underline text-sm">{{ __('Ack') }}</button></form>
+                                            <form method="post" action="{{ route('incidents.acknowledge', $incident) }}" class="inline">@csrf<button class="text-blue-600 hover:underline ">{{ __('Ack') }}</button></form>
                                         @endif
                                         @if($incident->status !== 'resolved')
-                                            <form method="post" action="{{ route('incidents.resolve', $incident) }}" class="inline ml-2">@csrf<button class="text-green-600 hover:underline text-sm">{{ __('Resolve') }}</button></form>
+                                            <form method="post" action="{{ route('incidents.resolve', $incident) }}" class="inline ml-2">@csrf<button class="text-green-600 hover:underline ">{{ __('Resolve') }}</button></form>
                                         @endif
                                     </td>
                                 </tr>

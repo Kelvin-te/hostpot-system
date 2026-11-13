@@ -23,19 +23,19 @@
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Active Sessions</div>
+                    <div class="text-slate-600">Active Sessions</div>
                     <div class="text-2xl font-bold text-green-600">{{ $stats['active'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Expired Sessions</div>
+                    <div class="text-slate-600">Expired Sessions</div>
                     <div class="text-2xl font-bold text-red-600">{{ $stats['expired'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Sessions Today</div>
+                    <div class="text-slate-600">Sessions Today</div>
                     <div class="text-2xl font-bold text-blue-600">{{ $stats['total_today'] }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Data Used Today</div>
+                    <div class="text-slate-600">Data Used Today</div>
                     <div class="text-2xl font-bold text-purple-600">{{ number_format($stats['data_used_today'] / (1024 * 1024 * 1024), 2) }} GB</div>
                 </div>
             </div>
@@ -45,7 +45,7 @@
                 <div class="p-6">
                     <form method="GET" action="{{ route('sessions.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="status" class="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                            <label for="status" class="block font-medium text-slate-700 mb-1">Status</label>
                             <x-select name="status" id="status" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="active" {{ request('status', 'active') === 'active' ? 'selected' : '' }}>Active</option>
                                 <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Expired</option>
@@ -54,7 +54,7 @@
                             </x-select>
                         </div>
                         <div>
-                            <label for="router_id" class="block text-sm font-medium text-slate-700 mb-1">Router</label>
+                            <label for="router_id" class="block font-medium text-slate-700 mb-1">Router</label>
                             <x-select name="router_id" id="router_id" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="">All Routers</option>
                                 @foreach($routers as $router)
@@ -65,8 +65,8 @@
                             </x-select>
                         </div>
                         <div>
-                            <label for="search" class="block text-sm font-medium text-slate-700 mb-1">Search</label>
-                            <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Username, MAC, IP..." class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="search" class="block font-medium text-slate-700 mb-1">Search</label>
+                            <x-text-input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Username, MAC, IP..." />
                         </div>
                         <div class="flex items-end gap-2">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
@@ -84,11 +84,11 @@
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <label for="auto-refresh" class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="auto-refresh" class="rounded border-slate-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        <span class="ml-2 text-sm font-medium text-slate-700">Auto-refresh (30s)</span>
+                        <x-text-input type="checkbox" id="auto-refresh" />
+                        <span class="ml-2 font-medium text-slate-700">Auto-refresh (30s)</span>
                     </label>
                 </div>
-                <div class="text-sm text-slate-600">
+                <div class="text-slate-600">
                     Last updated: <span id="last-updated">{{ now()->format('H:i:s') }}</span>
                 </div>
             </div>
@@ -114,15 +114,15 @@
                                     @foreach($sessions as $session)
                                         <tr class="{{ $loop->even ? 'bg-white' : 'bg-slate-50' }} hover:bg-slate-100">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-slate-900">{{ $session->username ?? 'Guest' }}</div>
+                                                <div class="font-medium text-slate-900">{{ $session->username ?? 'Guest' }}</div>
                                                 <div class="text-xs text-slate-500">{{ $session->session_id }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-slate-900">{{ $session->package->name }}</div>
+                                                <div class="text-slate-900">{{ $session->package->name }}</div>
                                                 <div class="text-xs text-slate-500">KES {{ number_format($session->package->price, 2) }}</div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <div class="text-sm text-slate-900">{{ $session->ip_address }}</div>
+                                                <div class="text-slate-900">{{ $session->ip_address }}</div>
                                                 <div class="text-xs text-slate-500">{{ $session->mac_address }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
@@ -134,7 +134,7 @@
                                                     }
                                                     $percentage = $limitMB > 0 ? min(100, ($totalMB / $limitMB) * 100) : 0;
                                                 @endphp
-                                                <div class="text-sm text-slate-900">{{ number_format($totalMB, 2) }} MB</div>
+                                                <div class="text-slate-900">{{ number_format($totalMB, 2) }} MB</div>
                                                 @if($limitMB > 0)
                                                     <div class="w-full bg-slate-200 rounded-full h-2 mt-1">
                                                         <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
@@ -142,7 +142,7 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-slate-900">{{ $session->started_at->format('M d, H:i') }}</div>
+                                                <div class="text-slate-900">{{ $session->started_at->format('M d, H:i') }}</div>
                                                 <div class="text-xs text-slate-500">
                                                     @if($session->isActive())
                                                         Expires {{ $session->expires_at->diffForHumans() }}

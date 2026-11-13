@@ -24,7 +24,7 @@
                 <div class="p-6 border-b border-slate-200">
                     <div>
                         <h3 class="text-lg font-semibold text-slate-900">Edit Package: {{ $package->name }}</h3>
-                        <p class="text-sm text-slate-600 mt-1">Update package settings and pricing</p>
+                        <p class="text-slate-600 mt-1">Update package settings and pricing</p>
                     </div>
                 </div>
                 <div class="p-6">
@@ -78,7 +78,7 @@
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
                             <h4 class="font-semibold text-slate-900">Delete Package</h4>
-                            <p class="text-sm text-slate-600 mt-1">
+                            <p class="text-slate-600 mt-1">
                                 Permanently delete this package from database and MikroTik router <strong>{{ $package->router->name }}</strong>. This action cannot be undone.
                             </p>
                         </div>

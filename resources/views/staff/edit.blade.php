@@ -16,7 +16,7 @@
             <div>
                 <label for="is_active" class="inline-flex items-center">
                     <input id="is_active" type="checkbox" class="rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="is_active" value="1" {{ old('is_active', $staff->is_active) ? 'checked' : '' }}>
-                    <span class="ms-2 text-sm text-slate-600">{{ __('Active') }}</span>
+                    <span class="ms-2 text-slate-600">{{ __('Active') }}</span>
                 </label>
                 <x-input-error :messages="$errors->get('is_active')" class="mt-2" />
             </div>
@@ -29,7 +29,7 @@
                     <form method="POST" action="{{ route('staff.destroy', $staff) }}" onsubmit="return confirm('{{ __('Delete this staff member?') }}')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-800">{{ __('Delete') }}</button>
+                        <button type="submit" class="font-medium text-red-600 hover:text-red-800">{{ __('Delete') }}</button>
                     </form>
                 </div>
                 <x-primary-button>{{ __('Update Staff') }}</x-primary-button>

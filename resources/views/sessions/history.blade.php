@@ -20,15 +20,15 @@
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Total Sessions</div>
+                    <div class="text-slate-600">Total Sessions</div>
                     <div class="text-2xl font-bold text-blue-600">{{ number_format($stats['total_sessions']) }}</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Total Data Used</div>
+                    <div class="text-slate-600">Total Data Used</div>
                     <div class="text-2xl font-bold text-purple-600">{{ number_format($stats['total_data_used'] / (1024 * 1024 * 1024), 2) }} GB</div>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
-                    <div class="text-sm text-slate-600">Average Duration</div>
+                    <div class="text-slate-600">Average Duration</div>
                     <div class="text-2xl font-bold text-green-600">{{ $stats['average_duration'] }}</div>
                 </div>
             </div>
@@ -39,15 +39,15 @@
                     <form method="GET" action="{{ route('sessions.history') }}" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
-                                <label for="from_date" class="block text-sm font-medium text-slate-700 mb-1">From Date</label>
-                                <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <label for="from_date" class="block font-medium text-slate-700 mb-1">From Date</label>
+                                <x-text-input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" />
                             </div>
                             <div>
-                                <label for="to_date" class="block text-sm font-medium text-slate-700 mb-1">To Date</label>
-                                <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <label for="to_date" class="block font-medium text-slate-700 mb-1">To Date</label>
+                                <x-text-input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" />
                             </div>
                             <div>
-                                <label for="package_id" class="block text-sm font-medium text-slate-700 mb-1">Package</label>
+                                <label for="package_id" class="block font-medium text-slate-700 mb-1">Package</label>
                                 <x-select name="package_id" id="package_id" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">All Packages</option>
                                     @foreach($packages as $package)
@@ -58,8 +58,8 @@
                                 </x-select>
                             </div>
                             <div>
-                                <label for="search" class="block text-sm font-medium text-slate-700 mb-1">Search</label>
-                                <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Username, MAC, IP..." class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <label for="search" class="block font-medium text-slate-700 mb-1">Search</label>
+                                <x-text-input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Username, MAC, IP..." />
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -69,13 +69,13 @@
                             <a href="{{ route('sessions.history') }}" class="px-4 py-2 bg-slate-300 text-slate-700 rounded-md hover:bg-slate-400 transition">
                                 Clear
                             </a>
-                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 Today
                             </button>
-                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Week
                             </button>
-                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Month
                             </button>
                         </div>
@@ -105,17 +105,17 @@
                                     @foreach($sessions as $session)
                                         <tr class="{{ $loop->even ? 'bg-white' : 'bg-slate-50' }} hover:bg-slate-100">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-slate-900">{{ $session->username ?? 'Guest' }}</div>
+                                                <div class="font-medium text-slate-900">{{ $session->username ?? 'Guest' }}</div>
                                                 @if($session->user)
                                                     <div class="text-xs text-slate-500">{{ $session->user->name }}</div>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-slate-900">{{ $session->package->name }}</div>
+                                                <div class="text-slate-900">{{ $session->package->name }}</div>
                                                 <div class="text-xs text-slate-500">KES {{ number_format($session->package->price, 2) }}</div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <div class="text-sm text-slate-900">{{ $session->ip_address ?? 'N/A' }}</div>
+                                                <div class="text-slate-900">{{ $session->ip_address ?? 'N/A' }}</div>
                                                 <div class="text-xs text-slate-500">{{ $session->mac_address ?? 'N/A' }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
@@ -123,7 +123,7 @@
                                                     $totalMB = $session->bytes_total / (1024 * 1024);
                                                     $totalGB = $totalMB / 1024;
                                                 @endphp
-                                                <div class="text-sm text-slate-900">
+                                                <div class="text-slate-900">
                                                     @if($totalGB >= 1)
                                                         {{ number_format($totalGB, 2) }} GB
                                                     @else
@@ -136,11 +136,11 @@
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-slate-900">{{ $session->started_at->format('M d, Y') }}</div>
+                                                <div class="text-slate-900">{{ $session->started_at->format('M d, Y') }}</div>
                                                 <div class="text-xs text-slate-500">{{ $session->started_at->format('H:i:s') }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-slate-900">
+                                                <div class="text-slate-900">
                                                     {{ $session->started_at->diffForHumans($session->expires_at, true) }}
                                                 </div>
                                             </td>

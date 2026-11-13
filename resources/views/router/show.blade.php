@@ -21,7 +21,7 @@
                             <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
                                 {{ $router->name }}
                             </h2>
-                            <p class="text-sm text-slate-600 mt-1">MikroTik Router Details</p>
+                            <p class="text-slate-600 mt-1">MikroTik Router Details</p>
                         </div>
                         <div class="flex space-x-3">
                             <a href="{{ route('router.edit', $router) }}"
@@ -59,35 +59,35 @@
                     </div>
 
                     <!-- Quick Actions Row -->
-                    <div class=" mb-6">
+                    <div class="mb-6">
                         
                         <div class="pb-6">
                             <div class="grid-cols-4 md:grid-cols-4 gap-4 text-right">
-                                <a href="{{ route('packages.copy.form', ['router_id' => $router->id]) }}" class="inline-flex items-center justify-center px-4 py-2 text-indigo-600 font-medium rounded text-sm transition duration-200">
+                                <a href="{{ route('packages.copy.form', ['router_id' => $router->id]) }}" class="inline-flex items-center justify-center px-4 py-2 text-indigo-600 font-medium rounded transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8M16 7v8M4 7h16M4 15h16"></path>
                                     </svg>
                                     Copy Packages
                                 </a>
-                                <a href="{{ route('log', ['param' => $router]) }}" class="inline-flex items-center justify-center px-4 py-2 text-green-600 font-medium rounded text-sm transition duration-200">
+                                <a href="{{ route('log', ['param' => $router]) }}" class="inline-flex items-center justify-center px-4 py-2 text-green-600 font-medium rounded transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                     View Logs
                                 </a>
-                                <button id="reboot-btn" class="inline-flex items-center justify-center px-4 py-2 text-yellow-600 font-medium rounded text-sm transition duration-200">
+                                <button id="reboot-btn" class="inline-flex items-center justify-center px-4 py-2 text-yellow-600 font-medium rounded transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                     </svg>
                                     Reboot
                                 </button>
-                                <button id="backup-btn" class="inline-flex items-center justify-center px-4 py-2 text-red-600 font-medium rounded text-sm transition duration-200">
+                                <button id="backup-btn" class="inline-flex items-center justify-center px-4 py-2 text-red-600 font-medium rounded transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>
                                     Backup
                                 </button>
-                                <button id="config-btn" class="inline-flex items-center justify-center px-4 py-2 text-blue-600 font-medium rounded text-sm transition duration-200">
+                                <button id="config-btn" class="inline-flex items-center justify-center px-4 py-2 text-blue-600 font-medium rounded transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -108,9 +108,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Basic Information</h3>
+                                <h3 class="font-semibold text-slate-800 ml-2">Basic Information</h3>
                             </div>
-                            <div class="space-y-2 text-sm">
+                            <div class="space-y-2 ">
                                 <div class="flex justify-between">
                                     <span class="text-slate-600">Router Name:</span>
                                     <span class="text-slate-900 font-medium">{{ $router->name }}</span>
@@ -138,9 +138,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Connection Status</h3>
+                                <h3 class="font-semibold text-slate-800 ml-2">Connection Status</h3>
                             </div>
-                            <div class="space-y-2 text-sm">
+                            <div class="space-y-2 ">
                                 <div class="flex justify-between items-center">
                                     <span class="text-slate-600">Status:</span>
                                     @if($connectionStatus)
@@ -192,9 +192,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Timestamps</h3>
+                                <h3 class="font-semibold text-slate-800 ml-2">Timestamps</h3>
                             </div>
-                            <div class="space-y-2 text-sm">
+                            <div class="space-y-2 ">
                                 <div class="flex justify-between">
                                     <span class="text-slate-600">Added:</span>
                                     <span class="text-slate-900">{{ $router->created_at->format('M d, Y') }}</span>
@@ -230,7 +230,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-sm font-semibold text-slate-800 ml-2">Setup Checklist</h3>
+                                <h3 class="font-semibold text-slate-800 ml-2">Setup Checklist</h3>
                             </div>
                             <button type="button" id="refresh-checklist-btn" class="text-xs text-teal-600 hover:text-teal-800 font-medium">
                                 Refresh
@@ -247,7 +247,7 @@
                                 </div>
                             </div>
                             <div id="setup-checklist-body" class="space-y-3">
-                                <div class="text-center text-slate-400 py-4 text-sm">Loading checklist...</div>
+                                <div class="text-center text-slate-400 py-4 ">Loading checklist...</div>
                             </div>
                         </div>
                     </div>
@@ -263,11 +263,11 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">System Info</h3>
+                                    <h3 class="font-semibold text-slate-800 ml-2">System Info</h3>
                                 </div>
                             </div>
                             <div class="p-4">
-                                <div class="space-y-2 text-sm">
+                                <div class="space-y-2 ">
                                     <div class="flex justify-between">
                                         <span class="text-slate-600">Model:</span>
                                         <span class="text-slate-900 font-medium">{{ $systemInfo['board-name'] ?? $systemInfo['platform'] ?? '-' }}</span>
@@ -310,11 +310,11 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Interfaces</h3>
+                                    <h3 class="font-semibold text-slate-800 ml-2">Interfaces</h3>
                                 </div>
                             </div>
                             <div class="p-4">
-                                <div class="space-y-2 text-sm">
+                                <div class="space-y-2 ">
                                     @php
                                         $ethernetCount = 0;
                                         $wirelessCount = 0;
@@ -369,11 +369,11 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Resources</h3>
+                                    <h3 class="font-semibold text-slate-800 ml-2">Resources</h3>
                                 </div>
                             </div>
                             <div class="p-4">
-                                <div class="space-y-2 text-sm">
+                                <div class="space-y-2 ">
                                     <div class="flex justify-between">
                                         <span class="text-slate-600">CPU Usage:</span>
                                         <span class="text-slate-900 font-medium">{{ isset($systemInfo['cpu-load']) ? $systemInfo['cpu-load'] . '%' : '-' }}</span>
@@ -434,11 +434,11 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Hotspot Status</h3>
+                                    <h3 class="font-semibold text-slate-800 ml-2">Hotspot Status</h3>
                                 </div>
                             </div>
                             <div class="p-4">
-                                <div class="space-y-2 text-sm" id="hotspot-status">
+                                <div class="space-y-2 " id="hotspot-status">
                                     <div class="flex justify-between">
                                         <span class="text-slate-600">Service:</span>
                                         <span class="text-slate-900 font-medium" id="hotspot-enabled">Loading...</span>
@@ -469,11 +469,11 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                         </svg>
                                     </div>
-                                    <h3 class="text-sm font-semibold text-slate-800 ml-2">Walled Garden</h3>
+                                    <h3 class="font-semibold text-slate-800 ml-2">Walled Garden</h3>
                                 </div>
                             </div>
                             <div class="p-4">
-                                <div class="space-y-2 text-sm" id="walled-garden">
+                                <div class="space-y-2 " id="walled-garden">
                                     <div class="flex justify-between">
                                         <span class="text-slate-600">Status:</span>
                                         <span class="text-slate-900 font-medium" id="walled-garden-status">Loading...</span>
@@ -506,7 +506,7 @@
                                     </div>
                                     <h3 class="text-lg font-semibold text-slate-800 ml-3">Recent Activity</h3>
                                 </div>
-                                <a href="{{ route('log', ['param' => $router]) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                <a href="{{ route('log', ['param' => $router]) }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
                                     View All Logs →
                                 </a>
                             </div>
@@ -517,7 +517,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                                 </svg>
                                 <p class="text-base font-semibold">No recent activity</p>
-                                <p class="text-sm">Router activity will appear here once monitoring is active</p>
+                                <p class="">Router activity will appear here once monitoring is active</p>
                             </div>
                         </div>
                     </div>
@@ -540,7 +540,7 @@
                                 @foreach($router->packages as $package)
                                 <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition duration-200">
                                     <h4 class="font-semibold text-slate-800">{{ $package->name }}</h4>
-                                    <p class="text-sm text-slate-600 mt-1">{{ $package->description ?? 'No description' }}</p>
+                                    <p class="text-slate-600 mt-1">{{ $package->description ?? 'No description' }}</p>
                                     <div class="mt-2 text-xs text-slate-500">
                                         Added: {{ $package->created_at->format('M d, Y') }}
                                     </div>
@@ -724,13 +724,13 @@
                         renderChecklist(data.checklist);
                     } else {
                         document.getElementById('setup-checklist-body').innerHTML =
-                            '<div class="text-center text-red-400 py-4 text-sm">Failed to load checklist</div>';
+                            '<div class="text-center text-red-400 py-4 ">Failed to load checklist</div>';
                     }
                 })
                 .catch(error => {
                     console.error('Error loading checklist:', error);
                     document.getElementById('setup-checklist-body').innerHTML =
-                        '<div class="text-center text-red-400 py-4 text-sm">Failed to load checklist</div>';
+                        '<div class="text-center text-red-400 py-4 ">Failed to load checklist</div>';
                 });
             }
 
@@ -741,7 +741,7 @@
                 const progressText = document.getElementById('checklist-progress-text');
 
                 if (!checklist.steps || checklist.steps.length === 0) {
-                    body.innerHTML = '<div class="text-center text-slate-400 py-4 text-sm">No steps available</div>';
+                    body.innerHTML = '<div class="text-center text-slate-400 py-4 ">No steps available</div>';
                     return;
                 }
 
@@ -766,7 +766,7 @@
                         '<div class="flex items-start">' +
                             '<div class="flex-shrink-0 mt-0.5">' + statusIcon + '</div>' +
                             '<div class="ml-3">' +
-                                '<p class="text-sm font-medium text-slate-900">' + (index + 1) + '. ' + escapeHtml(step.label) + '</p>' +
+                                '<p class="font-medium text-slate-900">' + (index + 1) + '. ' + escapeHtml(step.label) + '</p>' +
                                 '<p class="text-xs text-slate-500">' + escapeHtml(step.description) + '</p>' +
                                 '<p class="step-status text-xs mt-1 ' + (isDone ? 'text-green-600' : 'text-amber-600') + '">' + (isDone ? 'Done' : 'Pending') + '</p>' +
                             '</div>' +

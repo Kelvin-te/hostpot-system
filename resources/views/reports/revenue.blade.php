@@ -23,24 +23,24 @@
                 <div class="p-6">
                     <form method="GET" action="{{ route('reports.revenue') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="from_date" class="block text-sm font-medium text-slate-700 mb-1">From Date</label>
-                            <input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="from_date" class="block font-medium text-slate-700 mb-1">From Date</label>
+                            <x-text-input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" />
                         </div>
                         <div>
-                            <label for="to_date" class="block text-sm font-medium text-slate-700 mb-1">To Date</label>
-                            <input type="date" name="to_date" id="to_date" value="{{ $toDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="to_date" class="block font-medium text-slate-700 mb-1">To Date</label>
+                            <x-text-input type="date" name="to_date" id="to_date" value="{{ $toDate }}" />
                         </div>
                         <div class="flex items-end col-span-2 gap-2">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
                                 Apply Filter
                             </button>
-                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 Today
                             </button>
-                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Week
                             </button>
-                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Month
                             </button>
                         </div>
@@ -51,25 +51,25 @@
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Total Revenue</div>
+                    <div class="opacity-90 mb-1">Total Revenue</div>
                     <div class="text-2xl font-bold">KES {{ number_format($totalRevenue, 2) }}</div>
                     <div class="text-xs opacity-75 mt-2">{{ \Carbon\Carbon::parse($fromDate)->format('M d') }} - {{ \Carbon\Carbon::parse($toDate)->format('M d, Y') }}</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Transactions</div>
+                    <div class="opacity-90 mb-1">Transactions</div>
                     <div class="text-2xl font-bold">{{ number_format($transactionCount) }}</div>
                     <div class="text-xs opacity-75 mt-2">Completed payments</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-purple-500 to-purple-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Average Transaction</div>
+                    <div class="opacity-90 mb-1">Average Transaction</div>
                     <div class="text-2xl font-bold">KES {{ number_format($averageTransaction, 0) }}</div>
                     <div class="text-xs opacity-75 mt-2">Per sale</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-red-500 to-red-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Failed Transactions</div>
+                    <div class="opacity-90 mb-1">Failed Transactions</div>
                     <div class="text-2xl font-bold">{{ $failedTransactions }}</div>
                     <div class="text-xs opacity-75 mt-2">Unsuccessful attempts</div>
                 </div>
@@ -100,7 +100,7 @@
                                         @endphp
                                         <tr class="hover:bg-slate-50">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-slate-900">{{ $item->package->name ?? 'Unknown' }}</div>
+                                                <div class="font-medium text-slate-900">{{ $item->package->name ?? 'Unknown' }}</div>
                                                 <div class="text-xs text-slate-500">{{ $item->package->data_cap ?? 'N/A' }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
@@ -117,7 +117,7 @@
                                                     <div class="w-full max-w-[100px] bg-slate-200 rounded-full h-2 mr-2">
                                                         <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $share }}%"></div>
                                                     </div>
-                                                    <span class="text-sm text-slate-700">{{ number_format($share, 1) }}%</span>
+                                                    <span class="text-slate-700">{{ number_format($share, 1) }}%</span>
                                                 </div>
                                             </td>
                                         </tr>

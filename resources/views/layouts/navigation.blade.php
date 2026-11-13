@@ -13,7 +13,7 @@
     {{-- User menu --}}
     <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
-            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-700">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
             </span>
             <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
@@ -21,10 +21,10 @@
         </button>
 
         <div x-show="open" x-cloak x-transition.origin.top.right class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
-            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">{{ __('Profile') }}</a>
+            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-slate-700 hover:bg-slate-50">{{ __('Profile') }}</a>
             <form method="POST" action="{{ Auth::guard('staff')->check() ? route('staff.logout') : route('logout') }}">
                 @csrf
-                <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50">{{ __('Log Out') }}</button>
+                <button type="submit" class="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-50">{{ __('Log Out') }}</button>
             </form>
         </div>
     </div>

@@ -23,24 +23,24 @@
                 <div class="p-6">
                     <form method="GET" action="{{ route('reports.usage') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="from_date" class="block text-sm font-medium text-slate-700 mb-1">From Date</label>
-                            <input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="from_date" class="block font-medium text-slate-700 mb-1">From Date</label>
+                            <x-text-input type="date" name="from_date" id="from_date" value="{{ $fromDate }}" />
                         </div>
                         <div>
-                            <label for="to_date" class="block text-sm font-medium text-slate-700 mb-1">To Date</label>
-                            <input type="date" name="to_date" id="to_date" value="{{ $toDate }}" class="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="to_date" class="block font-medium text-slate-700 mb-1">To Date</label>
+                            <x-text-input type="date" name="to_date" id="to_date" value="{{ $toDate }}" />
                         </div>
                         <div class="flex items-end col-span-2 gap-2">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
                                 Apply Filter
                             </button>
-                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('today')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 Today
                             </button>
-                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('week')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Week
                             </button>
-                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-sm">
+                            <button type="button" onclick="setQuickDate('month')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition ">
                                 This Month
                             </button>
                         </div>
@@ -51,25 +51,25 @@
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Total Data Used</div>
+                    <div class="opacity-90 mb-1">Total Data Used</div>
                     <div class="text-2xl font-bold">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
                     <div class="text-xs opacity-75 mt-2">All sessions</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Downloaded</div>
+                    <div class="opacity-90 mb-1">Downloaded</div>
                     <div class="text-2xl font-bold">{{ number_format($totalDownloaded / (1024 * 1024 * 1024), 2) }} GB</div>
                     <div class="text-xs opacity-75 mt-2">↓ Incoming traffic</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-purple-500 to-purple-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Uploaded</div>
+                    <div class="opacity-90 mb-1">Uploaded</div>
                     <div class="text-2xl font-bold">{{ number_format($totalUploaded / (1024 * 1024 * 1024), 2) }} GB</div>
                     <div class="text-xs opacity-75 mt-2">↑ Outgoing traffic</div>
                 </div>
 
                 <div class="bg-gradient-to-br from-orange-500 to-orange-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90 mb-1">Avg per Session</div>
+                    <div class="opacity-90 mb-1">Avg per Session</div>
                     <div class="text-2xl font-bold">{{ number_format($averagePerSession / (1024 * 1024), 0) }} MB</div>
                     <div class="text-xs opacity-75 mt-2">{{ number_format($sessionCount) }} sessions</div>
                 </div>
@@ -102,7 +102,7 @@
                                         @endphp
                                         <tr class="hover:bg-slate-50">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-slate-900">{{ $item->package->name ?? 'Unknown' }}</div>
+                                                <div class="font-medium text-slate-900">{{ $item->package->name ?? 'Unknown' }}</div>
                                                 <div class="text-xs text-slate-500">{{ $item->package->data_cap ?? 'N/A' }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
@@ -119,7 +119,7 @@
                                                     <div class="w-full max-w-[100px] bg-slate-200 rounded-full h-2 mr-2">
                                                         <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $share }}%"></div>
                                                     </div>
-                                                    <span class="text-sm text-slate-700">{{ number_format($share, 1) }}%</span>
+                                                    <span class="text-slate-700">{{ number_format($share, 1) }}%</span>
                                                 </div>
                                             </td>
                                         </tr>
@@ -165,9 +165,9 @@
                                     @endphp
                                     <div>
                                         <div class="flex justify-between items-center mb-1">
-                                            <span class="text-sm font-medium text-slate-700">{{ str_pad($hour->hour, 2, '0', STR_PAD_LEFT) }}:00 - {{ str_pad($hour->hour + 1, 2, '0', STR_PAD_LEFT) }}:00</span>
+                                            <span class="font-medium text-slate-700">{{ str_pad($hour->hour, 2, '0', STR_PAD_LEFT) }}:00 - {{ str_pad($hour->hour + 1, 2, '0', STR_PAD_LEFT) }}:00</span>
                                             <div class="text-right">
-                                                <div class="text-sm font-semibold text-slate-900">{{ $hour->session_count }} sessions</div>
+                                                <div class="font-semibold text-slate-900">{{ $hour->session_count }} sessions</div>
                                                 <div class="text-xs text-slate-500">{{ number_format($dataMB, 0) }} MB</div>
                                             </div>
                                         </div>
@@ -213,7 +213,7 @@
                                                 {{ $index + 1 }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-slate-900">{{ $user->username }}</div>
+                                                <div class="font-medium text-slate-900">{{ $user->username }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                                 {{ $user->session_count }}

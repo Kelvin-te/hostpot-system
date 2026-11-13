@@ -16,36 +16,36 @@
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded">
-                            <div class="text-sm text-slate-500">{{ __('MRR (est.)') }}</div>
+                            <div class="text-slate-500">{{ __('MRR (est.)') }}</div>
                             <div class="text-2xl font-bold text-blue-600">KES {{ number_format($mrr, 0) }}</div>
                             <div class="text-xs text-slate-500">{{ __('active subscribers × package price') }}</div>
                         </div>
                         <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded">
-                            <div class="text-sm text-slate-500">{{ __('Period Revenue') }}</div>
+                            <div class="text-slate-500">{{ __('Period Revenue') }}</div>
                             <div class="text-2xl font-bold text-green-600">KES {{ number_format($periodRevenue, 0) }}</div>
                         </div>
                         <div class="bg-purple-50 dark:bg-purple-900/30 p-4 rounded">
-                            <div class="text-sm text-slate-500">{{ __('ARPU') }}</div>
+                            <div class="text-slate-500">{{ __('ARPU') }}</div>
                             <div class="text-2xl font-bold text-purple-600">KES {{ number_format($arpu, 0) }}</div>
                             <div class="text-xs text-slate-500">{{ __('per active subscriber') }}</div>
                         </div>
                         <div class="bg-teal-50 dark:bg-teal-900/30 p-4 rounded">
-                            <div class="text-sm text-slate-500">{{ __('Collection Rate') }}</div>
+                            <div class="text-slate-500">{{ __('Collection Rate') }}</div>
                             <div class="text-2xl font-bold text-teal-600">{{ $collectionRate !== null ? number_format($collectionRate, 1) . '%' : '—' }}</div>
                             <div class="text-xs text-slate-500">{{ __('collected / billed') }}</div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4 mb-6">
-                        <div class="border p-4 rounded"><div class="text-sm text-slate-500">{{ __('Active Subscribers') }}</div><div class="text-xl font-bold">{{ $activeSubscribers }}</div></div>
-                        <div class="border p-4 rounded"><div class="text-sm text-slate-500">{{ __('New (period)') }}</div><div class="text-xl font-bold text-green-600">+{{ $newSubscribers }}</div></div>
-                        <div class="border p-4 rounded"><div class="text-sm text-slate-500">{{ __('Churned (period)') }}</div><div class="text-xl font-bold text-red-600">-{{ $churnedSubscribers }}</div></div>
+                        <div class="border p-4 rounded"><div class="text-slate-500">{{ __('Active Subscribers') }}</div><div class="text-xl font-bold">{{ $activeSubscribers }}</div></div>
+                        <div class="border p-4 rounded"><div class="text-slate-500">{{ __('New (period)') }}</div><div class="text-xl font-bold text-green-600">+{{ $newSubscribers }}</div></div>
+                        <div class="border p-4 rounded"><div class="text-slate-500">{{ __('Churned (period)') }}</div><div class="text-xl font-bold text-red-600">-{{ $churnedSubscribers }}</div></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <h3 class="font-semibold mb-2">{{ __('Revenue by Router') }}</h3>
-                            <table class="min-w-full text-sm">
+                            <table class="min-w-full ">
                                 <thead><tr class="text-left text-slate-500"><th class="py-1">{{ __('Router') }}</th><th>{{ __('Revenue') }}</th><th>{{ __('Txns') }}</th></tr></thead>
                                 <tbody>
                                     @forelse($revenueByRouter as $row)
@@ -58,7 +58,7 @@
                         </div>
                         <div>
                             <h3 class="font-semibold mb-2">{{ __('Top Plans (period sessions)') }}</h3>
-                            <table class="min-w-full text-sm">
+                            <table class="min-w-full ">
                                 <thead><tr class="text-left text-slate-500"><th class="py-1">{{ __('Package') }}</th><th>{{ __('Price') }}</th><th>{{ __('Sessions') }}</th></tr></thead>
                                 <tbody>
                                     @forelse($planMix as $pkg)

@@ -24,7 +24,7 @@
                         <x-application-logo class="h-10 w-auto" />
                     </a>
                     <h1 class="text-xl font-semibold text-slate-900">{{ config('app.name', 'MatuNet') }}</h1>
-                    <p class="mt-1 text-sm text-slate-500">{{ __('Sign in to your account') }}</p>
+                    <p class="mt-1 text-slate-500">{{ __('Sign in to your account') }}</p>
                 </div>
 
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

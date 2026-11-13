@@ -5,7 +5,7 @@
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
                         <h2 class="text-xl font-semibold text-slate-900">Revenue Dashboard (Last 30 Days)</h2>
-                        <a href="{{ route('billing.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">← Back to Billing</a>
+                        <a href="{{ route('billing.index') }}" class="text-indigo-600 hover:text-indigo-800">← Back to Billing</a>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -30,7 +30,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                             <h3 class="font-semibold text-slate-700 mb-3">Revenue by Gateway</h3>
-                            <table class="min-w-full text-sm">
+                            <table class="min-w-full ">
                                 <thead>
                                     <tr class="border-b text-left text-slate-500">
                                         <th class="py-2 px-3">Gateway</th>
@@ -55,7 +55,7 @@
 
                         <div>
                             <h3 class="font-semibold text-slate-700 mb-3">Revenue by Router</h3>
-                            <table class="min-w-full text-sm">
+                            <table class="min-w-full ">
                                 <thead>
                                     <tr class="border-b text-left text-slate-500">
                                         <th class="py-2 px-3">Router</th>
@@ -95,7 +95,7 @@
                     <div class="mt-6">
                         <h3 class="font-semibold text-slate-700 mb-3">Daily Revenue Trend</h3>
                         <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm">
+                            <table class="min-w-full ">
                                 <thead>
                                     <tr class="border-b text-left text-slate-500">
                                         <th class="py-2 px-3">Date</th>

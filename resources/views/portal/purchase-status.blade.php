@@ -8,8 +8,8 @@
                         
                         <h2 class="text-xl font-semibold mb-2">{{ __('Check your phone') }}</h2>
                         <p class="text-slate-600 mb-4">{{ __('Enter your M-Pesa PIN to complete payment of KES') }} {{ number_format($transaction->amount, 2) }}</p>
-                        <div class="text-sm text-slate-500">{{ $transaction->checkout_request_id }}</div>
-                        <div id="poll-status" class="mt-4 text-sm text-slate-500">{{ __('Waiting for payment...') }}</div>
+                        <div class="text-slate-500">{{ $transaction->checkout_request_id }}</div>
+                        <div id="poll-status" class="mt-4 text-slate-500">{{ __('Waiting for payment...') }}</div>
                         <meta http-equiv="refresh" content="5">
                         <script>
                             setTimeout(() => location.reload(), 5000);
@@ -20,7 +20,7 @@
                         @if(($connectionType ?? '') === 'pppoe')
                             <p class="text-slate-600 mb-3">{{ __('Your PPPoE service has been activated/extended.') }}</p>
                             @if(!empty($credentials['username']))
-                                <div class="bg-slate-50 rounded p-3 text-left font-mono text-sm">
+                                <div class="bg-slate-50 rounded p-3 text-left font-mono ">
                                     {{ __('Username') }}: {{ $credentials['username'] }}
                                 </div>
                             @endif
@@ -33,7 +33,7 @@
                         
                         <h2 class="text-xl font-semibold mb-2 text-yellow-600">{{ __('Payment received, activation failed') }}</h2>
                         <p class="text-slate-600">{{ $message ?? '' }}</p>
-                        <p class="text-sm text-slate-500 mt-2">{{ __('Contact support — your payment was received.') }}</p>
+                        <p class="text-slate-500 mt-2">{{ __('Contact support — your payment was received.') }}</p>
                         <a href="{{ route('user.dashboard') }}" class="inline-block mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg">{{ __('Back to dashboard') }}</a>
                     @else
                         

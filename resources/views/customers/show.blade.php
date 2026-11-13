@@ -13,7 +13,7 @@
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <h2 class="text-xl font-semibold text-slate-900">{{ $customer->name ?: $customer->phone }}</h2>
-                            <p class="text-slate-500 text-sm mt-1">
+                            <p class="text-slate-500 mt-1">
                                 {{ $customer->phone ?? 'No phone' }} &middot;
                                 Member since {{ $customer->created_at->format('M Y') }}
                             </p>
@@ -58,7 +58,7 @@
                     </div>
 
                     @if($customer->router)
-                        <div class="mb-4 text-sm text-slate-600">
+                        <div class="mb-4 text-slate-600">
                             <span class="font-semibold">Router:</span> {{ $customer->router->name }} ({{ $customer->router->ip }})
                         </div>
                     @endif
@@ -95,7 +95,7 @@
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-slate-800 mb-4">Payment History</h3>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
+                        <table class="min-w-full ">
                             <thead>
                                 <tr class="border-b text-left text-slate-500">
                                     <th class="py-2 px-3">Date</th>
@@ -133,7 +133,7 @@
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-slate-800 mb-4">Session History</h3>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
+                        <table class="min-w-full ">
                             <thead>
                                 <tr class="border-b text-left text-slate-500">
                                     <th class="py-2 px-3">Started</th>
@@ -166,7 +166,7 @@
                     <form action="{{ route('customers.sms', $customer) }}" method="POST">
                         @csrf
                         <div class="flex gap-2">
-                            <input type="text" name="message" class="flex-1 rounded border-slate-300" placeholder="Type a message..." required maxlength="500">
+                            <x-text-input type="text" name="message" class="flex-1" placeholder="Type a message..." required maxlength="500" />
                             <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Send</button>
                         </div>
                     </form>

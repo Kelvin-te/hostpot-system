@@ -54,7 +54,7 @@
                                 @csrf
                                 <div>
                                     <x-input-label for="comment" :value="__('Add comment')" class="mt-4"></x-input-label>
-                                    <textarea name="comment" class="px-3 py-3 mt-1 rounded-lg border-slate-300 md:text-sm block w-full" rows="5"></textarea>
+                                    <textarea name="comment" class="px-3 py-3 mt-1 rounded-lg border-slate-300 md: block w-full" rows="5"></textarea>
                                     <x-input-error class="mt-2" :messages="$errors->get('comment')"></x-input-error>
                                 </div>
                                 <x-text-input name="ticket_id" type="hidden" value="{{ $ticket->id }}"></x-text-input>

@@ -6,25 +6,25 @@
                     <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
                         <h2 class="text-xl font-semibold text-slate-900">{{ __('Payment Reconciliation') }}</h2>
                         <form method="get" class="flex gap-2 items-center">
-                            <input type="date" name="from_date" value="{{ $fromDate }}" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
-                            <input type="date" name="to_date" value="{{ $toDate }}" class="rounded-md border-slate-300 dark:bg-slate-900 dark:text-slate-100">
+                            <x-text-input type="date" name="from_date" value="{{ $fromDate }}" />
+                            <x-text-input type="date" name="to_date" value="{{ $toDate }}" />
                             <button class="px-4 py-2 bg-blue-600 text-white rounded">{{ __('Apply') }}</button>
                         </form>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4 mb-6">
                         <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded">
-                            <div class="text-sm text-slate-500">{{ __('Completed') }}</div>
+                            <div class="text-slate-500">{{ __('Completed') }}</div>
                             <div class="text-2xl font-bold text-green-600">{{ $summary['completed'] }}</div>
-                            <div class="text-sm">KES {{ number_format($summary['completed_amount'], 2) }}</div>
+                            <div class="">KES {{ number_format($summary['completed_amount'], 2) }}</div>
                         </div>
                         <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded">
-                            <div class="text-sm text-slate-500">{{ __('Pending') }}</div>
+                            <div class="text-slate-500">{{ __('Pending') }}</div>
                             <div class="text-2xl font-bold text-yellow-600">{{ $summary['pending'] }}</div>
-                            <div class="text-sm">KES {{ number_format($summary['pending_amount'], 2) }}</div>
+                            <div class="">KES {{ number_format($summary['pending_amount'], 2) }}</div>
                         </div>
                         <div class="bg-red-50 dark:bg-red-900/30 p-4 rounded">
-                            <div class="text-sm text-slate-500">{{ __('Failed') }}</div>
+                            <div class="text-slate-500">{{ __('Failed') }}</div>
                             <div class="text-2xl font-bold text-red-600">{{ $summary['failed'] }}</div>
                         </div>
                     </div>
@@ -37,7 +37,7 @@
                         </div>
                         <div class="border p-4 rounded col-span-2">
                             <div class="font-semibold mb-2">{{ __('By gateway / status') }}</div>
-                            <table class="w-full text-sm">
+                            <table class="w-full ">
                                 <thead><tr class="text-left text-slate-500"><th>{{ __('Gateway') }}</th><th>{{ __('Status') }}</th><th>{{ __('Count') }}</th><th>{{ __('Total') }}</th></tr></thead>
                                 <tbody>
                                     @forelse($byGateway as $row)

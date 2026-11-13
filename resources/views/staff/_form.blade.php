@@ -55,7 +55,7 @@ $passwordLabel = $isEdit ? __('New Password') : __('Password');
 
 @if($isEdit)
     <div class="bg-slate-50 p-4 rounded-lg">
-        <p class="text-sm text-slate-600 mb-4">{{ __('Leave password fields blank to keep the current password.') }}</p>
+        <p class="text-slate-600 mb-4">{{ __('Leave password fields blank to keep the current password.') }}</p>
 @endif
 
 <div>

@@ -11,17 +11,17 @@
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-gradient-to-br from-green-500 to-green-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90">Total Spent</div>
+                    <div class="opacity-90">Total Spent</div>
                     <div class="text-2xl font-bold">KES {{ number_format($stats['total_spent'], 0) }}</div>
                     <div class="text-xs opacity-75 mt-1">All successful payments</div>
                 </div>
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90">Successful Payments</div>
+                    <div class="opacity-90">Successful Payments</div>
                     <div class="text-2xl font-bold">{{ $stats['total_transactions'] }}</div>
                     <div class="text-xs opacity-75 mt-1">Completed transactions</div>
                 </div>
                 <div class="bg-gradient-to-br from-red-500 to-red-600 overflow-hidden shadow-lg rounded-lg p-6 text-white">
-                    <div class="text-sm opacity-90">Failed Payments</div>
+                    <div class="opacity-90">Failed Payments</div>
                     <div class="text-2xl font-bold">{{ $stats['failed_transactions'] }}</div>
                     <div class="text-xs opacity-75 mt-1">Unsuccessful attempts</div>
                 </div>
@@ -50,21 +50,21 @@
                                     @foreach($transactions as $transaction)
                                         <tr class="hover:bg-slate-50">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-slate-900">{{ $transaction->created_at->format('M d, Y') }}</div>
+                                                <div class="text-slate-900">{{ $transaction->created_at->format('M d, Y') }}</div>
                                                 <div class="text-xs text-slate-500">{{ $transaction->created_at->format('H:i:s') }}</div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <div class="text-sm font-medium text-slate-900">{{ $transaction->package->name ?? 'Package' }}</div>
+                                                <div class="font-medium text-slate-900">{{ $transaction->package->name ?? 'Package' }}</div>
                                                 @if($transaction->package)
                                                     <div class="text-xs text-slate-500">{{ $transaction->package->data_cap }}</div>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-semibold text-slate-900">KES {{ number_format($transaction->amount, 2) }}</div>
+                                                <div class="font-semibold text-slate-900">KES {{ number_format($transaction->amount, 2) }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 @if($transaction->mpesa_receipt_number)
-                                                    <div class="text-sm font-mono text-slate-900">{{ $transaction->mpesa_receipt_number }}</div>
+                                                    <div class="font-mono text-slate-900">{{ $transaction->mpesa_receipt_number }}</div>
                                                 @else
                                                     <span class="text-xs text-slate-400">N/A</span>
                                                 @endif

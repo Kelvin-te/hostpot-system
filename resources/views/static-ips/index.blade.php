@@ -20,10 +20,10 @@
                     </div>
 
                     <div class="grid grid-cols-4 gap-4 mb-6">
-                        <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded"><div class="text-sm text-slate-500">{{ __('Total') }}</div><div class="text-2xl font-bold">{{ $stats['total'] }}</div></div>
-                        <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded"><div class="text-sm text-slate-500">{{ __('Free') }}</div><div class="text-2xl font-bold text-green-600">{{ $stats['free'] }}</div></div>
-                        <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded"><div class="text-sm text-slate-500">{{ __('Assigned') }}</div><div class="text-2xl font-bold text-blue-600">{{ $stats['assigned'] }}</div></div>
-                        <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded"><div class="text-sm text-slate-500">{{ __('Reserved') }}</div><div class="text-2xl font-bold text-yellow-600">{{ $stats['reserved'] }}</div></div>
+                        <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded"><div class="text-slate-500">{{ __('Total') }}</div><div class="text-2xl font-bold">{{ $stats['total'] }}</div></div>
+                        <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded"><div class="text-slate-500">{{ __('Free') }}</div><div class="text-2xl font-bold text-green-600">{{ $stats['free'] }}</div></div>
+                        <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded"><div class="text-slate-500">{{ __('Assigned') }}</div><div class="text-2xl font-bold text-blue-600">{{ $stats['assigned'] }}</div></div>
+                        <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded"><div class="text-slate-500">{{ __('Reserved') }}</div><div class="text-2xl font-bold text-yellow-600">{{ $stats['reserved'] }}</div></div>
                     </div>
 
                     <form method="get" class="flex gap-4 mb-4">
@@ -71,9 +71,9 @@
                                     <td class="px-6 py-3">{{ $ip->synced_to_router ? __('Yes') : __('No') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @if(!$ip->synced_to_router && $ip->status !== 'free' && $ip->mac_address)
-                                            <form method="post" action="{{ route('static-ips.sync', $ip) }}" class="inline">@csrf<button class="text-blue-600 hover:underline text-sm">{{ __('Sync') }}</button></form>
+                                            <form method="post" action="{{ route('static-ips.sync', $ip) }}" class="inline">@csrf<button class="text-blue-600 hover:underline ">{{ __('Sync') }}</button></form>
                                         @endif
-                                        <form method="post" action="{{ route('static-ips.destroy', $ip) }}" class="inline" onsubmit="return confirm('{{ __('Remove this static IP?') }}')">@csrf @method('DELETE')<button class="text-red-600 hover:underline text-sm ml-2">{{ __('Delete') }}</button></form>
+                                        <form method="post" action="{{ route('static-ips.destroy', $ip) }}" class="inline" onsubmit="return confirm('{{ __('Remove this static IP?') }}')">@csrf @method('DELETE')<button class="text-red-600 hover:underline ml-2">{{ __('Delete') }}</button></form>
                                     </td>
                                 </tr>
                             @empty

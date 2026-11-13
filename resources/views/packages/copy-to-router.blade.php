@@ -30,9 +30,9 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Select Packages to Copy</label>
+                            <label class="block font-medium text-slate-700 mb-2">Select Packages to Copy</label>
                             <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm border border-slate-200">
+                                <table class="min-w-full border border-slate-200">
                                     <thead>
                                         <tr class="bg-slate-50 border-b">
                                             <th class="py-2 px-3 text-left w-10">
@@ -93,7 +93,7 @@
 
                         <div class="flex items-center">
                             <input id="overwrite" name="overwrite" type="checkbox" value="1" class="h-4 w-4 text-indigo-600 border-slate-300 rounded">
-                            <label for="overwrite" class="ml-2 block text-sm text-slate-700">Overwrite existing packages with same name on destination</label>
+                            <label for="overwrite" class="ml-2 block text-slate-700">Overwrite existing packages with same name on destination</label>
                         </div>
 
                         <div class="flex items-center gap-4 mt-6">

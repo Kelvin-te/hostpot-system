@@ -19,7 +19,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ __('Account') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ __("The phone number is the customer's hotspot login identity.") }}</p>
+                                <p class="mt-1 text-slate-600 dark:text-slate-400">{{ __("The phone number is the customer's hotspot login identity.") }}</p>
                             </div>
 
                             <div>
@@ -34,7 +34,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ __('Subscription') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ __("Select the package to activate for this user.") }}</p>
+                                <p class="mt-1 text-slate-600 dark:text-slate-400">{{ __("Select the package to activate for this user.") }}</p>
                             </div>
 
                             <div>

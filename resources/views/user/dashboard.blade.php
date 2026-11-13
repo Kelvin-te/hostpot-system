@@ -24,7 +24,7 @@
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="flex items-center">
                         <div class="flex-1">
-                            <div class="text-sm text-slate-600">Total Spent</div>
+                            <div class="text-slate-600">Total Spent</div>
                             <div class="text-2xl font-bold text-green-600">KES {{ number_format($totalSpent, 0) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
@@ -35,7 +35,7 @@
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="flex items-center">
                         <div class="flex-1">
-                            <div class="text-sm text-slate-600">Total Sessions</div>
+                            <div class="text-slate-600">Total Sessions</div>
                             <div class="text-2xl font-bold text-blue-600">{{ number_format($totalSessions) }}</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
@@ -46,7 +46,7 @@
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="flex items-center">
                         <div class="flex-1">
-                            <div class="text-sm text-slate-600">Data Used</div>
+                            <div class="text-slate-600">Data Used</div>
                             <div class="text-2xl font-bold text-purple-600">{{ number_format($totalDataUsed / (1024 * 1024 * 1024), 2) }} GB</div>
                             <div class="text-xs text-slate-500 mt-1">All time</div>
                         </div>
@@ -57,7 +57,7 @@
                 <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden p-6">
                     <div class="flex items-center">
                         <div class="flex-1">
-                            <div class="text-sm text-slate-600">Wallet Balance</div>
+                            <div class="text-slate-600">Wallet Balance</div>
                             <div class="text-2xl font-bold text-indigo-600">KES {{ number_format($walletBalance, 0) }}</div>
                             <a href="{{ route('user.wallet') }}" class="text-xs text-indigo-500 hover:text-indigo-700 mt-1">Top up →</a>
                         </div>
@@ -72,7 +72,7 @@
                 <div class="p-6 border-b border-slate-200">
                     <div class="flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-slate-900">Active Sessions</h3>
-                        <a href="{{ route('user.sessions') }}" class="text-sm text-indigo-600 hover:text-indigo-800">View All →</a>
+                        <a href="{{ route('user.sessions') }}" class="text-indigo-600 hover:text-indigo-800">View All →</a>
                     </div>
                 </div>
                 <div class="p-6">
@@ -82,7 +82,7 @@
                                 <div class="flex justify-between items-start">
                                     <div class="flex-1">
                                         <div class="font-semibold text-slate-900">{{ $session->package->name }}</div>
-                                        <div class="text-sm text-slate-600 mt-1">
+                                        <div class="text-slate-600 mt-1">
                                             Started: {{ $session->started_at->format('M d, Y H:i') }}
                                         </div>
                                         @php
@@ -142,7 +142,7 @@
                     <div class="p-6 border-b border-slate-200">
                         <div class="flex justify-between items-center">
                             <h3 class="text-lg font-semibold text-slate-900">Recent Sessions</h3>
-                            <a href="{{ route('user.sessions') }}" class="text-sm text-indigo-600 hover:text-indigo-800">View All →</a>
+                            <a href="{{ route('user.sessions') }}" class="text-indigo-600 hover:text-indigo-800">View All →</a>
                         </div>
                     </div>
                     <div class="p-6">
@@ -151,11 +151,11 @@
                                 @foreach($recentSessions as $session)
                                     <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
                                         <div>
-                                            <div class="text-sm font-medium text-slate-900">{{ $session->package->name }}</div>
+                                            <div class="font-medium text-slate-900">{{ $session->package->name }}</div>
                                             <div class="text-xs text-slate-500">{{ $session->started_at->format('M d, Y') }}</div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-sm text-slate-900">{{ number_format($session->bytes_total / (1024 * 1024), 0) }} MB</div>
+                                            <div class="text-slate-900">{{ number_format($session->bytes_total / (1024 * 1024), 0) }} MB</div>
                                             @if($session->isActive())
                                                 <span class="text-xs text-green-600">Active</span>
                                             @else
@@ -176,7 +176,7 @@
                     <div class="p-6 border-b border-slate-200">
                         <div class="flex justify-between items-center">
                             <h3 class="text-lg font-semibold text-slate-900">Recent Purchases</h3>
-                            <a href="{{ route('user.purchases') }}" class="text-sm text-indigo-600 hover:text-indigo-800">View All →</a>
+                            <a href="{{ route('user.purchases') }}" class="text-indigo-600 hover:text-indigo-800">View All →</a>
                         </div>
                     </div>
                     <div class="p-6">
@@ -185,11 +185,11 @@
                                 @foreach($recentTransactions as $transaction)
                                     <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
                                         <div>
-                                            <div class="text-sm font-medium text-slate-900">{{ $transaction->package->name ?? 'Package' }}</div>
+                                            <div class="font-medium text-slate-900">{{ $transaction->package->name ?? 'Package' }}</div>
                                             <div class="text-xs text-slate-500">{{ $transaction->created_at->format('M d, Y H:i') }}</div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-sm font-semibold text-slate-900">KES {{ number_format($transaction->amount, 0) }}</div>
+                                            <div class="font-semibold text-slate-900">KES {{ number_format($transaction->amount, 0) }}</div>
                                             @if($transaction->status === 'completed')
                                                 <span class="text-xs text-green-600">Paid</span>
                                             @elseif($transaction->status === 'pending')

@@ -82,7 +82,7 @@
                         <div id="section-isp" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('ISP Information') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Update your company information.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Update your company information.") }}</p>
                             </div>
 
                             <div>
@@ -118,7 +118,7 @@
                         <div id="section-app" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Application Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure global application settings.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure global application settings.") }}</p>
                             </div>
 
                             <div>
@@ -148,7 +148,7 @@
                         <div id="section-walled-garden" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Walled Garden Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure walled garden for captive portal.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure walled garden for captive portal.") }}</p>
                             </div>
 
                             <div>
@@ -181,7 +181,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Billing Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure billing and disconnection schedules.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure billing and disconnection schedules.") }}</p>
                             </div>
 
                             <div>
@@ -209,7 +209,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('SMS/Notification Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure SMS and notification preferences.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure SMS and notification preferences.") }}</p>
                             </div>
 
                             <div>
@@ -245,7 +245,7 @@
                                 </div>
 
                                 <div class="mt-4 pt-4 border-t border-slate-200">
-                                    <a href="{{ route('settings.test-sms') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-sm text-slate-700 hover:bg-slate-200">
+                                    <a href="{{ route('settings.test-sms') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-slate-700 hover:bg-slate-200">
                                         {{ __('Test SMS Configuration') }}
                                     </a>
                                 </div>
@@ -258,7 +258,7 @@
                         <div id="section-payment" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Payment Gateway Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure payment gateway credentials.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure payment gateway credentials.") }}</p>
                             </div>
 
                             <div>
@@ -309,7 +309,7 @@
                                 </div>
 
                                 <div class="mt-4 pt-4 border-t border-slate-200">
-                                    <a href="{{ route('settings.test-mpesa') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-sm text-slate-700 hover:bg-slate-200">
+                                    <a href="{{ route('settings.test-mpesa') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-slate-700 hover:bg-slate-200">
                                         {{ __('Test M-Pesa Configuration') }}
                                     </a>
                                 </div>
@@ -322,7 +322,7 @@
                         <div id="section-email" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Email Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure SMTP email settings.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure SMTP email settings.") }}</p>
                             </div>
 
                             <div>
@@ -357,7 +357,7 @@
                                 </div>
 
                                 <div class="mt-4 pt-4 border-t border-slate-200">
-                                    <a href="{{ route('settings.test-email') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-sm text-slate-700 hover:bg-slate-200">
+                                    <a href="{{ route('settings.test-email') }}" class="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-300 rounded-md font-medium text-slate-700 hover:bg-slate-200">
                                         {{ __('Test Email Configuration') }}
                                     </a>
                                 </div>
@@ -370,7 +370,7 @@
                         <div id="section-security" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Security Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure security and password policies.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure security and password policies.") }}</p>
                             </div>
 
                             <div>
@@ -412,7 +412,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Support/Contact Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure support contact information.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure support contact information.") }}</p>
                             </div>
 
                             <div>
@@ -448,7 +448,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Free Package Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure free package limits and anti-abuse.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure free package limits and anti-abuse.") }}</p>
                             </div>
 
                             <div>
@@ -481,7 +481,7 @@
                         <div id="section-invoice" class="grid grid-cols-2 gap-4 scroll-mt-6">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Invoice Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure invoice generation and formatting.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure invoice generation and formatting.") }}</p>
                             </div>
 
                             <div>
@@ -511,7 +511,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Branding Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Customize application branding and appearance.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Customize application branding and appearance.") }}</p>
                             </div>
 
                             <div>
@@ -541,7 +541,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h2 class="text-base font-semibold text-slate-900">{{ __('Backup Settings') }}</h2>
-                                <p class="mt-1 text-sm text-slate-600">{{ __("Configure database backup schedule.") }}</p>
+                                <p class="mt-1 text-slate-600">{{ __("Configure database backup schedule.") }}</p>
                             </div>
 
                             <div>

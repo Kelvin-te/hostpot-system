@@ -55,7 +55,7 @@
                             <div class="mb-6">
                                 <h3 class="font-semibold text-slate-700 mb-3">Top Customers (30d)</h3>
                                 <div class="overflow-x-auto">
-                                    <table class="min-w-full text-sm">
+                                    <table class="min-w-full ">
                                         <thead>
                                             <tr class="border-b text-left text-slate-500">
                                                 <th class="py-2 px-3">Customer</th>

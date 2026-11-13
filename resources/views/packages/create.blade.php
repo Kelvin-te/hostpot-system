@@ -18,7 +18,7 @@
                 <div class="p-6 border-b border-slate-200">
                     <div>
                         <h3 class="text-lg font-semibold text-slate-900">New Internet Package</h3>
-                        <p class="text-sm text-slate-600 mt-1">Configure your new hotspot data package</p>
+                        <p class="text-slate-600 mt-1">Configure your new hotspot data package</p>
                     </div>
                 </div>
                 <div class="p-6">

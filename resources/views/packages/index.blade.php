@@ -25,7 +25,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h3 class="text-lg font-semibold text-slate-900">Internet Packages</h3>
-                            <p class="text-sm text-slate-600 mt-1">Manage your hotspot data packages</p>
+                            <p class="text-slate-600 mt-1">Manage your hotspot data packages</p>
                         </div>
                         @if (auth()->user()->isAdmin())
                             <div class="flex space-x-2">

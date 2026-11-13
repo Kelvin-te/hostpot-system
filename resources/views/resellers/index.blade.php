@@ -45,9 +45,9 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <a href="{{ route('resellers.edit', $reseller) }}" class="text-blue-600 hover:underline text-sm">{{ __('Edit') }}</a>
-                                        <form method="post" action="{{ route('resellers.toggle', $reseller) }}" class="inline ml-2">@csrf<button class="text-yellow-600 hover:underline text-sm">{{ $reseller->status === 'active' ? __('Suspend') : __('Activate') }}</button></form>
-                                        <form method="post" action="{{ route('resellers.destroy', $reseller) }}" class="inline ml-2" onsubmit="return confirm('{{ __('Delete this reseller?') }}')">@csrf @method('DELETE')<button class="text-red-600 hover:underline text-sm">{{ __('Delete') }}</button></form>
+                                        <a href="{{ route('resellers.edit', $reseller) }}" class="text-blue-600 hover:underline ">{{ __('Edit') }}</a>
+                                        <form method="post" action="{{ route('resellers.toggle', $reseller) }}" class="inline ml-2">@csrf<button class="text-yellow-600 hover:underline ">{{ $reseller->status === 'active' ? __('Suspend') : __('Activate') }}</button></form>
+                                        <form method="post" action="{{ route('resellers.destroy', $reseller) }}" class="inline ml-2" onsubmit="return confirm('{{ __('Delete this reseller?') }}')">@csrf @method('DELETE')<button class="text-red-600 hover:underline ">{{ __('Delete') }}</button></form>
                                     </td>
                                 </tr>
                             @empty
